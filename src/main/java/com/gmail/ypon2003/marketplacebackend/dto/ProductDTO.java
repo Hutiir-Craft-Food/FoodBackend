@@ -5,7 +5,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 
-@Builder
+@Builder//Чи потрібний даний патерн?
 public record ProductDTO(Long id,
                          String name,
                          String description,

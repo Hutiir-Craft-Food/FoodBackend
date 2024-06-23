@@ -4,7 +4,7 @@ import lombok.Builder;
 
 import java.util.List;
 
-@Builder
+@Builder//Чи потрібний даний патерн?
 public record UserDTO(Long id,
                       String name,
                       String lastName,
