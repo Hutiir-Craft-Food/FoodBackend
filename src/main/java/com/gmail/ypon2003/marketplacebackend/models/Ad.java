@@ -1,40 +1,55 @@
 package com.gmail.ypon2003.marketplacebackend.models;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
+import java.text.DecimalFormat;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author uriiponomarenko 27.05.2024
  */
 @Entity
-@Data
-@Table(name = "ad")
+@Table(name = "ads")
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class Ad {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ad_id")
+    @Schema(description = "Unique identifier of the ad.", example = "1", required = true)
     private Long ad_id;
 
-    @Column(name = "ad_name")
+    @Schema(description = "Name of the ad.", example = "Bicycle", required = true)
     private String name;
 
-    @Column(name = "ad_description")
+    @Schema(description = "Description of the ad.", example = "A mountain bike in good condition.", required = true)
     private String description;
 
-    @Column(name = "ad_price")
-    private double price;
+    @Schema(description = "Price of the ad.", example = "199.99", required = true)
+    private DecimalFormat price;
 
-    @Column(name = "ad_flag")
-    private boolean flag;
+    @Schema(description = "Measurement unit for the ad.", example = "USD", required = true)
+    private String measurement;
 
-    @Column(name = "ad_created_at")
     @Temporal(TemporalType.TIMESTAMP)
+    @Schema(description = "Creation date of the ad.", example = "2024-05-27T15:35:00")
     private Date createAt;
 
-    @Column(name = "ad_info_seller")
+    @Schema(description = "Information about the seller.", example = "John Doe, phone: +123456789")
     private String infoSeller;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "person_id")
+    @Schema(description = "The person who created the ad.")
+    private Person person;
+
+    @ManyToMany(mappedBy = "favorites")
+    @Schema(description = "List of persons  who have this ad as a favorite.")
+    private List<Person> personList;
 
 }
