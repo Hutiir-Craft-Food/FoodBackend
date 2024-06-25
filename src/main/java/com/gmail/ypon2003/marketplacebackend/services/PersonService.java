@@ -1,12 +1,11 @@
 package com.gmail.ypon2003.marketplacebackend.services;
 
-import com.gmail.ypon2003.marketplacebackend.models.Ad;
+import com.gmail.ypon2003.marketplacebackend.dto.PersonDTO;
 import com.gmail.ypon2003.marketplacebackend.models.Person;
-import com.gmail.ypon2003.marketplacebackend.repositories.AdRepository;
+import com.gmail.ypon2003.marketplacebackend.models.Product;
 import com.gmail.ypon2003.marketplacebackend.repositories.PersonRepository;
+import com.gmail.ypon2003.marketplacebackend.repositories.ProductRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.java.Log;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +22,7 @@ import java.util.Optional;
 public class PersonService {
 
     private final PersonRepository personRepository;
-    private final AdRepository adRepository;
+    private final ProductRepository productRepository;
 
     public List<Person> findAllPerson() {
         return personRepository.findAll();
@@ -34,10 +33,16 @@ public class PersonService {
     }
 
     @Transactional
-    public Person save(Person person) {
-        person.setEmail(person.getEmail());
-        person.setPassword(person.getPassword());
-        person.setRole("USER_ROLE");
+    public Person save(PersonDTO personDTO) {
+        if(personRepository.existsByEmail(personDTO.getEmail())) {
+            throw new RuntimeException("Email вже існує");
+        }
+        Person person = Person.builder()
+                .email(personDTO.getEmail())
+                .password(personDTO.getPassword())
+                .role("USER_ROLE")
+                .build();
+
         return personRepository.save(person);
     }
 
@@ -62,14 +67,14 @@ public class PersonService {
         personRepository.deleteById(id);
     }
 
-    public void addToFavorites(Long personId, Long adId) throws ChangeSetPersister.NotFoundException {
+    public void addToFavorites(Long personId, Long productId) throws ChangeSetPersister.NotFoundException {
         Person person = personRepository.findById(personId).orElseThrow(ChangeSetPersister.NotFoundException::new);
-        Ad ad = adRepository.findById(adId).orElseThrow(ChangeSetPersister.NotFoundException::new);
-        person.addToFavorites(ad);
+        Product product = productRepository.findById(productId).orElseThrow(ChangeSetPersister.NotFoundException::new);
+        person.addToFavorites(product);
         personRepository.save(person);
     }
 
-    public List<Ad> getFavorites(Long personId) throws ChangeSetPersister.NotFoundException {
+    public List<Product> getFavorites(Long personId) throws ChangeSetPersister.NotFoundException {
         Person person = personRepository.findById(personId).orElseThrow(ChangeSetPersister.NotFoundException::new);
         return person.getFavorites();
     }

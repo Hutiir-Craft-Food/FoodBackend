@@ -16,6 +16,7 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class Person {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,19 +43,19 @@ public class Person {
     private String role;
 
     @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Schema(description = "List of ads created by the person.")
-    private List<Ad> ads = new ArrayList<>();//поле яке керується сутністю Person
+    @Schema(description = "List of products created by the person.")
+    private List<Product> products = new ArrayList<>();//поле яке керується сутністю Person
 
     @ManyToMany
     @JoinTable(
             name = "person_favorites",
             joinColumns = @JoinColumn(name = "person_id"),
-            inverseJoinColumns = @JoinColumn(name = "ad_id")
+            inverseJoinColumns = @JoinColumn(name = "product_id")
     )
-    @Schema(description = "List of favorite ads the person.")
-    private List<Ad> favorites = new ArrayList<>();
+    @Schema(description = "List of favorite products the person.")
+    private List<Product> favorites = new ArrayList<>();
 
-    public void addToFavorites(Ad ad) {
-        this.favorites.add(ad);
+    public void addToFavorites(Product product) {
+        this.favorites.add(product);
     }
 }
