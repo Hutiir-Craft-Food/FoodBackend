@@ -1,7 +1,6 @@
 package com.gmail.ypon2003.marketplacebackend.services;
 
 import com.gmail.ypon2003.marketplacebackend.dto.PersonAsSellerDTO;
-import com.gmail.ypon2003.marketplacebackend.dto.PersonDTO;
 import com.gmail.ypon2003.marketplacebackend.models.Person;
 import com.gmail.ypon2003.marketplacebackend.repositories.PersonRepository;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class PersonAsSellerService {
 
     private final PersonRepository personRepository;
