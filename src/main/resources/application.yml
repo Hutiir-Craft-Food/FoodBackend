@@ -1,26 +1,24 @@
-spring:
-  application:
-    name: khutirCraftu
+config:
+  import: optional:file:.env[.properties]
 
   datasource:
-    driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/market_place
-    username: postgres
-    password: postgres
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME}
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
 
-  jpa:
-    properties:
+    jpa:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-        show_sql: true
+        ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO}
+      show-sql: ${SPRING_JPA_SHOW_SQL}
 
-  mvc:
-    hiddenmethod:
-      filter:
-        enabled: true
+    mvc:
+      hiddenmethod:
+        filter:
+          enabled: ${SPRING_MVC_HIDDENMETHOD_FILTER_ENABLED}
 
-logging:
-  level:
-    root: INFO
+  logging:
+    level:
+      root: ${LOGGING_LEVEL_ROOT}
 
 
