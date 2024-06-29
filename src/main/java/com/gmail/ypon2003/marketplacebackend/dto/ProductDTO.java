@@ -13,6 +13,5 @@ public record ProductDTO(
         String measurement,
         Date createAt,
         String infoSeller
-)
-{
+) {
 }

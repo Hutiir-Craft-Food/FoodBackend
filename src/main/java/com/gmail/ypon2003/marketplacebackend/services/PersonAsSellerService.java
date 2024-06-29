@@ -15,7 +15,7 @@ public class PersonAsSellerService {
 
     @Transactional
     public Person saveSeller(PersonAsSellerDTO personAsSellerDTO) {
-        if(personRepository.existsByEmail(personAsSellerDTO.email())) {
+        if (personRepository.existsByEmail(personAsSellerDTO.email())) {
             throw new RuntimeException("Email вже існує");
         }
         Person person = Person.builder()

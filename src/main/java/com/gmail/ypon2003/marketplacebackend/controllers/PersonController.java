@@ -30,6 +30,7 @@ import java.util.Optional;
 public class PersonController {
 
     private final PersonService personService;
+
     @GetMapping
     @Operation(summary = "Get of list all persons")
     @ApiResponse(responseCode = "200", description = "Successfully retrieved list of persons")

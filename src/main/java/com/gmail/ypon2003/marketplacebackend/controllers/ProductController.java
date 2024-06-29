@@ -78,9 +78,9 @@ public class ProductController {
             @Parameter(description = "ID of the person to be updated", required = true)
             @PathVariable Long id, @RequestBody ProductDTO productDTO) {
         try {
-        productService.updateProduct(id, productDTO);
-        return ResponseEntity.ok().build();
-    } catch (RuntimeException e) {
+            productService.updateProduct(id, productDTO);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
@@ -91,7 +91,7 @@ public class ProductController {
             @ApiResponse(responseCode = "200", description = "Product deleted successfully"),
             @ApiResponse(responseCode = "404", description = "Product not found")
     })
-    public ResponseEntity<Void> deleteProduct (
+    public ResponseEntity<Void> deleteProduct(
             @Parameter(description = "ID of the product to be deleted", required = true)
             @PathVariable Long id) {
         productService.deleteProduct(id);
@@ -110,7 +110,7 @@ public class ProductController {
     @Operation(summary = "Sorted of products from price or date created", description = "Creates a list of sorted products and returns the status")
     public ResponseEntity<List<Product>> getProductsSorted(@RequestParam("sortBy") String sortBy) {
         List<Product> products;
-        if(sortBy.equals("price")) {
+        if (sortBy.equals("price")) {
             products = productService.getProductsSortedByPrice();
         } else {
             products = productService.getProductsSortedByDate();
@@ -121,7 +121,7 @@ public class ProductController {
     @GetMapping
     @Operation(summary = "Pageable of pages", description = "Creates pageable of pages, starting with 0 pages and 10 goods per page, return status")
     public ResponseEntity<Page<Product>> getProducts(@RequestParam(value = "page", defaultValue = "0") int page,
-                                           @RequestParam(value = "size", defaultValue = "10") int size) {
+                                                     @RequestParam(value = "size", defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Product> productsPage = productService.getProductsPage(pageable);
         return ResponseEntity.ok(productsPage);

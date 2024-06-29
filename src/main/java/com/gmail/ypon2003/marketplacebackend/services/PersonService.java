@@ -34,7 +34,7 @@ public class PersonService {
 
     @Transactional
     public Person save(PersonDTO personDTO) {
-        if(personRepository.existsByEmail(personDTO.email())) {
+        if (personRepository.existsByEmail(personDTO.email())) {
             throw new RuntimeException("Email вже існує");
         }
         Person person = Person.builder()
@@ -49,7 +49,7 @@ public class PersonService {
     @Transactional
     public void updatePerson(long id, PersonDTO personDTO) {
         Optional<Person> updateToBePerson = findPersonById(id);
-        if(updateToBePerson.isPresent()) {
+        if (updateToBePerson.isPresent()) {
             Person person = updateToBePerson.get();
             person.setName(personDTO.name());
             person.setEmail(personDTO.email());

@@ -14,7 +14,8 @@ import java.nio.file.AccessDeniedException;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(RuntimeException.class)//виняток який дозволяє уникнути використання try-catch блоків у контролерах
+    @ExceptionHandler(RuntimeException.class)
+//виняток який дозволяє уникнути використання try-catch блоків у контролерах
     public ResponseEntity<?> handlerRuntimeException(RuntimeException ex, WebRequest request) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }

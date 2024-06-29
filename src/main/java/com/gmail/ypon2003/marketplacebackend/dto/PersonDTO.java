@@ -5,10 +5,9 @@ import lombok.Builder;
 @Builder
 public record PersonDTO(
         String name,
-     String lastName,
-     String phoneNumber,
-     String email,
-     String password,
-     String  role)
-{
+        String lastName,
+        String phoneNumber,
+        String email,
+        String password,
+        String role) {
 }

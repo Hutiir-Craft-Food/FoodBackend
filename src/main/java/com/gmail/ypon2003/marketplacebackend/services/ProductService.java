@@ -53,7 +53,7 @@ public class ProductService {
     @Transactional
     public void updateProduct(long id, ProductDTO productDTO) {
         Optional<Product> updateToBeProduct = showProduct(id);
-        if(updateToBeProduct.isPresent()) {
+        if (updateToBeProduct.isPresent()) {
             Product product = updateToBeProduct.get();
             product.setName(productDTO.name());
             product.setCreateAt(productDTO.createAt());
