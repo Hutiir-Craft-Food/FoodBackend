@@ -15,15 +15,15 @@ public class PersonAsSellerService {
 
     @Transactional
     public Person saveSeller(PersonAsSellerDTO personAsSellerDTO) {
-        if(personRepository.existsByEmail(personAsSellerDTO.getEmail())) {
+        if(personRepository.existsByEmail(personAsSellerDTO.email())) {
             throw new RuntimeException("Email вже існує");
         }
         Person person = Person.builder()
-                .name(personAsSellerDTO.getLastName())
-                .lastName(personAsSellerDTO.getLastName())
-                .email(personAsSellerDTO.getEmail())
-                .password(personAsSellerDTO.getPassword())
-                .phoneNumber(personAsSellerDTO.getPhoneNumber())
+                .name(personAsSellerDTO.name())
+                .lastName(personAsSellerDTO.lastName())
+                .email(personAsSellerDTO.email())
+                .password(personAsSellerDTO.password())
+                .phoneNumber(personAsSellerDTO.phoneNumber())
                 .role("USER_SELLER")
                 .build();
 

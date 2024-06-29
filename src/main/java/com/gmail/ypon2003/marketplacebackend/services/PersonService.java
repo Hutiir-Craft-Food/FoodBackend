@@ -34,12 +34,12 @@ public class PersonService {
 
     @Transactional
     public Person save(PersonDTO personDTO) {
-        if(personRepository.existsByEmail(personDTO.getEmail())) {
+        if(personRepository.existsByEmail(personDTO.email())) {
             throw new RuntimeException("Email вже існує");
         }
         Person person = Person.builder()
-                .email(personDTO.getEmail())
-                .password(personDTO.getPassword())
+                .email(personDTO.email())
+                .password(personDTO.password())
                 .role("USER_ROLE")
                 .build();
 
@@ -47,16 +47,17 @@ public class PersonService {
     }
 
     @Transactional
-    public void updatePerson(long id, Person personUpdate) {
+    public void updatePerson(long id, PersonDTO personDTO) {
         Optional<Person> updateToBePerson = findPersonById(id);
         if(updateToBePerson.isPresent()) {
             Person person = updateToBePerson.get();
-            person.setName(personUpdate.getName());
-            person.setEmail(personUpdate.getEmail());
-            person.setLastName(personUpdate.getLastName());
-            person.setPhoneNumber(personUpdate.getPhoneNumber());
-            person.setPassword(personUpdate.getPassword());
-            person.setRole(personUpdate.getRole());
+            person.setName(personDTO.name());
+            person.setEmail(personDTO.email());
+            person.setLastName(personDTO.lastName());
+            person.setPhoneNumber(personDTO.phoneNumber());
+            person.setPassword(personDTO.password());
+            person.setRole(personDTO.role());
+
             personRepository.save(person);
         }
     }

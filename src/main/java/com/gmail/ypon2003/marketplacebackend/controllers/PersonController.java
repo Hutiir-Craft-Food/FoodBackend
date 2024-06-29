@@ -73,10 +73,10 @@ public class PersonController {
             @ApiResponse(responseCode = "200", description = "Person updated successfully"),
             @ApiResponse(responseCode = "404", description = "Person not found")
     })
-    public ResponseEntity<Person> updatePerson(
+    public ResponseEntity<Void> updatePerson(
             @Parameter(description = "ID of the person to be updated", required = true)
-            @PathVariable Long id, @RequestBody Person personUpdate) {
-        personService.updatePerson(id, personUpdate);
+            @PathVariable Long id, @RequestBody PersonDTO personDTO) {
+        personService.updatePerson(id, personDTO);
         return ResponseEntity.ok().build();
     }
 

@@ -1,5 +1,6 @@
 package com.gmail.ypon2003.marketplacebackend.controllers;
 
+import com.gmail.ypon2003.marketplacebackend.dto.ProductDTO;
 import com.gmail.ypon2003.marketplacebackend.models.Product;
 import com.gmail.ypon2003.marketplacebackend.services.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -60,11 +61,11 @@ public class ProductController {
             @ApiResponse(responseCode = "201", description = "Product created successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid input")
     })
-    public ResponseEntity<Product> createProduct(@RequestBody Product product) {
+    public ResponseEntity<Product> createProduct(@RequestBody ProductDTO productDTO) {
 
-        productService.save(product);
+        Product createdProduct = productService.save(productDTO);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(product);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
     }
 
     @PutMapping("/{id}")
@@ -73,12 +74,15 @@ public class ProductController {
             @ApiResponse(responseCode = "200", description = "Product updated successfully"),
             @ApiResponse(responseCode = "404", description = "Product not found")
     })
-    public ResponseEntity<Product> updateProduct(
+    public ResponseEntity<Void> updateProduct(
             @Parameter(description = "ID of the person to be updated", required = true)
-            @PathVariable Long id, @RequestBody Product productUpdate) {
-        productService.updateProduct(id, productUpdate);
-
+            @PathVariable Long id, @RequestBody ProductDTO productDTO) {
+        try {
+        productService.updateProduct(id, productDTO);
         return ResponseEntity.ok().build();
+    } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 
     @DeleteMapping("/{id}")

@@ -1,5 +1,6 @@
 package com.gmail.ypon2003.marketplacebackend.services;
 
+import com.gmail.ypon2003.marketplacebackend.dto.ProductDTO;
 import com.gmail.ypon2003.marketplacebackend.models.Product;
 import com.gmail.ypon2003.marketplacebackend.repositories.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +11,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,21 +30,20 @@ public class ProductService {
     }
 
     @Transactional
-    public Product save(Product product) {
+    public Product save(ProductDTO productDTO) {
         try {
-            if(product.getCreateAt() == null) {
-                product.setCreateAt(new Date());
-            }
-            product.setName(product.getName());
-            product.setPrice(product.getPrice());
-            product.setInfoSeller(product.getInfoSeller());
-            product.setDescription(product.getDescription());
-            product.setMeasurement(product.getMeasurement());
-            productRepository.save(product);
+            Product product = Product.builder()
+                    .createAt(productDTO.createAt())
+                    .name(productDTO.name())
+                    .measurement(productDTO.measurement())
+                    .description(productDTO.description())
+                    .price(productDTO.price())
+                    .infoSeller(productDTO.infoSeller())
+                    .build();
+            return productRepository.save(product);
         } catch (Exception e) {
             throw new RuntimeException("Failed to save product", e);
         }
-        return product;
     }
 
     public Optional<Product> showProduct(long id) {
@@ -52,16 +51,18 @@ public class ProductService {
     }
 
     @Transactional
-    public void updateProduct(long id, Product productUpdate) {
+    public void updateProduct(long id, ProductDTO productDTO) {
         Optional<Product> updateToBeProduct = showProduct(id);
         if(updateToBeProduct.isPresent()) {
             Product product = updateToBeProduct.get();
-            product.setName(productUpdate.getName());
-            product.setCreateAt(productUpdate.getCreateAt());
-            product.setMeasurement(productUpdate.getMeasurement());
-            product.setDescription(productUpdate.getDescription());
-            product.setPrice(productUpdate.getPrice());
-            product.setInfoSeller(productUpdate.getInfoSeller());
+            product.setName(productDTO.name());
+            product.setCreateAt(productDTO.createAt());
+            product.setMeasurement(productDTO.measurement());
+            product.setDescription(productDTO.description());
+            product.setPrice(productDTO.price());
+            product.setInfoSeller(productDTO.infoSeller());
+
+            productRepository.save(product);
         }
     }
 
