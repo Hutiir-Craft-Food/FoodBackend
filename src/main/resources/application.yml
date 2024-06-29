@@ -1,24 +1,14 @@
-config:
-  import: optional:file:.env[.properties]
+spring:
+  config:
+    import: optional:file:.env[.properties]
 
   datasource:
-    driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME}
+    driver-class-name: org.postgresql.Driver
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
 
-    jpa:
-      hibernate:
-        ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO}
-      show-sql: ${SPRING_JPA_SHOW_SQL}
-
-    mvc:
-      hiddenmethod:
-        filter:
-          enabled: ${SPRING_MVC_HIDDENMETHOD_FILTER_ENABLED}
-
-  logging:
-    level:
-      root: ${LOGGING_LEVEL_ROOT}
-
-
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
