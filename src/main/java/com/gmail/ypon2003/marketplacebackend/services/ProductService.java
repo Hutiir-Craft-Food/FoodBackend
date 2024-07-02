@@ -1,7 +1,9 @@
 package com.gmail.ypon2003.marketplacebackend.services;
 
 import com.gmail.ypon2003.marketplacebackend.dto.ProductDTO;
+import com.gmail.ypon2003.marketplacebackend.models.Person;
 import com.gmail.ypon2003.marketplacebackend.models.Product;
+import com.gmail.ypon2003.marketplacebackend.repositories.PersonRepository;
 import com.gmail.ypon2003.marketplacebackend.repositories.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +13,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,6 +27,7 @@ import java.util.Optional;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final PersonRepository personRepository;
 
     public List<Product> findAll() {
         return productRepository.findAll();
@@ -32,16 +36,26 @@ public class ProductService {
     @Transactional
     public Product save(ProductDTO productDTO) {
         try {
+
+            Person person = personRepository.findById(productDTO.personId())
+                    .orElseThrow(() -> new RuntimeException("Person with id " +
+                    productDTO.personId() + " not found"));
+
+            Date createAt = productDTO.createAt() != null ?
+                    productDTO.createAt() : new Date();
+
             Product product = Product.builder()
-                    .createAt(productDTO.createAt())
+                    .createAt(createAt)
                     .name(productDTO.name())
                     .measurement(productDTO.measurement())
                     .description(productDTO.description())
                     .price(productDTO.price())
                     .infoSeller(productDTO.infoSeller())
+                    .person(person)
                     .build();
             return productRepository.save(product);
         } catch (Exception e) {
+            log.error("Failed to save product", e);
             throw new RuntimeException("Failed to save product", e);
         }
     }
@@ -56,7 +70,11 @@ public class ProductService {
         if (updateToBeProduct.isPresent()) {
             Product product = updateToBeProduct.get();
             product.setName(productDTO.name());
-            product.setCreateAt(productDTO.createAt());
+
+            if(productDTO.createAt() != null) {
+                product.setCreateAt(productDTO.createAt());
+            }
+
             product.setMeasurement(productDTO.measurement());
             product.setDescription(productDTO.description());
             product.setPrice(productDTO.price());

@@ -12,6 +12,7 @@ public record ProductDTO(
         BigDecimal price,
         String measurement,
         Date createAt,
-        String infoSeller
+        String infoSeller,
+        Long personId
 ) {
 }

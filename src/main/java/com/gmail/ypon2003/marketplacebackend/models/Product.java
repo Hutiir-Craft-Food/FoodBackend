@@ -50,7 +50,7 @@ public class Product {
     private Person person;
 
     @ManyToMany(mappedBy = "favorites")
-    @Schema(description = "List of persons  who have this producrs as a favorites.")
+    @Schema(description = "List of persons  who have this products as a favorites.")
     private List<Person> personList;
 
 }
