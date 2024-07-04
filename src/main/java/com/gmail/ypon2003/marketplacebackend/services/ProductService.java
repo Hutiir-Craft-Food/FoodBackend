@@ -13,7 +13,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,11 +41,8 @@ public class ProductService {
                     .orElseThrow(() -> new RuntimeException("Person with id " +
                     productDTO.personId() + " not found"));
 
-            Date createAt = productDTO.createAt() != null ?
-                    productDTO.createAt() : new Date();
-
             Product product = Product.builder()
-                    .createAt(createAt)
+                    .createAt(LocalDateTime.now())
                     .name(productDTO.name())
                     .measurement(productDTO.measurement())
                     .description(productDTO.description())
