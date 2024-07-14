@@ -3,7 +3,7 @@ package com.gmail.ypon2003.marketplacebackend.dto;
 import lombok.Builder;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Builder
 public record ProductDTO(
@@ -11,7 +11,8 @@ public record ProductDTO(
         String description,
         BigDecimal price,
         String measurement,
-        Date createAt,
-        String infoSeller
+        LocalDateTime createAt,
+        String infoSeller,
+        Long personId
 ) {
 }

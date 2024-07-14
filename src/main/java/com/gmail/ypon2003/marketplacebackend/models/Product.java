@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -39,7 +39,7 @@ public class Product {
 
     @Temporal(TemporalType.TIMESTAMP)
     @Schema(description = "Creation date of the product.", example = "2024-05-27T15:35:00")
-    private Date createAt;
+    private LocalDateTime createAt;
 
     @Schema(description = "Information about the seller.", example = "John Doe, phone: +123456789")
     private String infoSeller;
@@ -50,7 +50,7 @@ public class Product {
     private Person person;
 
     @ManyToMany(mappedBy = "favorites")
-    @Schema(description = "List of persons  who have this producrs as a favorites.")
+    @Schema(description = "List of persons  who have this products as a favorites.")
     private List<Person> personList;
 
 }
