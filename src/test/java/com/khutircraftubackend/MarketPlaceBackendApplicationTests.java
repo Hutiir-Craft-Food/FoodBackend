@@ -1,4 +1,4 @@
-package com.gmail.ypon2003.marketplacebackend;
+package com.khutircraftubackend;
 
 import org.springframework.boot.test.context.SpringBootTest;
 
