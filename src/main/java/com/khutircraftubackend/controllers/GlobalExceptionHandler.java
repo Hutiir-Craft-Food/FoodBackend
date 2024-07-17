@@ -1,4 +1,4 @@
-package com.gmail.ypon2003.marketplacebackend.controllers;
+package com.khutircraftubackend.controllers;
 
 import jakarta.persistence.EntityNotFoundException;
 import org.hibernate.exception.ConstraintViolationException;
