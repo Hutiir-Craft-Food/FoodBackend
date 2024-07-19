@@ -46,7 +46,7 @@ public class SellerService {
         mailMessage.setFrom(mailSellerName);
         mailMessage.setSubject("Підтвердження облікового запису");
         mailMessage.setText("Для підтвердження вашого облікового запису перейдіть за посиланням: "
-                + "http://your-app-domain.com/api/register/confirm?code=" + confirmationCode);
+                + "http://ocalhost:8080/v1/seller/register/confirm?code=" + confirmationCode);
 
         mailSender.send(mailMessage);
 
