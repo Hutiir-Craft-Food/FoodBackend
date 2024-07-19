@@ -26,6 +26,9 @@ public class SellerService {
     @Value("${spring.mail.name")
     private String mailSellerName;
 
+    @Value("${app.domain}")
+    private String appDomain;
+
     @Transactional
     public void registerSeller(SellerDTO sellerDTO) {
         String confirmationCode = UUID.randomUUID().toString();
@@ -34,6 +37,8 @@ public class SellerService {
         seller.setPassword(passwordEncoder.encode(sellerDTO.password()));
         seller.setEnabled(false);
         seller.setConfirmationCode(confirmationCode);
+        seller.setName(sellerDTO.name());
+        seller.setPhoneNumber(sellerDTO.phoneNumber());
 
         sellerRepository.save(seller);
 
@@ -46,7 +51,7 @@ public class SellerService {
         mailMessage.setFrom(mailSellerName);
         mailMessage.setSubject("Підтвердження облікового запису");
         mailMessage.setText("Для підтвердження вашого облікового запису перейдіть за посиланням: "
-                + "http://ocalhost:8080/v1/seller/register/confirm?code=" + confirmationCode);
+                + appDomain + "/v1/seller/register/confirm?code=" + confirmationCode);
 
         mailSender.send(mailMessage);
 
