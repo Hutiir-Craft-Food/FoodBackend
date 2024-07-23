@@ -17,6 +17,8 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     generate-ddl: true
 
+
+
   mail:
     host: ${MAIL_HOST}
     port: ${MAIL_PORT}
@@ -31,6 +33,11 @@ spring:
           auth: true
           starttls:
             enable: true
-
-app:
-  domain: http://localhost:8080
+jwt:
+  secret: mySecretKey
+  expiration: 3600
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
