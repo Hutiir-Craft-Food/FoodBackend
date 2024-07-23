@@ -31,6 +31,12 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtils jwtUtils;
+    private final JavaMailSender mailSender;
+
+    /**
+     * Клас UserService реалізує бізнес-логіку для роботи з користувачами.
+     */
 
     @Transactional
     public UserDTO registerNewUser(UserDTO userDTO) {
@@ -55,5 +61,45 @@ public class UserService {
             user.setEnabled(true);
             userRepository.save(user);
         }
+    }
+
+    @Transactional
+    public boolean updatePassword(PasswordUpdateRequest passwordUpdateRequest) {
+
+        Optional<UserDTO> userDTOOptional = findUserByEmail(passwordUpdateRequest.getEmail());
+        if(userDTOOptional.isPresent()) {
+            User user = UserMapper.INSTANCE.userDTOToUser(userDTOOptional.get());
+            if(passwordEncoder.matches(passwordUpdateRequest.getOldPassword(), user.getPassword())) {
+                user.setPassword(passwordEncoder.encode(passwordUpdateRequest.getNewPassword()));
+                userRepository.save(user);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void initiatePasswordRecovery(String email) {
+        Optional<UserDTO> userDTOOptional = findUserByEmail(email);
+        if(userDTOOptional.isPresent()) {
+            // логіка відправки листа для відновлення пароля
+            UserDTO userDTO = userDTOOptional.get();
+            // Генерація токена для відновлення пароля та відправка електронного листа
+            User user = UserMapper.INSTANCE.userDTOToUser(userDTOOptional.get());
+            String token = generatePasswordRecoveryToken(user.getEmail());
+            sendPasswordRecoveryEmail(user.getEmail(), token);
+        }
+    }
+    private String generatePasswordRecoveryToken(String email) {
+        return jwtUtils.generateJwtToken(email);
+    }
+
+    private void sendPasswordRecoveryEmail(String email, String token) {
+        String recoveryUrl = "http://your-app-url.com/reset-password?token=" + token;
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(email);
+        message.setSubject("Password Recovery");
+        message.setText("To reset your password, click the link below:\n" + recoveryUrl);
+        mailSender.send(message);
+        log.info("Password recovery email sent to: {}", email);
     }
 }
