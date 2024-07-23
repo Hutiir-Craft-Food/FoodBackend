@@ -1,13 +1,17 @@
 package com.khutircraftubackend.validation.validator;
 
-import com.khutircraftubackend.dto.SellerDTO;
+import com.khutircraftubackend.models.User;
 import com.khutircraftubackend.validation.annotation.PasswordMatches;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
-public class PasswordMatchesValidator implements ConstraintValidator<PasswordMatches, SellerDTO> {
+/**
+ * Клас PasswordMatchesValidator реалізує логіку валідації для анотації PasswordMatches.
+ */
+
+public class PasswordMatchesValidator implements ConstraintValidator<PasswordMatches, User> {
     @Override
-    public boolean isValid(SellerDTO sellerDTO, ConstraintValidatorContext context) {
-        return sellerDTO.isPasswordMatching();
+    public boolean isValid(User user, ConstraintValidatorContext context) {
+        return user.getPassword().equals(user.getConfirmPassword());
     }
 }

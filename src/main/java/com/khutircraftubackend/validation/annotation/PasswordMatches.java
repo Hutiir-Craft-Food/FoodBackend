@@ -8,6 +8,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Анотація PasswordMatches використовується для валідації того, що паролі співпадають.
+ */
+
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = com.khutircraftubackend.validation.validator.PasswordMatchesValidator.class)
