@@ -11,6 +11,10 @@ import org.springframework.web.context.request.WebRequest;
 
 import java.nio.file.AccessDeniedException;
 
+/**
+ * Клас GlobalExceptionHandler обробляє глобальні винятки в додатку.
+ */
+
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
