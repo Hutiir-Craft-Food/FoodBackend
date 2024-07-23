@@ -5,6 +5,10 @@ import com.khutircraftubackend.models.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
+/**
+ * Інтерфейс UserMapper мапить дані між моделлю User та DTO UserDTO.
+ */
+
 @Mapper
 public interface UserMapper {
     UserMapper INSTANCE = Mappers.getMapper(UserMapper.class);

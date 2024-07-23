@@ -16,6 +16,10 @@ CREATE TABLE users (
 );
  */
 
+/**
+ * Клас User є моделлю користувача і відображає таблицю користувачів у базі даних.
+ */
+
 @Entity
 @Table(name = "users")
 @Getter
