@@ -2,76 +2,28 @@ package com.khutircraftubackend.services;
 
 import com.khutircraftubackend.dto.SellerDTO;
 import com.khutircraftubackend.mapper.SellerMapper;
-import com.khutircraftubackend.models.SellerEntity;
+import com.khutircraftubackend.models.Seller;
 import com.khutircraftubackend.repositories.SellerRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.UUID;
+/**
+ * Клас SellerService реалізує бізнес-логіку для роботи з продавцями.
+ */
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class SellerService {
 
     private final SellerRepository sellerRepository;
-    private final JavaMailSender mailSender;
-    private final BCryptPasswordEncoder passwordEncoder;
-
-    @Value("${spring.mail.name")
-    private String mailSellerName;
-
-    @Value("${app.domain}")
-    private String appDomain;
 
     @Transactional
-    public void registerSeller(SellerDTO sellerDTO) {
-        String confirmationCode = UUID.randomUUID().toString();
-        SellerEntity seller = SellerMapper.INSTANCE.toSellerEntity(sellerDTO);
-
-        seller.setPassword(passwordEncoder.encode(sellerDTO.password()));
-        seller.setEnabled(false);
-        seller.setConfirmationCode(confirmationCode);
-        seller.setName(sellerDTO.name());
-        seller.setPhoneNumber(sellerDTO.phoneNumber());
-
-        sellerRepository.save(seller);
-
-        sendConfirmationEmail(seller.getEmail(), confirmationCode);
-    }
-    @Async
-    public void sendConfirmationEmail(String email, String confirmationCode) {
-        SimpleMailMessage mailMessage = new SimpleMailMessage();
-        mailMessage.setTo(email);
-        mailMessage.setFrom(mailSellerName);
-        mailMessage.setSubject("Підтвердження облікового запису");
-        mailMessage.setText("Для підтвердження вашого облікового запису перейдіть за посиланням: "
-                + appDomain + "/v1/seller/register/confirm?code=" + confirmationCode);
-
-        mailSender.send(mailMessage);
-
-    }
-
-    @Transactional
-    public boolean confirmSeller(String confirmationCode) {
-        SellerEntity seller = sellerRepository.findByConfirmationCode(confirmationCode);
-        if(seller == null) {
-            return false; //Код підтвердження не знайдено
-        }
-        seller.setConfirmationCode(null);
-        seller.setEnabled(true);
-        sellerRepository.save(seller);
-        return true;
-    }
-
-    @Transactional
-    public SellerDTO getSellerConfirmation(String email) {
-        SellerEntity seller = sellerRepository.findByEmail(email);
-        return SellerMapper.INSTANCE.toSellerDTO(seller);
+    public SellerDTO saveSeller(SellerDTO sellerDTO) {
+        Seller seller = SellerMapper.INSTANCE.SellerDTOToSeller(sellerDTO);
+        Seller savedSeller = sellerRepository.save(seller);
+        return SellerMapper.INSTANCE.SellerToSellerDTO(savedSeller);
     }
 }
