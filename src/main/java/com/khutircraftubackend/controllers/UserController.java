@@ -5,11 +5,14 @@ import com.khutircraftubackend.dto.security.JwtResponse;
 import com.khutircraftubackend.dto.security.LoginRequest;
 import com.khutircraftubackend.dto.security.PasswordRecoveryRequest;
 import com.khutircraftubackend.dto.security.PasswordUpdateRequest;
+import com.khutircraftubackend.mapper.UserMapper;
+import com.khutircraftubackend.models.User;
 import com.khutircraftubackend.security.JwtUtils;
 import com.khutircraftubackend.services.PersonDetailsServices;
 import com.khutircraftubackend.services.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -57,6 +60,10 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<UserDTO> register(@Valid @RequestBody UserDTO userDTO) {
+        User user = UserMapper.INSTANCE.userDTOToUser(userDTO);
+        if(userService.findUserByEmail(user.getEmail()).isPresent()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
         UserDTO registeredUser = userService.registerNewUser(userDTO);
         return ResponseEntity.ok(registeredUser);
     }
