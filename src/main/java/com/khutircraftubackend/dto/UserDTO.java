@@ -2,6 +2,7 @@ package com.khutircraftubackend.dto;
 
 import com.khutircraftubackend.models.Role;
 import com.khutircraftubackend.models.Seller;
+import com.khutircraftubackend.validation.annotation.PasswordMatches;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -15,6 +16,7 @@ import lombok.Builder;
  */
 
 @Builder
+@PasswordMatches
 public record UserDTO(
 
         @NotBlank(message = "E-mail не може бути порожнім")
@@ -42,4 +44,7 @@ public record UserDTO(
         Seller seller
 
 ) {
+        public boolean isPasswordMatching() {
+                return this.password.equals(this.confirmPassword);
+        }
 }
