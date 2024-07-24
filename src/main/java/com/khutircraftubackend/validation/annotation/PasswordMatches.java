@@ -14,7 +14,8 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = com.khutircraftubackend.validation.validator.PasswordMatchesValidator.class)
+@Constraint(validatedBy =
+        com.khutircraftubackend.validation.validator.PasswordMatchesValidator.class)
 public @interface PasswordMatches {
 
     String message() default "Пароль і підтвердження не співпадають";
