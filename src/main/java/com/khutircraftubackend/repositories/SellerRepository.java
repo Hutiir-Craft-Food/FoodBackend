@@ -1,11 +1,13 @@
 package com.khutircraftubackend.repositories;
 
-import com.khutircraftubackend.models.SellerEntity;
+import com.khutircraftubackend.models.Seller;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+/**
+ * Інтерфейс SellerRepository забезпечує доступ до даних продавців у базі даних.
+ */
+
 @Repository
-public interface SellerRepository extends JpaRepository<SellerEntity, Long> {
-    SellerEntity findByConfirmationCode(String confirmationCode);
-    SellerEntity findByEmail(String email);
+public interface SellerRepository extends JpaRepository<Seller, Long> {
 }
