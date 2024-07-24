@@ -34,8 +34,8 @@ spring:
           starttls:
             enable: true
 jwt:
-  secret: mySecretKey
-  expiration: 3600
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION}
 springdoc:
   api-docs:
     enabled: true
