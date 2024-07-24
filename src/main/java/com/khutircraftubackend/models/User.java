@@ -1,6 +1,5 @@
 package com.khutircraftubackend.models;
 
-import com.khutircraftubackend.validation.annotation.PasswordMatches;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -21,13 +20,14 @@ CREATE TABLE users (
  */
 
 @Entity
-@Table(name = "users")
+@Table(name = "users", uniqueConstraints = {
+        @UniqueConstraint(columnNames = "email")
+})
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@PasswordMatches
 public class User {
 
     @Id
@@ -64,10 +64,5 @@ public class User {
     private boolean enabled;
 
     private String confirmationCode; // Код підтвердження, який відправляється на пошту
-
-    //метод перевірки відповідності пароля і підтвердження
-    public boolean isPasswordMatching() {
-        return this.password.equals(this.confirmPassword);
-    }
 
 }
