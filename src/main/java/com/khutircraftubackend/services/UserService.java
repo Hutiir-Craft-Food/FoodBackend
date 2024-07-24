@@ -42,11 +42,14 @@ public class UserService {
     public UserDTO registerNewUser(UserDTO userDTO) {
         User user = UserMapper.INSTANCE.userDTOToUser(userDTO);
 
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRole(userDTO.role() == Role.SELLER ? Role.SELLER : Role.BUYER);
-        user.setEnabled(false);//до підтвердження електронною поштою
-        User savedUser = userRepository.save(user);// надіслати сюди логіку електронного листа з підтвердженням
-        return UserMapper.INSTANCE.userToUserDTO(savedUser);
+        if(userDTO.isPasswordMatching()) {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+            user.setRole(userDTO.role() == Role.SELLER ? Role.SELLER : Role.BUYER);
+            user.setEnabled(false);//до підтвердження електронною поштою
+            user.setJwt(jwtUtils.generateJwtToken(user.getEmail()));
+        }
+            User savedUser = userRepository.save(user);// надіслати сюди логіку електронного листа з підтвердженням
+            return UserMapper.INSTANCE.userToUserDTO(savedUser);
     }
 
     public Optional<UserDTO> findUserByEmail(String email) {
