@@ -3,6 +3,7 @@ package com.khutircraftubackend.security;
 import io.jsonwebtoken.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.time.Instant;
 import java.util.Date;
@@ -14,15 +15,19 @@ import java.util.Date;
 @RequiredArgsConstructor
 @Slf4j
 public class JwtUtils {
-    private final String jwtSecret;
-    private final int jwtExpirationSec;
+
+    @Value("${jwt.secret}")
+    private String jwtSecret;
+
+    @Value("${jwt.expiration}")
+    private int jwtExpirationSec;
 
     public String generateJwtToken(String email) {
         return Jwts.builder()
                 .setSubject(email)
                 .setIssuedAt(Date.from(Instant.now()))
                 .setExpiration(Date.from(Instant.now().plusSeconds(jwtExpirationSec)))
-                .signWith(SignatureAlgorithm.HS512, jwtSecret)
+                .signWith(SignatureAlgorithm.HS256, jwtSecret)
                 .compact();
     }
 
