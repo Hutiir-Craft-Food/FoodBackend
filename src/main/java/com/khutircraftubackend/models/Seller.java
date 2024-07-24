@@ -3,6 +3,10 @@ package com.khutircraftubackend.models;
 import jakarta.persistence.*;
 import lombok.*;
 
+/**
+ * Клас Seller є моделлю продавця і відображає таблицю продавців у базі даних.
+ */
+
 @Entity
 @Setter
 @Getter
@@ -16,23 +20,25 @@ public class Seller {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String name;
+    private String company;
 
-    @Column(nullable = false, unique = true)
-    private String email;
+    private String tax_code;
 
     @Column(nullable = false, unique = true)
     private String phoneNumber;
 
-    @Column(nullable = false)
-    private String password;
+    @OneToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    @Column(nullable = false)
-    private String confirmPassword;
+    public User getUser() {
+        return user;
+    }
 
-    private boolean enabled;
-
-    private String confirmationCode; // Код підтвердження, який відправляється на пошту
-
+    public void setUser(User user) {
+        this.user = user;
+        if(user != null) {
+            user.setSeller(this);
+        }
+    }
 }
