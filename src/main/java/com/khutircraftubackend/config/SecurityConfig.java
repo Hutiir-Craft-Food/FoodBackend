@@ -2,7 +2,7 @@ package com.khutircraftubackend.config;
 
 import com.khutircraftubackend.security.JwtUtils;
 import com.khutircraftubackend.services.PersonDetailsServices;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -14,6 +14,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
  * Клас SecurityConfig відповідає за налаштування безпеки додатку за допомогою Spring Security.
@@ -21,7 +22,10 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -33,14 +37,9 @@ public class SecurityConfig {
         return new PersonDetailsServices();
     }
 
-    @Value("${jwt.secret}")
-    private String jwtSecret;
-
-    @Value("${jwt.expiration}")
-    private int jwtExpirationSec;
     @Bean
     public JwtUtils jwtUtils() {
-        return new JwtUtils(jwtSecret, jwtExpirationSec);
+        return new JwtUtils();
     }
 
 
@@ -50,18 +49,23 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/login",
-                                "/register",
+                                "/v1/user/login",
+                                "/v1/user/register",
                                 "/error")
                         .permitAll()
+                        .requestMatchers("/seller/**").hasRole("SELLER")
+                        .requestMatchers("/buyer/**").hasRole("BUYER")
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .formLogin(form -> form.loginPage("/login")
                         .loginProcessingUrl("/process_login")
                         .defaultSuccessUrl("/index", true)
-                        .failureUrl("/logi?error"))
-                .rememberMe(remembeMe -> remembeMe.userDetailsService(userDetailsService()))
+                        .failureUrl("/login?error"))
+                .rememberMe(rememberMe -> rememberMe.userDetailsService(userDetailsService()))
                 .logout(logout -> logout.logoutUrl("/logout")
                         .logoutSuccessUrl("/login").permitAll());
+
+        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
