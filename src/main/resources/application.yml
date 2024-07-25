@@ -18,7 +18,6 @@ spring:
     generate-ddl: true
 
 
-
   mail:
     host: ${MAIL_HOST}
     port: ${MAIL_PORT}
@@ -26,18 +25,22 @@ spring:
     password: ${MAIL_PASSWORD}
     properties:
       mail:
-        debug: false
-        transport:
-          protocol: smtp
         smtp:
           auth: true
           starttls:
             enable: true
+
 jwt:
   secret: ${JWT_SECRET}
   expiration: ${JWT_EXPIRATION}
+
 springdoc:
   api-docs:
     enabled: true
   swagger-ui:
     path: /swagger-ui.html
+
+sendinblue:
+  api-key: ${SENDINBLUE_API_KEY}
+
+
