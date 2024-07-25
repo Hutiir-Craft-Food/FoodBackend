@@ -1,7 +1,5 @@
 package com.khutircraftubackend.config;
 
-import com.khutircraftubackend.security.JwtUtils;
-import com.khutircraftubackend.services.PersonDetailsServices;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,7 +9,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -27,20 +24,8 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public UserDetailsService userDetailsService() {
-        return new PersonDetailsServices();
-    }
-
-    @Bean
-    public JwtUtils jwtUtils() {
-        return new JwtUtils();
-    }
+    private final UserDetailsService userDetailsService;
+    private final PasswordEncoder passwordEncoder;
 
 
     @Bean
@@ -61,7 +46,7 @@ public class SecurityConfig {
                         .loginProcessingUrl("/process_login")
                         .defaultSuccessUrl("/index", true)
                         .failureUrl("/login?error"))
-                .rememberMe(rememberMe -> rememberMe.userDetailsService(userDetailsService()))
+                .rememberMe(rememberMe -> rememberMe.userDetailsService(userDetailsService))
                 .logout(logout -> logout.logoutUrl("/logout")
                         .logoutSuccessUrl("/login").permitAll());
 
@@ -72,8 +57,8 @@ public class SecurityConfig {
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService());
-        provider.setPasswordEncoder(passwordEncoder());
+        provider.setUserDetailsService(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder);
         return provider;
     }
 }
