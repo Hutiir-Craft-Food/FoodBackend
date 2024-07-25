@@ -1,7 +1,7 @@
 package com.khutircraftubackend.services;
 
-import com.khutircraftubackend.dto.security.PasswordUpdateRequest;
 import com.khutircraftubackend.dto.UserDTO;
+import com.khutircraftubackend.dto.security.PasswordUpdateRequest;
 import com.khutircraftubackend.mapper.UserMapper;
 import com.khutircraftubackend.models.Role;
 import com.khutircraftubackend.models.User;
@@ -16,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Клас UserService реалізує бізнес-логіку для роботи з користувачами.
@@ -33,9 +34,17 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
     private final JavaMailSender mailSender;
+    private final SendinblueEmailService sendinblueEmailService;
 
     /**
-     * Клас UserService реалізує бізнес-логіку для роботи з користувачами.
+     * Реєструє нового користувача.
+     * <p>
+     * Метод перетворює UserDTO в User, хешує пароль, генерує JWT токен та код підтвердження.
+     * Потім зберігає користувача в базі даних і надсилає електронного листа з кодом підтвердження.
+     * </p>
+     *
+     * @param userDTO дані для реєстрації користувача
+     * @return UserDTO об'єкт зареєстрованого користувача
      */
 
     @Transactional
@@ -46,29 +55,87 @@ public class UserService {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             user.setRole(userDTO.role() == Role.SELLER ? Role.SELLER : Role.BUYER);
             user.setEnabled(false);//до підтвердження електронною поштою
-            user.setJwt(jwtUtils.generateJwtToken(user.getEmail()));
+
+            // Генерація та збереження JWT
+            String jwt = jwtUtils.generateJwtToken(user.getEmail());
+            user.setJwt(jwt);
+            log.info("jwt: {}", jwt);
+
+            // Генерація та збереження коду підтвердження
+            String confirmationCode = generateConfirmationCode();
+            user.setConfirmationCode(confirmationCode);
+            log.info("code: {}", confirmationCode);
         }
-            User savedUser = userRepository.save(user);// надіслати сюди логіку електронного листа з підтвердженням
+        User savedUser = userRepository.save(user);
+        sendEmail(userDTO.email(), "Confirm your email", "To confirm your email," +
+                " click the link below:\n http://your-app-url.com/confirm?code=" +
+                userDTO.confirmationCode());// Відправка коду підтвердження
             return UserMapper.INSTANCE.userToUserDTO(savedUser);
     }
 
-    public Optional<UserDTO> findUserByEmail(String email) {
-        return userRepository.findByEmail(email)
-                .map(UserMapper.INSTANCE::userToUserDTO);
+    /**
+     * Відправляє електронний лист.
+     *
+     * @param email адреса електронної пошти одержувача
+     * @param subject тема листа
+     * @param text текст листа
+     */
+    private void sendEmail(String email, String subject, String text) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(email);
+        message.setSubject(subject);
+        message.setText(text);
+        //mailSender.send(message);
+        sendinblueEmailService.sendEmail(email, subject, text);
+        log.info("{} email sent to: {}", subject, email);
     }
+
+    /**
+     * Генерує випадковий код підтвердження.
+     *
+     * @return випадковий код підтвердження
+     */
+    private String generateConfirmationCode() {
+        //Генерація випадкового коду підтвердження
+        return UUID.randomUUID().toString();
+    }
+
+    /**
+     * Активує користувача за кодом підтвердження.
+     * <p>
+     * Метод знаходить користувача за кодом підтвердження та активує його.
+     * </p>
+     *
+     * @param confirmationCode код підтвердження
+     */
     @Transactional
-    public void enableUser(String email) {
-        Optional<User> userOptional = userRepository.findByEmail(email);
-        if(userOptional.isPresent()) {
-            User user = userOptional.get();
+    public void enableUser(String confirmationCode) {
+        User user = userRepository.findByConfirmationCode(confirmationCode);
+        if(user != null) {
             user.setEnabled(true);
             userRepository.save(user);
         }
     }
 
+    /**
+     * Знаходить користувача за електронною поштою.
+     *
+     * @param email адреса електронної пошти користувача
+     * @return Optional<UserDTO> об'єкт UserDTO, якщо користувач знайдений, інакше - пустий Optional
+     */
+    public Optional<UserDTO> findUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .map(UserMapper.INSTANCE::userToUserDTO);
+    }
+
+    /**
+     * Оновлює пароль користувача.
+     *
+     * @param passwordUpdateRequest запит на оновлення пароля, що містить старий та новий паролі
+     * @return true, якщо пароль успішно оновлено, інакше - false
+     */
     @Transactional
     public boolean updatePassword(PasswordUpdateRequest passwordUpdateRequest) {
-
         Optional<UserDTO> userDTOOptional = findUserByEmail(passwordUpdateRequest.getEmail());
         if(userDTOOptional.isPresent()) {
             User user = UserMapper.INSTANCE.userDTOToUser(userDTOOptional.get());
@@ -81,28 +148,21 @@ public class UserService {
         return false;
     }
 
+    /**
+     * Ініціює відновлення пароля для користувача.
+     * <p>
+     * Метод генерує токен для відновлення пароля і відправляє електронний лист з посиланням для відновлення пароля.
+     * </p>
+     *
+     * @param email адреса електронної пошти користувача, для якого потрібно відновити пароль
+     */
     public void initiatePasswordRecovery(String email) {
         Optional<UserDTO> userDTOOptional = findUserByEmail(email);
-        if(userDTOOptional.isPresent()) {
-            // логіка відправки листа для відновлення пароля
-            UserDTO userDTO = userDTOOptional.get();
+        if (userDTOOptional.isPresent()) {
             // Генерація токена для відновлення пароля та відправка електронного листа
-            User user = UserMapper.INSTANCE.userDTOToUser(userDTOOptional.get());
-            String token = generatePasswordRecoveryToken(user.getEmail());
-            sendPasswordRecoveryEmail(user.getEmail(), token);
+            String token = jwtUtils.generateJwtToken(email);
+            sendEmail(email, "Password Recovery", "To reset your password, " +
+                    "click the link below:\n http://your-app-url.com/reset-password?token=" +  token);
         }
-    }
-    private String generatePasswordRecoveryToken(String email) {
-        return jwtUtils.generateJwtToken(email);
-    }
-
-    private void sendPasswordRecoveryEmail(String email, String token) {
-        String recoveryUrl = "http://your-app-url.com/reset-password?token=" + token;
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(email);
-        message.setSubject("Password Recovery");
-        message.setText("To reset your password, click the link below:\n" + recoveryUrl);
-        mailSender.send(message);
-        log.info("Password recovery email sent to: {}", email);
     }
 }

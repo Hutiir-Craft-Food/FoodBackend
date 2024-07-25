@@ -23,12 +23,14 @@ public class JwtUtils {
     private int jwtExpirationSec;
 
     public String generateJwtToken(String email) {
-        return Jwts.builder()
+        String jwt = Jwts.builder()
                 .setSubject(email)
                 .setIssuedAt(Date.from(Instant.now()))
                 .setExpiration(Date.from(Instant.now().plusSeconds(jwtExpirationSec)))
                 .signWith(SignatureAlgorithm.HS256, jwtSecret)
                 .compact();
+        log.info("Generate JWT: {}", jwt);
+        return jwt;
     }
 
     public String getJwtUsernameFromToken(String token) {
