@@ -42,5 +42,6 @@ springdoc:
 
 sendinblue:
   api-key: ${SENDINBLUE_API_KEY}
+  api-url: ${SENDINBLUE_API_URL}
 
 
