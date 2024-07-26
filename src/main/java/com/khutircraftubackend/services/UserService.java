@@ -48,28 +48,34 @@ public class UserService {
      */
 
     @Transactional
-    public UserDTO registerNewUser(UserDTO userDTO) {
-        User user = UserMapper.INSTANCE.userDTOToUser(userDTO);
+        public UserDTO registerNewUser(UserDTO userDTO) {
+            User user = UserMapper.INSTANCE.userDTOToUser(userDTO);
 
-        if(userDTO.isPasswordMatching()) {
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
-            user.setRole(userDTO.role() == Role.SELLER ? Role.SELLER : Role.BUYER);
-            user.setEnabled(false);//до підтвердження електронною поштою
+            if(userDTO.isPasswordMatching()) {
+                user.setPassword(passwordEncoder.encode(user.getPassword()));
+                switch (userDTO.role()) {
+                    case SELLER -> user.setRole(Role.SELLER);
+                    case BUYER -> user.setRole(Role.BUYER);
+                    case ADMIN -> user.setRole(Role.ADMIN);
+                    default -> user.setRole(Role.GUEST);
+                }
 
-            // Генерація та збереження JWT
-            String jwt = jwtUtils.generateJwtToken(user.getEmail());
-            user.setJwt(jwt);
-            log.info("jwt: {}", jwt);
+                user.setEnabled(false);//до підтвердження електронною поштою
 
-            // Генерація та збереження коду підтвердження
-            String confirmationCode = generateConfirmationCode();
-            user.setConfirmationCode(confirmationCode);
-            log.info("code: {}", confirmationCode);
-        }
-        User savedUser = userRepository.save(user);
-        sendEmail(userDTO.email(), "Confirm your email", "To confirm your email," +
-                " click the link below:\n http://your-app-url.com/confirm?code=" +
-                userDTO.confirmationCode());// Відправка коду підтвердження
+                // Генерація та збереження JWT
+                String jwt = jwtUtils.generateJwtToken(user.getEmail());
+                user.setJwt(jwt);
+                log.info("jwt: {}", jwt);
+
+                // Генерація та збереження коду підтвердження
+                String confirmationCode = generateConfirmationCode();
+                user.setConfirmationCode(confirmationCode);
+                log.info("code: {}", confirmationCode);
+            }
+            User savedUser = userRepository.save(user);
+            sendEmail(userDTO.email(), "Confirm your email", "To confirm your email," +
+                    " click the link below:\n http://your-app-url.com/confirm?code=" +
+                    userDTO.confirmationCode());// Відправка коду підтвердження
             return UserMapper.INSTANCE.userToUserDTO(savedUser);
     }
 
