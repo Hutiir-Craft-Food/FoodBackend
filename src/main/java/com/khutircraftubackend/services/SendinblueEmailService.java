@@ -11,17 +11,32 @@ import org.springframework.web.client.RestTemplate;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Service for sending emails using Sendinblue API.
+ */
+
 @Service
 public class SendinblueEmailService {
 
     @Value("${sendinblue.api-key}")
     private String apiKey;
 
+    @Value("${sendinblue.api-url}")
+    private String apiUrl;
+
+    /**
+     * Sends an email using the Sendinblue API.
+     *
+     * @param to the recipient email address
+     * @param subject the subject of the email
+     * @param content the HTML content of the email
+     */
+
     public void sendEmail(String to, String subject, String content) {
         RestTemplate restTemplate = new RestTemplate();
-        String url = "https://api.sendinblue.com/v3/smtp/email";
 
         HttpHeaders headers = new HttpHeaders();
+        headers.set("api_url", apiUrl);
         headers.set("api-key", apiKey);
         headers.set("Content-Type", "application/json");
 
@@ -33,7 +48,7 @@ public class SendinblueEmailService {
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(emailData, headers);
 
-        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, request, String.class);
+        ResponseEntity<String> response = restTemplate.exchange(apiUrl, HttpMethod.POST, request, String.class);
 
         System.out.println(response.getStatusCode());
         System.out.println(response.getBody());
