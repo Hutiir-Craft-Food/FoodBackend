@@ -1,5 +1,6 @@
 package com.khutircraftubackend.controllers;
 
+import com.khutircraftubackend.security.exceptionJwt.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
@@ -12,11 +13,71 @@ import org.springframework.web.context.request.WebRequest;
 import java.nio.file.AccessDeniedException;
 
 /**
- * Клас GlobalExceptionHandler обробляє глобальні винятки в додатку.
+ * Global exception handler for handling JWT validation exceptions.
  */
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
+
+    /**
+     * Handles InvalidJwtSignatureException and returns a response with status 401 (Unauthorized).
+     *
+     * @param e the exception to handle
+     * @return the response entity with the exception message and status 401
+     */
+
+    @ExceptionHandler(InvalidJwtSignatureException.class)
+    public ResponseEntity<String> handleInvalidJwtSignatureException(InvalidJwtSignatureException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+    }
+
+    /**
+     * Handles MalformedJwtTokenException and returns a response with status 400 (Bad Request).
+     *
+     * @param e the exception to handle
+     * @return the response entity with the exception message and status 400
+     */
+
+    @ExceptionHandler(MalformedJwtTokenException.class)
+    public ResponseEntity<String> handleMalformedJwtTokenException(MalformedJwtTokenException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * Handles ExpiredJwtTokenException and returns a response with status 401 (Unauthorized).
+     *
+     * @param e the exception to handle
+     * @return the response entity with the exception message and status 401
+     */
+
+    @ExceptionHandler(ExpiredJwtTokenException.class)
+    public ResponseEntity<String> handleExpiredJwtTokenException(ExpiredJwtTokenException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+    }
+
+    /**
+     * Handles UnsupportedJwtTokenException and returns a response with status 400 (Bad Request).
+     *
+     * @param e the exception to handle
+     * @return the response entity with the exception message and status 400
+     */
+
+    @ExceptionHandler(UnsupportedJwtTokenException.class)
+    public ResponseEntity<String> handleUnsupportedJwtTokenException(UnsupportedJwtTokenException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * Handles EmptyJwtClaimsException and returns a response with status 400 (Bad Request).
+     *
+     * @param e the exception to handle
+     * @return the response entity with the exception message and status 400
+     */
+
+    @ExceptionHandler(EmptyJwtClaimsException.class)
+    public ResponseEntity<String> handleEmptyJwtClaimsException(EmptyJwtClaimsException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+    }
 
     @ExceptionHandler(RuntimeException.class)
 //виняток який дозволяє уникнути використання try-catch блоків у контролерах
