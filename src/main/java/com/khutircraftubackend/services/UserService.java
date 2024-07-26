@@ -86,6 +86,7 @@ public class UserService {
      * @param subject тема листа
      * @param text текст листа
      */
+
     private void sendEmail(String email, String subject, String text) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(email);
@@ -101,6 +102,7 @@ public class UserService {
      *
      * @return випадковий код підтвердження
      */
+
     private String generateConfirmationCode() {
         //Генерація випадкового коду підтвердження
         return UUID.randomUUID().toString();
@@ -114,6 +116,7 @@ public class UserService {
      *
      * @param confirmationCode код підтвердження
      */
+
     @Transactional
     public void enableUser(String confirmationCode) {
         User user = userRepository.findByConfirmationCode(confirmationCode);
@@ -129,6 +132,7 @@ public class UserService {
      * @param email адреса електронної пошти користувача
      * @return Optional<UserDTO> об'єкт UserDTO, якщо користувач знайдений, інакше - пустий Optional
      */
+
     public Optional<UserDTO> findUserByEmail(String email) {
         return userRepository.findByEmail(email)
                 .map(UserMapper.INSTANCE::userToUserDTO);
@@ -140,6 +144,7 @@ public class UserService {
      * @param passwordUpdateRequest запит на оновлення пароля, що містить старий та новий паролі
      * @return true, якщо пароль успішно оновлено, інакше - false
      */
+
     @Transactional
     public boolean updatePassword(PasswordUpdateRequest passwordUpdateRequest) {
         Optional<UserDTO> userDTOOptional = findUserByEmail(passwordUpdateRequest.getEmail());
@@ -162,6 +167,7 @@ public class UserService {
      *
      * @param email адреса електронної пошти користувача, для якого потрібно відновити пароль
      */
+
     public void initiatePasswordRecovery(String email) {
         Optional<UserDTO> userDTOOptional = findUserByEmail(email);
         if (userDTOOptional.isPresent()) {

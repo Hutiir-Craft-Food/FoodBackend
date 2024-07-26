@@ -17,6 +17,7 @@ import lombok.Builder;
 @Builder
 @PasswordMatches
 public record SellerDTO(
+
         @NotBlank(message = "Назва компанії не може бути порожнім")
         @Size(max = 200, message = "Назва компанії не може перевищувати 200 символів")
         @Pattern(regexp = "^[a-zA-Zа-яА-ЯіїєґІЇЄҐ\\s]*$", message = "Назва компанії має містити лише українські або англійські літери")

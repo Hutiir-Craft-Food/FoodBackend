@@ -22,6 +22,7 @@ public class PersonDetailsServices implements UserDetailsService {
 
     @Autowired
     private UserRepository userRepository;
+
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         log.info("Searching for user with email: {}", email);
@@ -31,6 +32,7 @@ public class PersonDetailsServices implements UserDetailsService {
         } else {
             log.info("User not found with email: {}", email);
         }
+
         return user.map(PersonDetails::new)
                 .orElseThrow(() -> new UsernameNotFoundException("Not found " + email));
     }

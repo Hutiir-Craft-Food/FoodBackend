@@ -38,6 +38,7 @@ public class UserController {
      * @param loginRequest запит з даними для входу (email і пароль)
      * @return відповідь з JWT токеном або статусом помилки, якщо аутентифікація не вдалася
      */
+
     @PostMapping("/login")
     public ResponseEntity<JwtResponse> authenticateUser(@RequestBody LoginRequest loginRequest) {
         Authentication authentication = authenticate(loginRequest.getEmail(), loginRequest.getPassword());
@@ -58,6 +59,7 @@ public class UserController {
      * @param password пароль користувача
      * @return Authentication об'єкт, якщо аутентифікація пройшла успішно, або null, якщо не вдалася
      */
+
     private Authentication authenticate(String email, String password) {
         UserDetails userDetails = personDetailsServices.loadUserByUsername(email);
 
@@ -74,6 +76,7 @@ public class UserController {
      * @param userDTO дані для реєстрації користувача
      * @return відповідь з даними зареєстрованого користувача або статусом помилки, якщо користувач з таким email вже існує
      */
+
     @PostMapping("/register")
     public ResponseEntity<UserDTO> register(@Valid @RequestBody UserDTO userDTO) {
         if(userService.findUserByEmail(userDTO.email()).isPresent()) {
@@ -100,6 +103,7 @@ public class UserController {
      * @param passwordRecoveryRequest запит з даними для відновлення пароля (email користувача)
      * @return відповідь з HTTP статусом 200 (OK) після успішної ініціації відновлення пароля
      */
+
     @PostMapping("/recovery")
     public ResponseEntity<Void> recoverPassword(@Valid @RequestBody PasswordRecoveryRequest passwordRecoveryRequest) {
         userService.initiatePasswordRecovery(passwordRecoveryRequest.getEmail());
@@ -116,6 +120,7 @@ public class UserController {
      * @param code код підтвердження, який був надісланий на електронну пошту користувача
      * @return відповідь з HTTP статусом 200 (OK), якщо підтвердження пройшло успішно
      */
+
     @GetMapping("/confirm")
     public ResponseEntity<Void> confirmUser(@RequestParam String code) {
         userService.enableUser(code);
