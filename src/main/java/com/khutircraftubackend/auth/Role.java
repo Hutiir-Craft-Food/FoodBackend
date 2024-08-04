@@ -1,4 +1,4 @@
-package com.khutircraftubackend.models;
+package com.khutircraftubackend.auth;
 
 
 /**

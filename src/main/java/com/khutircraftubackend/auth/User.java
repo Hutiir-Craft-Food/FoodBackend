@@ -1,5 +1,6 @@
-package com.khutircraftubackend.models;
+package com.khutircraftubackend.auth;
 
+import com.khutircraftubackend.seller.Seller;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,12 +13,8 @@ CREATE TABLE users (
 );
  */
 
-/**
- * Клас User є моделлю користувача і відображає таблицю користувачів у базі даних.
- */
-
 @Entity
-@Table(name = "users", uniqueConstraints = {@UniqueConstraint(columnNames = "email")})
+@Table(name = "users")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -27,6 +24,7 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
     @Column(unique = true, nullable = false)
@@ -36,6 +34,7 @@ public class User {
     private String password;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Role role;
 
     private String jwt;
@@ -43,15 +42,9 @@ public class User {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private Seller seller;
 
-    public void setSeller(Seller seller) {
-        this.seller = seller;
-        if(seller != null) {
-            seller.setUser(this);
-        }
-    }
-
     private boolean enabled;
 
-    private String confirmationCode; // Код підтвердження, який відправляється на пошту
+    private String confirmationToken; // Код підтвердження, який відправляється на пошту
+
 
 }

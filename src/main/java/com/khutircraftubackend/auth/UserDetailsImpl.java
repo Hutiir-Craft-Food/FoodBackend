@@ -1,6 +1,6 @@
-package com.khutircraftubackend.security;
+package com.khutircraftubackend.auth;
 
-import com.khutircraftubackend.models.User;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -14,7 +14,8 @@ import java.util.Collections;
  */
 
 @RequiredArgsConstructor
-public class PersonDetails implements UserDetails {
+@Getter
+public class UserDetailsImpl implements UserDetails {
 
     private final User user;
 
@@ -51,5 +52,10 @@ public class PersonDetails implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    // Статичний метод для створення екземпляра UserDetailsImpl
+    public static UserDetailsImpl build(User user) {
+        return new UserDetailsImpl(user);
     }
 }
