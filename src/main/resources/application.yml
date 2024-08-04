@@ -2,6 +2,7 @@ spring:
   config:
     import: optional:file:.env[.properties]
 
+
   datasource:
     driver-class-name: org.postgresql.Driver
     url: ${SPRING_DATASOURCE_URL}
@@ -25,6 +26,9 @@ spring:
     password: ${MAIL_PASSWORD}
     properties:
       mail:
+        debug: false
+        transport:
+          protocol: smtp
         smtp:
           auth: true
           starttls:
@@ -34,14 +38,6 @@ jwt:
   secret: ${JWT_SECRET}
   expiration: ${JWT_EXPIRATION}
 
-springdoc:
-  api-docs:
-    enabled: true
-  swagger-ui:
-    path: /swagger-ui.html
 
-sendinblue:
-  api-key: ${SENDINBLUE_API_KEY}
-  api-url: ${SENDINBLUE_API_URL}
 
 
