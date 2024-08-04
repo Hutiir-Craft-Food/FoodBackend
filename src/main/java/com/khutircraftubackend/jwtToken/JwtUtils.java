@@ -50,11 +50,21 @@ public class JwtUtils {
     public boolean validateJwtToken(String authToken) {
         try {
             log.info("Validating token: {}", authToken);
-            jwtVerifier.verify(authToken);
-            log.info("Token is valid");
+            DecodedJWT jwt = jwtVerifier.verify(authToken);
+            log.info("Token is valid: {}", jwt.getSubject());
             return true;
         } catch (JWTVerificationException e) {
             log.error("Invalid JWT token: {}", e.getMessage());
+        }
+        return false;
+    }
+
+    public boolean isTokenExpired(String token) {
+        try {
+            DecodedJWT jwt = jwtVerifier.verify(token);
+            return jwt.getExpiresAt().before(new Date());
+        } catch (JWTVerificationException e) {
+            log.error("Error checking token verification: {}", e.getMessage());
         }
         return false;
     }
