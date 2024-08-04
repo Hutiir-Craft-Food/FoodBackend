@@ -1,4 +1,4 @@
-package com.khutircraftubackend.security.exceptionJwt;
+package com.khutircraftubackend.globalException.exception;
 
 /**
  * Exception thrown when the JWT token is unsupported.
