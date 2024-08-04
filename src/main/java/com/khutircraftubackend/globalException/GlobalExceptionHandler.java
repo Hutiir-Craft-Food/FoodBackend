@@ -1,5 +1,6 @@
 package com.khutircraftubackend.globalException;
 
+import com.khutircraftubackend.auth.exception.UserNotFoundException;
 import com.khutircraftubackend.globalException.exception.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.hibernate.exception.ConstraintViolationException;
