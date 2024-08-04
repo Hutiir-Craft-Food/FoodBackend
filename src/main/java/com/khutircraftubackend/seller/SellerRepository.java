@@ -1,6 +1,6 @@
-package com.khutircraftubackend.repositories;
+package com.khutircraftubackend.seller;
 
-import com.khutircraftubackend.models.Seller;
+import com.khutircraftubackend.seller.Seller;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

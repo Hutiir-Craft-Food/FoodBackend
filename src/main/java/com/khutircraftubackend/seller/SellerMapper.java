@@ -1,7 +1,5 @@
-package com.khutircraftubackend.mapper;
+package com.khutircraftubackend.seller;
 
-import com.khutircraftubackend.dto.SellerDTO;
-import com.khutircraftubackend.models.Seller;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 

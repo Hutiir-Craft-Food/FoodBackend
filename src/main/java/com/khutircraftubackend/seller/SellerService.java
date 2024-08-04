@@ -1,9 +1,5 @@
-package com.khutircraftubackend.services;
+package com.khutircraftubackend.seller;
 
-import com.khutircraftubackend.dto.SellerDTO;
-import com.khutircraftubackend.mapper.SellerMapper;
-import com.khutircraftubackend.models.Seller;
-import com.khutircraftubackend.repositories.SellerRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

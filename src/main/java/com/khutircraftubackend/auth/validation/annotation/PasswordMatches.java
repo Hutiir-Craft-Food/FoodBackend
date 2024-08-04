@@ -1,12 +1,10 @@
-package com.khutircraftubackend.validation.annotation;
+package com.khutircraftubackend.auth.validation.annotation;
 
+import com.khutircraftubackend.auth.validation.validator.PasswordMatchesValidator;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * Анотація PasswordMatches використовується для валідації того, що паролі співпадають.
@@ -14,7 +12,8 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = com.khutircraftubackend.validation.validator.PasswordMatchesValidator.class)
+@Constraint(validatedBy = PasswordMatchesValidator.class)
+@Documented
 public @interface PasswordMatches {
 
     String message() default "Пароль і підтвердження не співпадають";

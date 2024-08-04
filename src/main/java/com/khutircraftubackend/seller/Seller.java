@@ -1,5 +1,6 @@
-package com.khutircraftubackend.models;
+package com.khutircraftubackend.seller;
 
+import com.khutircraftubackend.auth.User;
 import jakarta.persistence.*;
 import lombok.*;
 

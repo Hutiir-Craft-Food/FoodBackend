@@ -1,7 +1,7 @@
-package com.khutircraftubackend.dto;
+package com.khutircraftubackend.seller;
 
-import com.khutircraftubackend.models.User;
-import com.khutircraftubackend.validation.annotation.PasswordMatches;
+import com.khutircraftubackend.auth.User;
+import com.khutircraftubackend.auth.validation.annotation.PasswordMatches;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;

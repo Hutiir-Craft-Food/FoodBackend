@@ -1,9 +1,9 @@
-package com.khutircraftubackend.dto;
+package com.khutircraftubackend.auth;
 
-import com.khutircraftubackend.models.Role;
-import com.khutircraftubackend.models.Seller;
-import com.khutircraftubackend.validation.annotation.PasswordMatches;
+import com.khutircraftubackend.seller.Seller;
+import com.khutircraftubackend.auth.validation.annotation.PasswordMatches;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
@@ -14,7 +14,6 @@ import lombok.Builder;
  * Цей клас містить основні дані користувача, такі як ім'я, email, пароль, підтвердження паролю, підтвердження коду з пошти, роль, статус, токен тощо.
  * </p>
  */
-
 @Builder
 @PasswordMatches
 public record UserDTO(
@@ -35,6 +34,7 @@ public record UserDTO(
 
         String confirmationCode,
 
+        @NotNull(message = "Роль не може бути порожньою")
         Role role,
 
         boolean enabled,
@@ -44,7 +44,13 @@ public record UserDTO(
         Seller seller
 
 ) {
+        /**
+         * Is password matching boolean.
+         *
+         * @return the boolean
+         */
         public boolean isPasswordMatching() {
-                return this.password.equals(this.confirmPassword);
+                return this.password != null && this.password.equals(this.confirmPassword);
         }
+
 }
