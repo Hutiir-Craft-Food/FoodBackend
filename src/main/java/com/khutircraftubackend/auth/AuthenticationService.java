@@ -4,7 +4,7 @@ import com.khutircraftubackend.auth.request.LoginRequest;
 import com.khutircraftubackend.auth.request.RegisterRequest;
 import com.khutircraftubackend.auth.response.AuthResponse;
 import com.khutircraftubackend.jwtToken.JwtUtils;
-import com.khutircraftubackend.mail.MailService;
+import com.khutircraftubackend.mail.EmailSender;
 import jakarta.persistence.PostUpdate;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -12,13 +12,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.UUID;
 
 /**
@@ -35,7 +33,7 @@ public class AuthenticationService {
     private final UserRepository userRepository;
     private final JwtUtils jwtUtils;
     private final PasswordEncoder passwordEncoder;
-    private final MailService mailService;
+    private final EmailSender emailSender;
     private final AuthenticationManager authenticationManager;
 
 
@@ -47,6 +45,7 @@ public class AuthenticationService {
      * @throws BadCredentialsException Якщо вказані невірні дані для входу.
      * @throws AuthenticationException Якщо виникла непередбачена помилка під час аутентифікації.
      */
+    @Transactional
     public AuthResponse authenticate(LoginRequest request) {
         try {
             authenticationManager.authenticate(
@@ -59,14 +58,26 @@ public class AuthenticationService {
                     .orElseThrow(() -> new IllegalArgumentException(
                             "Користувач з таким email не знайдений"));
 
-            // Генерація JWT токена
-            String jwt = jwtUtils.generateJwtToken(user.getEmail());
+            String existToken = user.getJwt();
 
-            // Build and return authentication response
-            return AuthResponse.builder()
-                    .jwt(jwt)
-                    .email(user.getEmail())
-                    .build();
+            if(existToken != null && jwtUtils.validateJwtToken(existToken)
+            && jwtUtils.getJwtEmailFromToken(existToken).equals(user.getEmail())
+                    && !jwtUtils.isTokenExpired(existToken)) {
+                // Build and return authentication response
+                return AuthResponse.builder()
+                        .jwt(existToken)
+                        .email(user.getEmail())
+                        .build();
+            } else {
+                // Генерація JWT токена
+                String jwt = jwtUtils.generateJwtToken(user.getEmail());
+                user.setJwt(jwt);
+                userRepository.save(user);
+                return AuthResponse.builder()
+                        .jwt(jwt)
+                        .email(user.getEmail())
+                        .build();
+            }
         } catch (BadCredentialsException e) {
             log.error("Невірні дані для входу для email: {}", request.email());
             throw new BadCredentialsException("Невірний email або пароль", e);
@@ -87,7 +98,6 @@ public class AuthenticationService {
         User user = User.builder()
                 .email(request.email())
                 .password(passwordEncoder.encode(request.password()))
-                .confirmationToken(UUID.randomUUID().toString())
                 .enabled(false)
                 .role(Role.GUEST)
                 .jwt(token)
@@ -95,9 +105,11 @@ public class AuthenticationService {
 
         userRepository.saveAndFlush(user);
 
-        //String confirmationUrl = "http://localhost:8080/v1/user/confirm?token=" + user.getConfirmationToken();
-        //log.info("Sending confirmation email to: {}", user.getEmail()); // Логування електронної адреси
-        //mailService.sendEmail(user.getEmail(), "Please confirm your registration by clicking on the following link: " + confirmationUrl);
+        String verificationCode = UUID.randomUUID().toString();
+        emailSender.sendVerificationEmail(user.getEmail(), verificationCode);
+
+        user.setConfirmationToken(verificationCode);
+        userRepository.save(user);
     }
 
     @Transactional
@@ -112,16 +124,8 @@ public class AuthenticationService {
         user.setEnabled(true);
         user.setConfirmationToken(null);
 
-        // Створення Authentication об'єкта
-        Authentication authentication = new UsernamePasswordAuthenticationToken(
-                user.getEmail(),
-                user.getPassword(),
-                Collections.emptyList() // Додати ролі або authorities, якщо потрібно
-        );
-
         // Генерація JWT токена
         String jwt = jwtUtils.generateJwtToken(email);
-
         user.setJwt(jwt);
 
         // TODO: Оновлення ролі користувача
