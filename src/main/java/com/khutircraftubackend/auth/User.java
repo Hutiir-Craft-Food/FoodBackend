@@ -1,6 +1,5 @@
 package com.khutircraftubackend.auth;
 
-import com.khutircraftubackend.seller.Seller;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -37,14 +36,12 @@ public class User {
     @Column(nullable = false)
     private Role role;
 
-    private String jwt;
-
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-    private Seller seller;
-
     private boolean enabled;
 
-    private String confirmationToken; // Код підтвердження, який відправляється на пошту
-
+    // Код підтвердження, який відправляється на пошту:
+    private String confirmationToken;
+    // TODO: remove it from here.
+    //  maybe should be moved into another repository with its own Entity
+    //  consider using "Cron Scheduler" for removing expired expiration codes.
 
 }

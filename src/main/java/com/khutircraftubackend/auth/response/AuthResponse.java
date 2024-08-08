@@ -5,7 +5,6 @@ import lombok.Builder;
 @Builder
 public record AuthResponse(
         String jwt,
-        String email,
-        String password
+        String email
 ) {
 }

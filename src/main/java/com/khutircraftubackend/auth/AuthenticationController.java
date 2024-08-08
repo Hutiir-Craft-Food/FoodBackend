@@ -1,16 +1,20 @@
 package com.khutircraftubackend.auth;
 
+import com.khutircraftubackend.auth.exception.UserExistsException;
+import com.khutircraftubackend.auth.request.ConfirmationRequest;
 import com.khutircraftubackend.auth.request.LoginRequest;
 import com.khutircraftubackend.auth.request.RegisterRequest;
-import com.khutircraftubackend.jwtToken.JwtResponse;
-import com.khutircraftubackend.jwtToken.JwtUtils;
+import com.khutircraftubackend.auth.response.AuthResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Клас AuthenticationController обробляє запити, пов'язані з користувачами.
@@ -22,7 +26,6 @@ import org.springframework.web.bind.annotation.*;
 public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
-    private final JwtUtils jwtUtils;
 
     /**
      * Authenticate user response entity.
@@ -33,63 +36,44 @@ public class AuthenticationController {
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         try {
-            authenticationService.authenticate(loginRequest);
-            String jwt = jwtUtils.generateJwtToken(loginRequest.email());
-
-            return ResponseEntity.ok(new JwtResponse(jwt));
+            AuthResponse authResponse = authenticationService.authenticate(loginRequest);
+            return ResponseEntity.ok(authResponse);
         } catch (BadCredentialsException e) {
             log.error("Login failed for email: {}, invalid password", loginRequest.email());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         } catch (RuntimeException e) {
             log.error("Login failed for email: {}", loginRequest.email(), e);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        } catch (Exception e) {
+            log.error("Unexpected exception while logging in: {}", e);
+            return ResponseEntity.internalServerError().body(e.getMessage());
         }
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@Valid @RequestBody RegisterRequest request) {
-authenticationService.registerNewUser(request);
-return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully. Please check your email for the confirmation code.");
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest registerRequest) {
+        try {
+            AuthResponse authResponse = authenticationService.registerNewUser(registerRequest);
+            return ResponseEntity.status(HttpStatus.CREATED).body(authResponse);
+        } catch (UserExistsException e) {
+            log.error("Login failed for email: {}", registerRequest.email(), e);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        } catch (Exception e) {
+            log.error("Unexpected exception while logging in: {}", e);
+            return ResponseEntity.internalServerError().body(e.getMessage());
+        }
     }
 
-    @GetMapping ("/confirm")
-    public ResponseEntity<String> confirmUser(@RequestParam String email, @RequestParam("token") String token) {
-        authenticationService.confirmUser(email, token);
-    return ResponseEntity.ok("User confirmed successfully.");
+    @PostMapping("/confirm")
+    public ResponseEntity<String> confirmUser(@RequestBody ConfirmationRequest confirmationRequest) {
+        try {
+            authenticationService.confirmUser(confirmationRequest.email(), confirmationRequest.jwt());
+            return ResponseEntity.ok("User confirmed successfully.");
+        } catch (IllegalArgumentException e) {
+            // 400 Bad Request
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred.");
+        }
     }
-
-    @PostMapping("/update-token")
-    public ResponseEntity<String> updateJwtToken(@RequestParam String email) {
-        authenticationService.updateJwtToken(email);
-        return ResponseEntity.ok("JWT token updated successfully");
-    }
-
-    /**
-     * Update password response entity.
-     *
-     * @param passwordUpdateRequest the password update request
-     * @return the response entity
-     */
-//    @PatchMapping("/password")
-//    public ResponseEntity<Void> updatePassword(@Valid @RequestBody PasswordUpdateRequest passwordUpdateRequest) {
-//
-//        boolean isUpdated = authenticationService.updatePassword(passwordUpdateRequest);
-//        if(isUpdated) {
-//            return ResponseEntity.ok().build();
-//        } else {
-//            return ResponseEntity.badRequest().build();
-//        }
-//    }
-
-    /**
-     * Recover password response entity.
-     *
-     * @param passwordRecoveryRequest the password recovery request
-     * @return the response entity
-     */
-//    @PostMapping("/recovery")
-//    public ResponseEntity<Void> recoverPassword(@Valid @RequestBody PasswordRecoveryRequest passwordRecoveryRequest) {
-//        userService.initiatePasswordRecovery(passwordRecoveryRequest.email());
-//        return ResponseEntity.ok().build();
-//    }
 }
