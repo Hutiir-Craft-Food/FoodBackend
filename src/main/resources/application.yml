@@ -34,14 +34,6 @@ jwt:
   secret: ${JWT_SECRET}
   expiration: ${JWT_EXPIRATION}
 
-springdoc:
-  api-docs:
-    enabled: true
-  swagger-ui:
-    path: /swagger-ui.html
 
-sendinblue:
-  api-key: ${SENDINBLUE_API_KEY}
-  api-url: ${SENDINBLUE_API_URL}
 
 
