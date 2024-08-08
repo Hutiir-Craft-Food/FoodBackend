@@ -32,14 +32,4 @@ public class Seller {
     @JoinColumn(name = "user_id")
     private User user;
 
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-        if(user != null) {
-            user.setSeller(this);
-        }
-    }
 }
