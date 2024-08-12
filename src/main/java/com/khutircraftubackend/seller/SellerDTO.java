@@ -1,7 +1,6 @@
 package com.khutircraftubackend.seller;
 
 import com.khutircraftubackend.auth.User;
-import com.khutircraftubackend.auth.validation.annotation.PasswordMatches;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -15,7 +14,6 @@ import lombok.Builder;
  */
 
 @Builder
-@PasswordMatches
 public record SellerDTO(
 
         @NotBlank(message = "Назва компанії не може бути порожнім")
