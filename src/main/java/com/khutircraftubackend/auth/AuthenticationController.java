@@ -5,16 +5,15 @@ import com.khutircraftubackend.auth.request.ConfirmationRequest;
 import com.khutircraftubackend.auth.request.LoginRequest;
 import com.khutircraftubackend.auth.request.RegisterRequest;
 import com.khutircraftubackend.auth.response.AuthResponse;
+import com.khutircraftubackend.auth.security.PasswordRecoveryRequest;
+import com.khutircraftubackend.auth.security.PasswordUpdateRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * Клас AuthenticationController обробляє запити, пов'язані з користувачами.
@@ -75,5 +74,31 @@ public class AuthenticationController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred.");
         }
+    }
+
+    @PatchMapping("/update-password")
+    public ResponseEntity<String> updatePassword(@Valid @RequestBody PasswordUpdateRequest passwordUpdateRequest,
+                                                 @RequestHeader("Authorization") String authorizationHeader) {
+        log.info("authorizationHeader: {}", authorizationHeader);
+        String token = authorizationHeader.startsWith("Bearer ") ?
+                authorizationHeader.substring(7) : null;
+        if(token == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorization token is missing");
+        }
+
+        authenticationService.updatePassword(token, passwordUpdateRequest);
+        return ResponseEntity.ok("Password updated successfully");
+    }
+
+    @PostMapping("/recovery-password")
+    public ResponseEntity<String> recoveryPassword(@Valid @RequestBody PasswordRecoveryRequest passwordRecoveryRequest,
+                                                   @RequestHeader("Authorization") String authorizationHeader) {
+        String token = authorizationHeader.startsWith("Bearer ") ?
+                authorizationHeader.substring(7) : null;
+        if(token == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorization token is missing");
+        }
+        authenticationService.recoveryPassword(token, passwordRecoveryRequest);
+        return ResponseEntity.ok("Password recovery successfully");
     }
 }

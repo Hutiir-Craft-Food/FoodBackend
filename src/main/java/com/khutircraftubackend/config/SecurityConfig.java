@@ -37,6 +37,16 @@ public class SecurityConfig {
     }
 
     @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
+    }
+
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
@@ -57,9 +67,8 @@ public class SecurityConfig {
                         .failureUrl("/login?error"))
                 .rememberMe(rememberMe -> rememberMe.userDetailsService(userDetailsService))
                 .logout(logout -> logout.logoutUrl("/logout")
-                        .logoutSuccessUrl("/login").permitAll());
-
-        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                        .logoutSuccessUrl("/login").permitAll())
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 }

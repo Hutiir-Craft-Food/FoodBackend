@@ -7,8 +7,8 @@ import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
 import java.nio.file.AccessDeniedException;
@@ -17,7 +17,7 @@ import java.nio.file.AccessDeniedException;
  * Global exception handler for handling JWT validation exceptions.
  */
 
-@ControllerAdvice
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
     /**
@@ -136,6 +136,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AccessDeniedException.class)//виняток по правам доступу у користувачів
     public ResponseEntity<?> handleAccessDeniedException(AccessDeniedException ex, WebRequest request) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Доступ заборонено: " + ex.getMessage());
+    }
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Глобальне повідомлення: " + ex.getMessage());
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> handleGenericException(Exception ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Глобальне повідомлення: Внутрішня помилка сервера. Будь ласка, спробуйте пізніше.");
     }
 
 }
