@@ -28,18 +28,18 @@ public class Seller {
     @Column(nullable = false, unique = true)
     private String phoneNumber;
 
-    @OneToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+//    @OneToOne
+//    @JoinColumn(name = "user_id")
+//    private User user;
 
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-        if(user != null) {
-            user.setSeller(this);
-        }
-    }
+//    public User getUser() {
+//        return user;
+//    }
+//
+//    public void setUser(User user) {
+//        this.user = user;
+//        if(user != null) {
+//            user.setSeller(this);
+//        }
+//    }
 }
