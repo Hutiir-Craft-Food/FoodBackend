@@ -51,8 +51,6 @@ This command will stop and remove the containers, but the data stored in the Pos
 
 ## Умови
 
-Перед тим як розпочати, переконайтеся, що у вас встановлено наступне:
-
 - [Docker Desktop](https://www.docker.com/products/docker-desktop)
 - [Docker Compose](https://docs.docker.com/compose/install/)
 
