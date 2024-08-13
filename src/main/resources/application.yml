@@ -1,7 +1,13 @@
 spring:
+  application:
+    name: ${SPRING_APPLICATION_NAME:@artifactId@}
   config:
     import: optional:file:.env[.properties]
-
+  profiles:
+    default: ${ACTIVE_PROFILES:local}
+  output:
+    ansi:
+      enabled: ALWAYS
   datasource:
     driver-class-name: org.postgresql.Driver
     url: ${SPRING_DATASOURCE_URL}
@@ -9,14 +15,7 @@ spring:
     password: ${SPRING_DATASOURCE_PASSWORD}
 
   jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-    generate-ddl: true
-
+    open-in-view: false
 
   mail:
     host: ${MAIL_HOST}
@@ -34,6 +33,13 @@ jwt:
   secret: ${JWT_SECRET}
   expiration: ${JWT_EXPIRATION}
 
+logging:
+  pattern:
+    dateformat: 'yyyy-MM-dd hh:mm:ss.SSS'
+  level:
+    root: WARN
+    com:
+      khutircraftubackend: INFO
 
-
-
+server:
+  port: 8080
