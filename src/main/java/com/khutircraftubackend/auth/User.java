@@ -3,14 +3,6 @@ package com.khutircraftubackend.auth;
 import jakarta.persistence.*;
 import lombok.*;
 
-/*
-CREATE TABLE users (
-                       id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-                       jwt VARCHAR(255) NOT NULL UNIQUE,
-                       password VARCHAR(255) NOT NULL,
-                       email VARCHAR(255) NOT NULL UNIQUE
-);
- */
 
 @Entity
 @Table(name = "users")
@@ -23,7 +15,6 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    //@Column(name = "id")
     private Long id;
 
     @Column(unique = true, nullable = false)
