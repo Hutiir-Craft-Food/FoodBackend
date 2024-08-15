@@ -1,21 +1,29 @@
 spring:
   config:
     import: optional:file:.env[.properties]
+  profiles:
+    active: ${ACTIVE_PROFILES:dev}
 
-  datasource:
-    driver-class-name: org.postgresql.Driver
-    url: ${SPRING_DATASOURCE_URL}
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
+  #  datasource:
+#    driver-class-name: org.postgresql.Driver
+#    url: ${SPRING_DATASOURCE_URL}
+#    username: ${SPRING_DATASOURCE_USERNAME}
+#    password: ${SPRING_DATASOURCE_PASSWORD}
 
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-    generate-ddl: true
+#  jpa:
+#    hibernate:
+#      ddl-auto: none
+#    open-in-view: false
+
+#  flyway:
+#    enabled: true
+#    baseline-on-migrate: true
+#    locations: classpath:db/migration
+  #    show-sql: true
+#    properties:
+#      hibernate:
+#        dialect: org.hibernate.dialect.PostgreSQLDialect
+#    generate-ddl: true
 
 
   mail:
@@ -33,6 +41,7 @@ spring:
 jwt:
   secret: ${JWT_SECRET}
   expiration: ${JWT_EXPIRATION}
+
 
 
 
