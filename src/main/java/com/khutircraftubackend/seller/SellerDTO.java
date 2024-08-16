@@ -1,6 +1,6 @@
 package com.khutircraftubackend.seller;
 
-import com.khutircraftubackend.auth.User;
+import com.khutircraftubackend.auth.UserEntity;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -21,17 +21,19 @@ public record SellerDTO(
         @Pattern(regexp = "^[a-zA-Zа-яА-ЯіїєґІЇЄҐ\\s]*$", message = "Назва компанії має містити лише українські або англійські літери")
         String company,
 
-        @NotBlank(message = "E-mail не може бути порожнім")
-        @Pattern(regexp = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")
-        String email,
+//        @NotBlank(message = "E-mail не може бути порожнім")
+//        @Pattern(regexp = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")
+//        String email,
 
         @NotBlank(message = "Номер телефону не може бути порожнім")
         @Pattern(regexp = "^\\+380\\d{9}$", message = "Номер телефону має бути у форматі +380__________")
         String phoneNumber,
 
-        User user,
+        UserEntity userEntity,
 
-        String tax_code
+        String tax_code,
+        long id
+
 
 ) {
 }

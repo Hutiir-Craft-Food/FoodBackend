@@ -3,7 +3,7 @@ package com.khutircraftubackend.auth.exception;
 public class UserExistsException extends RuntimeException {
     // Конструктор без параметрів
     public UserExistsException() {
-        super("User not found");
+        super("UserEntity not found");
     }
 
     // Конструктор з повідомленням

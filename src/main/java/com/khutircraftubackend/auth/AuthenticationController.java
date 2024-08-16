@@ -27,7 +27,7 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
     /**
-     * Authenticate user response entity.
+     * Authenticate userEntity response entity.
      *
      * @param loginRequest the login request
      * @return the response entity
@@ -67,7 +67,7 @@ public class AuthenticationController {
     public ResponseEntity<String> confirmUser(@RequestBody ConfirmationRequest confirmationRequest) {
         try {
             authenticationService.confirmUser(confirmationRequest.email(), confirmationRequest.jwt());
-            return ResponseEntity.ok("User confirmed successfully.");
+            return ResponseEntity.ok("UserEntity confirmed successfully.");
         } catch (IllegalArgumentException e) {
             // 400 Bad Request
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());

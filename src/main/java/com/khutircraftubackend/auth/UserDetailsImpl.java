@@ -17,21 +17,21 @@ import java.util.Collections;
 @Getter
 public class UserDetailsImpl implements UserDetails {
 
-    private final User user;
+    private final UserEntity userEntity;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
+        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + userEntity.getRole().name()));
     }
 
     @Override
     public String getPassword() {
-        return this.user.getPassword();
+        return this.userEntity.getPassword();
     }
 
     @Override
     public String getUsername() {
-        return this.user.getEmail();
+        return this.userEntity.getEmail();
     }
 
     @Override
@@ -55,7 +55,7 @@ public class UserDetailsImpl implements UserDetails {
     }
 
     // Статичний метод для створення екземпляра UserDetailsImpl
-    public static UserDetailsImpl build(User user) {
-        return new UserDetailsImpl(user);
+    public static UserDetailsImpl build(UserEntity userEntity) {
+        return new UserDetailsImpl(userEntity);
     }
 }

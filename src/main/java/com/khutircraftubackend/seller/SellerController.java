@@ -1,7 +1,5 @@
 package com.khutircraftubackend.seller;
 
-import com.khutircraftubackend.seller.SellerDTO;
-import com.khutircraftubackend.seller.SellerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
