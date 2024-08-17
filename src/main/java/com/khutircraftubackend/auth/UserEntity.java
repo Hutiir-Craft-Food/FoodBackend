@@ -36,15 +36,15 @@ public class UserEntity {
     @Column (name = "creation_date")
     private LocalDateTime creationDate;
 
+    // Код підтвердження, який відправляється на пошту:
+    private String confirmationToken;
+
     @PrePersist
     protected void onCreate(){
         creationDate = LocalDateTime.now();
     }
 
-//    // Код підтвердження, який відправляється на пошту:
-    private String confirmationToken;
 //    // TODO: remove it from here.
 //    //  maybe should be moved into another repository with its own Entity
 //    //  consider using "Cron Scheduler" for removing expired expiration codes.
-
 }
