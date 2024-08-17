@@ -5,7 +5,7 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.khutircraftubackend.auth.UserDetailsImpl;
-import com.khutircraftubackend.auth.UserDetailsServicesImpl;
+import com.khutircraftubackend.auth.UserDetailsServiceImpl;
 import com.khutircraftubackend.globalException.exception.MalformedJwtTokenException;
 import com.khutircraftubackend.globalException.exception.UnsupportedJwtTokenException;
 import jakarta.servlet.FilterChain;
@@ -29,7 +29,7 @@ import java.io.IOException;
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JWTVerifier jwtVerifier;
-    private final UserDetailsServicesImpl userDetailsServices;
+    private final UserDetailsServiceImpl userDetailsServices;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,

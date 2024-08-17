@@ -41,7 +41,7 @@ public class AuthenticationService {
     private final EmailSender emailSender;
     private final AuthenticationManager authenticationManager;
     private final JWTVerifier jwtVerifier;
-    private final UserDetailsServicesImpl userDetailsServices;
+    private final UserDetailsServiceImpl userDetailsServices;
 
     /**
      * Аутентифікує користувача за вказаними email та паролем.
