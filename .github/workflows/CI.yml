@@ -1,12 +1,10 @@
 name: FoodMarket CI
 
 on:
-  push:
-    branches:
-      - "*"
   pull_request:
-    branches:
-      - "*"
+    types: ['synchronize', 'opened', 'ready_for_review']
+    branches: ['main']
+    paths-ignore: ['.gitignore', '*.md']
 
 permissions:
   contents: read
@@ -23,6 +21,8 @@ jobs:
       with:
         java-version: '17'
         distribution: 'adopt'
+        architecture: x64
+        cache: 'maven'
 
     - name: Build with Maven
       run: mvn clean install
