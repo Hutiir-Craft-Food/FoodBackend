@@ -22,17 +22,64 @@ To start the application and the PostgreSQL database using Docker Compose, run:
 ```bash
 docker-compose --file ./docker/docker-compose.yml up -d
 ```
-
 This command will:
 
 	•	Build the image (if not already built).
 	•	Start the PostgreSQL database container.
 	•	Start the Spring Boot application container.
 
+
 ### 2. Access the Application
 
 Once the containers are up and running, you can access the application at:
-http://localhost:8080/...
+http://localhost:8080/
+**Note:** The port `8080` is the default port specified in the `docker-compose.yml` file. If you wish to change this port,
+you can do so by modifying the `ports` section in the `docker-compose.yml` file. For example:
+
+```yaml
+ports:
+  - "8080:8080"
+```
+To change the exposed port, simply update the first number. For instance, to use port 9090, update it to:
+
+```yaml
+ports:
+  - "9090:8080"
+```
+After making the change, you will access the application at:
+  http://localhost:9090/
+
+```bash
+docker-compose ps
+```
+This command will show the status of your Docker containers.
+
+**Note:** For additional configuration and instructions related to the Dockerfile
+used to build your application’s image, refer to the docker/Dockerfile located
+in the docker directory. You may need to customize this file if you want to adjust 
+the base image, install additional dependencies, or configure the build process further.
+
+For building Docker image from Dockerfile, use the command:
+```Bash
+docker build -t my-app-image
+```
+This command generates an image with the name my-app-image
+
+For running container:
+```Bash
+docker run -d -p 8080:8080 my-app-image
+```
+This command will run the container in the background, using port 8080.
+
+To view all created images, use:
+```Bash
+docker image
+```
+
+To delete an image, use:
+```Bash
+docker rmi my-app-image
+```
 
 ### 3. Stopping the Application
 
@@ -41,66 +88,4 @@ To stop the running containers, use the following command:
 ```bash
 docker-compose --file ./docker/docker-compose.yml down
 ```
-
 This command will stop and remove the containers, but the data stored in the PostgreSQL volume will be preserved.
-
-
-
-
-# Налаштування проекту
-
-## Умови
-
-- [Docker Desktop](https://www.docker.com/products/docker-desktop)
-- [Docker Compose](https://docs.docker.com/compose/install/)
-
-## Налаштування на ОС Windows
-
-### Встановлення Docker та Docker Compose
-
-1. **Завантаження Docker Desktop**:
-    - Перейдіть на [Docker Desktop](https://www.docker.com/products/docker-desktop) та завантажте інсталяційний файл для Windows.
-    - Запустіть інсталяційний файл і слідуйте інструкціям на екрані для завершення установки.
-    - Після завершення встановлення, Docker Desktop автоматично запустить Docker та Docker Compose.
-
-2. **Перевірка установки**:
-    - Відкрийте командний рядок (CMD) або PowerShell і виконайте наступні команди, щоб перевірити, чи Docker та Docker Compose були встановлені успішно:
-
-      ```bash
-      docker --version
-      docker-compose --version
-      ```
-
-### Налаштування проекту
-
-1. **Клонування репозиторію**:
-    - Виконайте команду для клонування репозиторію на ваш комп'ютер:
-
-      ```bash
-      git clone <URL_вашого_репозиторію>
-      ```
-
-2. **Перехід до каталогу проекту**:
-    - Перейдіть у каталог проекту, наприклад:
-
-      ```bash
-      cd <назва_каталогу>
-      ```
-
-3. **Запуск Docker контейнерів**:
-    - Запустіть Docker контейнери за допомогою `docker-compose`:
-
-      ```bash
-      docker-compose --file ./docker/docker-compose.yml up -d
-      ```
-
-    - Це створить та запустить всі необхідні контейнери для вашого проекту.
-
-4. **Перевірка роботи**:
-    - Перевірте, чи всі контейнери працюють коректно:
-
-      ```bash
-      docker-compose ps(ls)
-      ```
-
----
