@@ -45,8 +45,8 @@ public class SecurityConfig {
                 .cors(c -> corsConfigurationSource())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/v1/userEntity/login",
-                                "/v1/userEntity/register",
+                                "/v1/user/login",
+                                "/v1/user/register",
                                 "/error")
                         .permitAll()
                         .requestMatchers("/products/**", "/sellers/**").permitAll()// Доступ для всіх

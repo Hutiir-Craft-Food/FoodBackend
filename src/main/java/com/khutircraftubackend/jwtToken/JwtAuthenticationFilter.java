@@ -38,7 +38,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // Перевіряємо, чи шлях запиту є шляхом для реєстрації
         String path = request.getRequestURI();
-        if (path.startsWith("/v1/userEntity/register")) {
+        if (path.startsWith("/v1/user/register")) {
             // Якщо це запит на реєстрацію, пропускаємо перевірку токену
             filterChain.doFilter(request, response);
             return;

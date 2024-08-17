@@ -1,5 +1,7 @@
 # DATABASE CONFIGURATION
 spring:
+  config:
+    import: optional:file:dev.env[.properties]
   datasource:
     driver-class-name: org.postgresql.Driver
     url: ${POSTGRES_DB}
