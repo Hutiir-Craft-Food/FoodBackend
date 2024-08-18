@@ -4,10 +4,10 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.khutircraftubackend.auth.UserDetailsImpl;
+import com.khutircraftubackend.auth.UserDetailsServiceImpl;
 import com.khutircraftubackend.globalException.exception.MalformedJwtTokenException;
 import com.khutircraftubackend.globalException.exception.UnsupportedJwtTokenException;
-import com.khutircraftubackend.auth.UserDetailsImpl;
-import com.khutircraftubackend.auth.UserDetailsServicesImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,7 +29,7 @@ import java.io.IOException;
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JWTVerifier jwtVerifier;
-    private final UserDetailsServicesImpl userDetailsServices;
+    private final UserDetailsServiceImpl userDetailsServices;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
@@ -86,7 +86,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             errorMessage = ("Invalid JWT Token");
             hasError = true;
         } catch (Exception e) {
-            log.error("Cannot set userEntity authentication: {}", e.getMessage());
+            log.error("Cannot set user authentication: {}", e.getMessage());
             errorStatus = HttpStatus.INTERNAL_SERVER_ERROR;
             errorMessage = ("Internal Server Error");
             hasError = true;
