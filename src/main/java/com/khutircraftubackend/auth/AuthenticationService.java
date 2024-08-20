@@ -95,9 +95,8 @@ public class AuthenticationService {
         userRepository.saveAndFlush(user);
 
         String verificationCode = UUID.randomUUID().toString();
-        String confirmationLink = "http://localhost:8080/confirm?token=" + verificationCode;
         emailSender.sendSimpleMessage(user.getEmail(), "Підтвердження реєстрації",
-                "Будь ласка, підтвердіть вашу реєстрацію за посиланням: " + confirmationLink);
+                "Будь ласка, підтвердіть вашу реєстрацію за посиланням: " + verificationCode);
 
         user.setConfirmationToken(verificationCode);
         userRepository.save(user);
