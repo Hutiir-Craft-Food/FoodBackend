@@ -6,8 +6,8 @@ import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.khutircraftubackend.auth.UserDetailsImpl;
 import com.khutircraftubackend.auth.UserDetailsServiceImpl;
-import com.khutircraftubackend.globalException.exception.MalformedJwtTokenException;
-import com.khutircraftubackend.globalException.exception.UnsupportedJwtTokenException;
+import com.khutircraftubackend.exception.jwt.MalformedJwtTokenException;
+import com.khutircraftubackend.exception.jwt.UnsupportedJwtTokenException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,14 +35,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(@NonNull HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
-
-        // Перевіряємо, чи шлях запиту є шляхом для реєстрації
-        String path = request.getRequestURI();
-        if (path.startsWith("/v1/user/register")) {
-            // Якщо це запит на реєстрацію, пропускаємо перевірку токену
-            filterChain.doFilter(request, response);
-            return;
-        }
 
         String authHeader = request.getHeader("Authorization");
         log.info("Token: {}", authHeader);

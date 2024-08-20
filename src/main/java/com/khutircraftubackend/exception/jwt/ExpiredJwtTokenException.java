@@ -1,4 +1,4 @@
-package com.khutircraftubackend.globalException.exception;
+package com.khutircraftubackend.exception.jwt;
 
 /**
  * Exception thrown when the JWT token is expired.
