@@ -4,7 +4,7 @@ spring:
   config:
     import: optional:file:.env[.properties]
   profiles:
-    active: "local"
+    default: local
   #default: ${ACTIVE_PROFILES:local}
   output:
     ansi:
