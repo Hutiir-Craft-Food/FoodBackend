@@ -4,9 +4,9 @@ spring:
     url: "jdbc:h2:mem:testdb"
     username: sa
     password: password
+  jpa:
     database-platform: org.hibernate.dialect.H2Dialect
-    compose:
-      enabled: false
-
+    hibernate:
+      ddl-auto: update
 jwt:
   expiration: 10_000 # 10 seconds

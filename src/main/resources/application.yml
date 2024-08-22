@@ -4,7 +4,8 @@ spring:
   config:
     import: optional:file:.env[.properties]
   profiles:
-    default: ${ACTIVE_PROFILES:local}
+    active: "local"
+  #default: ${ACTIVE_PROFILES:local}
   output:
     ansi:
       enabled: ALWAYS
@@ -15,6 +16,8 @@ spring:
     password: ${SPRING_DATASOURCE_PASSWORD}
 
   jpa:
+    hibernate:
+      ddl-auto: update
     open-in-view: false
 
   mail:
