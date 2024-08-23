@@ -5,7 +5,6 @@ spring:
     import: optional:file:.env[.properties]
   profiles:
     default: local
-  #default: ${ACTIVE_PROFILES:local}
   output:
     ansi:
       enabled: ALWAYS
