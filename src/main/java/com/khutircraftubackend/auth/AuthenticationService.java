@@ -2,8 +2,8 @@ package com.khutircraftubackend.auth;
 
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.khutircraftubackend.auth.exception.UserExistsException;
-import com.khutircraftubackend.auth.exception.UserNotFoundException;
+import com.khutircraftubackend.exception.user.UserExistsException;
+import com.khutircraftubackend.exception.user.UserNotFoundException;
 import com.khutircraftubackend.auth.request.LoginRequest;
 import com.khutircraftubackend.auth.request.RegisterRequest;
 import com.khutircraftubackend.auth.response.AuthResponse;
@@ -63,10 +63,17 @@ public class AuthenticationService {
         User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new UserNotFoundException("Користувач з таким email не знайдений"));
 
+        if (!user.isEnabled()) {
+            return AuthResponse
+                    .builder()
+                    .message("Підтвердження за поштою не пройдено")
+                    .build();
+        }
         String jwt = jwtUtils.generateJwtToken(user.getEmail());
         return AuthResponse.builder()
                 .jwt(jwt)
                 .email(user.getEmail())
+                .message("Вітаємо з успішним входом")
                 .build();
     }
 
@@ -88,27 +95,24 @@ public class AuthenticationService {
         userRepository.saveAndFlush(user);
 
         String verificationCode = UUID.randomUUID().toString();
-        String confirmationLink = "http://localhost:8080/confirm?token=" + verificationCode;
         emailSender.sendSimpleMessage(user.getEmail(), "Підтвердження реєстрації",
-                "Будь ласка, підтвердіть вашу реєстрацію за посиланням: " + confirmationLink);
+                "Будь ласка, підтвердіть вашу реєстрацію за посиланням: " + verificationCode);
 
         user.setConfirmationToken(verificationCode);
         userRepository.save(user);
 
-        String jwt = jwtUtils.generateJwtToken(user.getEmail());
+        //TODO consider returning token at this point
         return AuthResponse.builder()
-                .jwt(jwt)
-                .email(user.getEmail())
                 .build();
     }
 
     @Transactional
     public void confirmUser(String email, String confirmationToken) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid email address."));
+                .orElseThrow(() -> new UserNotFoundException("Користувач з таким email не знайдений"));
 
         if (!confirmationToken.equals(user.getConfirmationToken())) {
-            throw new IllegalArgumentException("Invalid confirmation token.");
+            throw new IllegalArgumentException("Неправильний код підтвердження.");
         }
 
         user.setEnabled(true);
@@ -120,13 +124,10 @@ public class AuthenticationService {
 
     @Transactional
     public void updatePassword(String jwt, PasswordUpdateRequest passwordUpdateRequest) {
-        log.info("jwt: {}", jwt);
         DecodedJWT decodedJWT = jwtVerifier.verify(jwt);
-        log.info("decodedJWT: {}", decodedJWT);
         String emailFromToken = decodedJWT.getSubject();
-        log.info("emailFromToken: {}", emailFromToken);
         if(!emailFromToken.equals(passwordUpdateRequest.email())) {
-            throw new UserNotFoundException("The token does not belong to this user");
+            throw new UserNotFoundException("Цей токен не належить цьому користувачу.");
         }
         UserDetailsImpl userDetails = (UserDetailsImpl) userDetailsServices.loadUserByUsername(emailFromToken);
         User user = userDetails.getUser();
@@ -140,7 +141,7 @@ public class AuthenticationService {
         DecodedJWT decodedJWT = jwtVerifier.verify(jwt);
         String emailFromToken = decodedJWT.getSubject();
         if (!emailFromToken.equals(passwordRecoveryRequest.email())) {
-            throw new UserNotFoundException("The token does not belong to this user");
+            throw new UserNotFoundException("Цей токен не належить цьому користувачу.");
         }
 
         // Генеруємо новий тимчасовий пароль
@@ -149,7 +150,7 @@ public class AuthenticationService {
 
         // Оновлюємо пароль у базі даних
         User user = userRepository.findByEmail(emailFromToken)
-                .orElseThrow(() -> new UserNotFoundException("User not found with email: " + emailFromToken));
+                .orElseThrow(() -> new UserNotFoundException("Користувач з таким email не знайдений " + emailFromToken));
         user.setPassword(encodedPassword);
         userRepository.save(user);
 

@@ -1,18 +1,21 @@
 package com.khutircraftubackend.auth;
 
-import com.khutircraftubackend.auth.exception.UserExistsException;
 import com.khutircraftubackend.auth.request.ConfirmationRequest;
 import com.khutircraftubackend.auth.request.LoginRequest;
 import com.khutircraftubackend.auth.request.RegisterRequest;
 import com.khutircraftubackend.auth.response.AuthResponse;
 import com.khutircraftubackend.auth.security.PasswordRecoveryRequest;
 import com.khutircraftubackend.auth.security.PasswordUpdateRequest;
+import com.khutircraftubackend.exception.user.UnauthorizedException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -32,73 +35,74 @@ public class AuthenticationController {
      * @param loginRequest the login request
      * @return the response entity
      */
+    @Operation(summary = "Authenticate user", description = "Authenticate user with email and password.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User authenticated successfully"),
+            @ApiResponse(responseCode = "401", description = "Invalid credentials")
+    })
     @PostMapping("/login")
-    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
-        try {
+    public ResponseEntity<?> authenticateUser(@Parameter(description = "Login request containing email and password") @Valid @RequestBody LoginRequest loginRequest) {
             AuthResponse authResponse = authenticationService.authenticate(loginRequest);
             return ResponseEntity.ok(authResponse);
-        } catch (BadCredentialsException e) {
-            log.error("Login failed for email: {}, invalid password", loginRequest.email());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-        } catch (RuntimeException e) {
-            log.error("Login failed for email: {}", loginRequest.email(), e);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-        } catch (Exception e) {
-            log.error("Unexpected exception while logging in: {}", e);
-            return ResponseEntity.internalServerError().body(e.getMessage());
-        }
     }
 
+    @Operation(summary = "Register a new user", description = "Register a new user with email and password.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "User registered successfully"),
+            @ApiResponse(responseCode = "401", description = "User already exists")
+    })
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest registerRequest) {
-        try {
+    public ResponseEntity<?> register(@Parameter(description = "Registration request containing user details") @Valid @RequestBody RegisterRequest registerRequest) {
             AuthResponse authResponse = authenticationService.registerNewUser(registerRequest);
-            return ResponseEntity.status(HttpStatus.CREATED).body(authResponse);
-        } catch (UserExistsException e) {
-            log.error("Login failed for email: {}", registerRequest.email(), e);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-        } catch (Exception e) {
-            log.error("Unexpected exception while logging in: {}", e);
-            return ResponseEntity.internalServerError().body(e.getMessage());
-        }
+            return ResponseEntity.status(HttpStatus.CREATED).body("Завершіть реєстрацію підтвердженням з переходом на пошту");
     }
 
+    @Operation(summary = "Confirm user registration", description = "Confirm user registration with email and confirmation token.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User confirmed successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid confirmation details")
+    })
     @PostMapping("/confirm")
-    public ResponseEntity<String> confirmUser(@RequestBody ConfirmationRequest confirmationRequest) {
-        try {
-            authenticationService.confirmUser(confirmationRequest.email(), confirmationRequest.jwt());
+    public ResponseEntity<String> confirmUser(@Parameter(description = "Confirmation request containing email and token") @RequestBody ConfirmationRequest confirmationRequest) {
+            authenticationService.confirmUser(confirmationRequest.email(), confirmationRequest.confirmationToken());
             return ResponseEntity.ok("User confirmed successfully.");
-        } catch (IllegalArgumentException e) {
-            // 400 Bad Request
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred.");
-        }
     }
 
+    @Operation(summary = "Update user password", description = "Update password with a valid authorization token.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Password updated successfully"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
     @PatchMapping("/update-password")
-    public ResponseEntity<String> updatePassword(@Valid @RequestBody PasswordUpdateRequest passwordUpdateRequest,
+    public ResponseEntity<String> updatePassword(@Parameter(description = "Password update request containing new password")
+                                                     @Valid @RequestBody PasswordUpdateRequest passwordUpdateRequest,
                                                  @RequestHeader("Authorization") String authorizationHeader) {
-        log.info("authorizationHeader: {}", authorizationHeader);
         String token = authorizationHeader.startsWith("Bearer ") ?
                 authorizationHeader.substring(7) : null;
         if(token == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorization token is missing");
+            throw new UnauthorizedException("Authorization token is missing");
         }
 
         authenticationService.updatePassword(token, passwordUpdateRequest);
         return ResponseEntity.ok("Password updated successfully");
     }
 
+    @Operation(summary = "Recover user password", description = "Recover password with a valid authorization token.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Password recovery initiated successfully"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
     @PostMapping("/recovery-password")
-    public ResponseEntity<String> recoveryPassword(@Valid @RequestBody PasswordRecoveryRequest passwordRecoveryRequest,
+    public ResponseEntity<String> recoveryPassword(@Parameter(description = "Password recovery request containing new password") @Valid @RequestBody PasswordRecoveryRequest passwordRecoveryRequest,
                                                    @RequestHeader("Authorization") String authorizationHeader) {
         String token = authorizationHeader.startsWith("Bearer ") ?
                 authorizationHeader.substring(7) : null;
         if(token == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorization token is missing");
+            throw new UnauthorizedException("Authorization token is missing");
         }
         authenticationService.recoveryPassword(token, passwordRecoveryRequest);
-        return ResponseEntity.ok("Password recovery successfully");
+        return ResponseEntity.ok("Password recovery successfully " + "\n" +
+                                " go to email to get new password and change password " +
+                "to yours when logging in for security");
     }
 }

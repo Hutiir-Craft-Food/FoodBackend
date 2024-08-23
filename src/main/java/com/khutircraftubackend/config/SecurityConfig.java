@@ -41,11 +41,11 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/v1/user/login",
-                                "/v1/user/register",
-                                "/error")
-                        .permitAll()
+                        // Дозволяємо доступ до Swagger UI та API документації
+                        .requestMatchers("/swagger-ui/index.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        // Дозволяємо доступ до інших ресурсів
+                        .requestMatchers("/v1/user/login", "/v1/user/register", "/v1/user/confirm", "/error").permitAll()
+                        // Визначаємо доступ для різних ролей
                         .requestMatchers("/products/**", "/sellers/**").permitAll()// Доступ для всіх
                         .requestMatchers("/seller/**").hasRole("SELLER")
                         .requestMatchers("/buyer/**").hasRole("BUYER")

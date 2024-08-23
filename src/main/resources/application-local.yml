@@ -1,0 +1,19 @@
+spring:
+  config:
+    import: optional:file:.env.local[.properties]
+
+  jpa:
+    generate-ddl: true
+    properties:
+      hibernate:
+        show-sql: true
+        format_sql: true
+
+jwt:
+  expiration: 60_000 # 1 minute
+
+logging:
+  level:
+    root: INFO
+    com:
+      khutircraftubackend: DEBUG
