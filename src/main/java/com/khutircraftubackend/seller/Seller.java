@@ -1,8 +1,11 @@
 package com.khutircraftubackend.seller;
 
 import com.khutircraftubackend.auth.User;
+import com.khutircraftubackend.product.Product;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.List;
 
 /**
  * Клас Seller є моделлю продавця і відображає таблицю продавців у базі даних.
@@ -31,4 +34,7 @@ public class Seller {
     @OneToOne
     @JoinColumn(name = "user_id")
     private User user;
+
+    @OneToMany(mappedBy = "seller")
+    private List<Product> products;
 }
