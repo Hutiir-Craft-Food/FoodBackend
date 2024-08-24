@@ -63,7 +63,7 @@ public class AuthenticationService {
         UserEntity user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new UserNotFoundException("Користувач з таким email не знайдений"));
 
-        if (!user.isEnabled()) {
+        if (Boolean.FALSE.equals(user.isEnabled())) {
             return AuthResponse
                     .builder()
                     .message("Підтвердження за поштою не пройдено")
@@ -111,7 +111,7 @@ public class AuthenticationService {
         UserEntity user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("Користувач з таким email не знайдений"));
 
-        if (!confirmationToken.equals(user.getConfirmationToken())) {
+        if (Boolean.FALSE.equals(!confirmationToken.equals(user.getConfirmationToken()))) {
             throw new IllegalArgumentException("Неправильний код підтвердження.");
         }
 
@@ -126,7 +126,7 @@ public class AuthenticationService {
     public void updatePassword(String jwt, PasswordUpdateRequest passwordUpdateRequest) {
         DecodedJWT decodedJWT = jwtVerifier.verify(jwt);
         String emailFromToken = decodedJWT.getSubject();
-        if(!emailFromToken.equals(passwordUpdateRequest.email())) {
+        if(Boolean.FALSE.equals(emailFromToken.equals(passwordUpdateRequest.email()))) {
             throw new UserNotFoundException("Цей токен не належить цьому користувачу.");
         }
         UserDetailsImpl userDetails = (UserDetailsImpl) userDetailsServices.loadUserByUsername(emailFromToken);
@@ -140,7 +140,7 @@ public class AuthenticationService {
     public void recoveryPassword(String jwt, PasswordRecoveryRequest passwordRecoveryRequest) {
         DecodedJWT decodedJWT = jwtVerifier.verify(jwt);
         String emailFromToken = decodedJWT.getSubject();
-        if (!emailFromToken.equals(passwordRecoveryRequest.email())) {
+        if (Boolean.FALSE.equals(emailFromToken.equals(passwordRecoveryRequest.email()))) {
             throw new UserNotFoundException("Цей токен не належить цьому користувачу.");
         }
 
