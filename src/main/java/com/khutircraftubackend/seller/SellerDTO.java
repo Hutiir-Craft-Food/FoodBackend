@@ -1,6 +1,6 @@
 package com.khutircraftubackend.seller;
 
-import com.khutircraftubackend.auth.User;
+import com.khutircraftubackend.auth.UserEntity;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -29,7 +29,7 @@ public record SellerDTO(
         @Pattern(regexp = "^\\+380\\d{9}$", message = "Номер телефону має бути у форматі +380__________")
         String phoneNumber,
 
-        User user,
+        UserEntity user,
 
         String tax_code
 
