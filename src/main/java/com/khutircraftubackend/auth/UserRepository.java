@@ -8,8 +8,8 @@ import java.util.Optional;
  * Інтерфейс UserRepository забезпечує доступ до даних користувачів у базі даних.
  */
 
-public interface UserRepository extends JpaRepository<User, Long> {
-    Optional<User> findByEmail(String email);
-    Optional<User> findByConfirmationToken(String confirmationToken);
+public interface UserRepository extends JpaRepository<UserEntity, Long> {
+    Optional<UserEntity> findByEmail(String email);
+    Optional<UserEntity> findByConfirmationToken(String confirmationToken);
     boolean existsByEmail(String email);
 }

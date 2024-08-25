@@ -60,7 +60,7 @@ public class AuthenticationService {
         );
 
         // Fetch user by email
-        User user = userRepository.findByEmail(request.email())
+        UserEntity user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new UserNotFoundException("Користувач з таким email не знайдений"));
 
         if (!user.isEnabled()) {
@@ -84,7 +84,7 @@ public class AuthenticationService {
             throw new UserExistsException("Цей email зайнятий, використайте інший або ввійдіть під цим");
         }
 
-        User user = User.builder()
+        UserEntity user = UserEntity.builder()
                 .email(request.email())
                 .password(passwordEncoder.encode(request.password()))
                 .enabled(false)
@@ -108,7 +108,7 @@ public class AuthenticationService {
 
     @Transactional
     public void confirmUser(String email, String confirmationToken) {
-        User user = userRepository.findByEmail(email)
+        UserEntity user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("Користувач з таким email не знайдений"));
 
         if (!confirmationToken.equals(user.getConfirmationToken())) {
@@ -130,7 +130,7 @@ public class AuthenticationService {
             throw new UserNotFoundException("Цей токен не належить цьому користувачу.");
         }
         UserDetailsImpl userDetails = (UserDetailsImpl) userDetailsServices.loadUserByUsername(emailFromToken);
-        User user = userDetails.getUser();
+        UserEntity user = userDetails.getUser();
 
         String encodeNewPassword = passwordEncoder.encode(passwordUpdateRequest.newPassword());
         user.setPassword(encodeNewPassword);
@@ -149,7 +149,7 @@ public class AuthenticationService {
         String encodedPassword = passwordEncoder.encode(temporaryPassword);
 
         // Оновлюємо пароль у базі даних
-        User user = userRepository.findByEmail(emailFromToken)
+        UserEntity user = userRepository.findByEmail(emailFromToken)
                 .orElseThrow(() -> new UserNotFoundException("Користувач з таким email не знайдений " + emailFromToken));
         user.setPassword(encodedPassword);
         userRepository.save(user);

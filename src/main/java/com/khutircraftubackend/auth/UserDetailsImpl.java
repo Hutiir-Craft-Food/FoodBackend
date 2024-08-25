@@ -17,7 +17,7 @@ import java.util.Collections;
 @Getter
 public class UserDetailsImpl implements UserDetails {
 
-    private final User user;
+    private final UserEntity user;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -55,7 +55,7 @@ public class UserDetailsImpl implements UserDetails {
     }
 
     // Статичний метод для створення екземпляра UserDetailsImpl
-    public static UserDetailsImpl build(User user) {
+    public static UserDetailsImpl build(UserEntity user) {
         return new UserDetailsImpl(user);
     }
 }
