@@ -3,7 +3,7 @@ spring:
     import: optional:file:.env.local[.properties]
 
   jpa:
-    generate-ddl: true
+    generate-ddl: false
     properties:
       hibernate:
         show-sql: true
