@@ -55,6 +55,7 @@ public class AuthenticationService {
     @Transactional
     public AuthResponse authenticate(LoginRequest request) {
 
+
         UserEntity user = getUserForEmail(request.email());
         if (!user.isEnabled()) {
             return buildDisabledUser(user);
@@ -155,10 +156,12 @@ public class AuthenticationService {
         updateConfirmationToken(user);
     }
 
+
     private void validateConfirmationToken(ConfirmationRequest request, UserEntity user) {
         if (Boolean.FALSE.equals(
                 request.confirmationToken().equals(user.getConfirmationToken()))) {
             throw new IllegalArgumentException(FinalMessagesUsers.NOT_VALID_CONFIRMATION_TOKEN);
+
         }
     }
 
@@ -171,9 +174,11 @@ public class AuthenticationService {
     }
 
     @Transactional
+
     public void updatePassword(Principal principal, PasswordUpdateRequest passwordUpdateRequest) {
         UserEntity user = getUserForPrincipal(principal);
         user.setPassword(passwordEncoder.encode(passwordUpdateRequest.password()));
+
         userRepository.save(user);
     }
 
@@ -184,6 +189,7 @@ public class AuthenticationService {
     }
 
     @Transactional
+
     public void recoveryPassword(Principal principal) {
 
         // Генеруємо новий тимчасовий пароль
