@@ -11,4 +11,6 @@ public final class FinalMessagesUsers {
     public static final String NOT_VALID_CONFIRMATION_TOKEN = "Неправильний код підтвердження.";
     public static final String RECOVERY_PASSWORD_SUBJECT = "Відновлення паролю";
     public static final String RECOVERY_PASSWORD_TEXT = "Ваш тимчасовий пароль: %s";
+
+    private FinalMessagesUsers(){}
 }

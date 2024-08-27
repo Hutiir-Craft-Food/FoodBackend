@@ -47,7 +47,6 @@ public class SecurityConfig {
                         .requestMatchers("/v1/user/login", "/v1/user/register", "/v1/user/confirm", "/error").permitAll()
                         // Визначаємо доступ для різних ролей
                         .requestMatchers("/products/**").permitAll()// Доступ для всіх
-                     //   .requestMatchers("/seller/**").hasRole("SELLER")
                         .requestMatchers("/buyer/**").hasRole("BUYER")
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())

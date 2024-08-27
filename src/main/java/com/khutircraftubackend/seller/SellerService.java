@@ -1,5 +1,6 @@
 package com.khutircraftubackend.seller;
 
+import com.khutircraftubackend.auth.AuthenticationService;
 import com.khutircraftubackend.auth.UserEntity;
 import com.khutircraftubackend.auth.UserRepository;
 import com.khutircraftubackend.exception.user.UserNotFoundException;
@@ -20,10 +21,10 @@ public class SellerService {
 
     private final UserRepository userRepository;
     private final SellerRepository sellerRepository;
+    private final AuthenticationService authenticationService;
 
     public SellerResponse getInfoSeller(Principal principal) {
-        UserEntity user = userRepository.findByEmail(principal.getName())
-                .orElseThrow(() -> new UserNotFoundException("Користувач з таким email не знайдений"));
+        UserEntity user = authenticationService.getUserForPrincipal(principal);
 
         SellerEntity seller = sellerRepository.findByUser(user);
         return SellerResponse.builder()

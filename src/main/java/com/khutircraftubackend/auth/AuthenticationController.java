@@ -4,9 +4,7 @@ import com.khutircraftubackend.auth.request.ConfirmationRequest;
 import com.khutircraftubackend.auth.request.LoginRequest;
 import com.khutircraftubackend.auth.request.RegisterRequest;
 import com.khutircraftubackend.auth.response.AuthResponse;
-import com.khutircraftubackend.auth.security.PasswordRecoveryRequest;
 import com.khutircraftubackend.auth.security.PasswordUpdateRequest;
-import com.khutircraftubackend.exception.user.UnauthorizedException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -55,7 +53,7 @@ public class AuthenticationController {
     })
     @PostMapping("/register")
     public ResponseEntity<?> register(@Parameter(description = "Registration request containing user details") @Valid @RequestBody RegisterRequest registerRequest) {
-        AuthResponse authResponse = authenticationService.registerNewUser(registerRequest);
+        authenticationService.registerNewUser(registerRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body("Завершіть реєстрацію підтвердженням з переходом на пошту");
     }
 

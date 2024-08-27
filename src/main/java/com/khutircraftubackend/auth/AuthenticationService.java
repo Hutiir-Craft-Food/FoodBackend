@@ -1,6 +1,5 @@
 package com.khutircraftubackend.auth;
 
-import com.auth0.jwt.JWTVerifier;
 import com.khutircraftubackend.auth.request.ConfirmationRequest;
 import com.khutircraftubackend.exception.user.UserExistsException;
 import com.khutircraftubackend.exception.user.UserNotFoundException;
@@ -42,8 +41,6 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final EmailSender emailSender;
     private final AuthenticationManager authenticationManager;
-    private final JWTVerifier jwtVerifier;
-    private final UserDetailsServiceImpl userDetailsServices;
     private final SellerRepository sellerRepository;
 
     /**
@@ -111,7 +108,7 @@ public class AuthenticationService {
     }
 
     private boolean isSeller(Role role) {
-        return "SELLER".equals(role);
+        return "SELLER".equals(role.toString());
     }
 
     private UserEntity buildAndSaveUser(RegisterRequest request) {
@@ -176,11 +173,12 @@ public class AuthenticationService {
     @Transactional
     public void updatePassword(Principal principal, PasswordUpdateRequest passwordUpdateRequest) {
         UserEntity user = getUserForPrincipal(principal);
-        user.setPassword(passwordEncoder.encode(passwordUpdateRequest.newPassword()));
+        user.setPassword(passwordEncoder.encode(passwordUpdateRequest.password()));
         userRepository.save(user);
     }
 
-    private UserEntity getUserForPrincipal(Principal principal) {
+    //TODO Вынести в отдельный клас этот метод? Используеться в SellerService
+    public UserEntity getUserForPrincipal(Principal principal) {
         String email = principal.getName();
         return getUserForEmail(email);
     }
