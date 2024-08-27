@@ -11,7 +11,7 @@ import org.mapstruct.factory.Mappers;
 public interface SellerMapper {
     SellerMapper INSTANCE = Mappers.getMapper(SellerMapper.class);
 
-    Seller SellerDTOToSeller(SellerDTO sellerDTO);
+    SellerEntity SellerDTOToSeller(SellerDTO sellerDTO);
 
-    SellerDTO SellerToSellerDTO(Seller seller);
+    SellerDTO SellerToSellerDTO(SellerEntity seller);
 }

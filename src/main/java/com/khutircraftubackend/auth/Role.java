@@ -8,6 +8,5 @@ package com.khutircraftubackend.auth;
 public enum Role {
     BUYER,
     SELLER,
-    ADMIN,
-    GUEST
+    ADMIN
 }

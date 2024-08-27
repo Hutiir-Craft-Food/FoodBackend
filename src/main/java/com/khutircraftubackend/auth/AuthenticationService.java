@@ -1,16 +1,17 @@
 package com.khutircraftubackend.auth;
 
 import com.auth0.jwt.JWTVerifier;
-import com.auth0.jwt.interfaces.DecodedJWT;
+import com.khutircraftubackend.auth.request.ConfirmationRequest;
 import com.khutircraftubackend.exception.user.UserExistsException;
 import com.khutircraftubackend.exception.user.UserNotFoundException;
 import com.khutircraftubackend.auth.request.LoginRequest;
 import com.khutircraftubackend.auth.request.RegisterRequest;
 import com.khutircraftubackend.auth.response.AuthResponse;
-import com.khutircraftubackend.auth.security.PasswordRecoveryRequest;
 import com.khutircraftubackend.auth.security.PasswordUpdateRequest;
 import com.khutircraftubackend.jwtToken.JwtUtils;
 import com.khutircraftubackend.mail.EmailSender;
+import com.khutircraftubackend.seller.SellerEntity;
+import com.khutircraftubackend.seller.SellerRepository;
 import jakarta.persistence.PostUpdate;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
 import java.util.UUID;
 
 /**
@@ -42,6 +44,7 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final JWTVerifier jwtVerifier;
     private final UserDetailsServiceImpl userDetailsServices;
+    private final SellerRepository sellerRepository;
 
     /**
      * Аутентифікує користувача за вказаними email та паролем.
@@ -51,70 +54,118 @@ public class AuthenticationService {
      * @throws BadCredentialsException Якщо вказані невірні дані для входу.
      * @throws AuthenticationException Якщо виникла непередбачена помилка під час аутентифікації.
      */
+
     @Transactional
     public AuthResponse authenticate(LoginRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.email(),
-                        request.password())
-        );
 
-        // Fetch user by email
-        UserEntity user = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new UserNotFoundException("Користувач з таким email не знайдений"));
-
+        UserEntity user = getUserForEmail(request.email());
         if (!user.isEnabled()) {
-            return AuthResponse
-                    .builder()
-                    .message("Підтвердження за поштою не пройдено")
-                    .build();
+            return buildDisabledUser(user);
         }
-        String jwt = jwtUtils.generateJwtToken(user.getEmail());
+
+        authenticateUser(request.email(), request.password());
+        String token = jwtUtils.generateJwtToken(user.getEmail());
+        return buildEnabledUser(user, token);
+    }
+
+    private UserEntity getUserForEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException(String.format(FinalMessagesUsers.EMAIL_NOT_FOUND, email)));
+    }
+
+    private void authenticateUser(String email, String password) {
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(email, password);
+        authenticationManager.authenticate(authenticationToken);
+    }
+
+    private AuthResponse buildDisabledUser(UserEntity user) {
+        return AuthResponse
+                .builder()
+                .message(String.format(FinalMessagesUsers.EMAIL_DISABLED, user.getEmail()))
+                .build();
+    }
+
+    private AuthResponse buildEnabledUser(UserEntity user, String token) {
         return AuthResponse.builder()
-                .jwt(jwt)
+                .jwt(token)
                 .email(user.getEmail())
-                .message("Вітаємо з успішним входом")
+                .message(String.format(FinalMessagesUsers.EMAIL_ENABLED))
                 .build();
     }
 
     @Transactional
     @PostUpdate
     public AuthResponse registerNewUser(RegisterRequest request) {
-        if(userRepository.existsByEmail(request.email())) {
-            throw new UserExistsException("Цей email зайнятий, використайте інший або ввійдіть під цим");
+
+        validateEmailNotInUse(request.email());
+        UserEntity user = buildAndSaveUser(request);
+        sendVerificationEmail(user);
+
+        if (isSeller(request.role())) {
+            createSeller(request, user);
         }
-
-        UserEntity user = UserEntity.builder()
-                .email(request.email())
-                .password(passwordEncoder.encode(request.password()))
-                .enabled(false)
-                // TODO: request this from Controller
-                .role(Role.GUEST)
-                .build();
-
-        userRepository.saveAndFlush(user);
-
-        String verificationCode = UUID.randomUUID().toString();
-        emailSender.sendSimpleMessage(user.getEmail(), "Підтвердження реєстрації",
-                "Будь ласка, підтвердіть вашу реєстрацію за посиланням: " + verificationCode);
-
-        user.setConfirmationToken(verificationCode);
-        userRepository.save(user);
 
         //TODO consider returning token at this point
         return AuthResponse.builder()
                 .build();
     }
 
-    @Transactional
-    public void confirmUser(String email, String confirmationToken) {
-        UserEntity user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("Користувач з таким email не знайдений"));
+    private boolean isSeller(Role role) {
+        return "SELLER".equals(role);
+    }
 
-        if (!confirmationToken.equals(user.getConfirmationToken())) {
-            throw new IllegalArgumentException("Неправильний код підтвердження.");
+    private UserEntity buildAndSaveUser(RegisterRequest request) {
+        UserEntity user = UserEntity.builder()
+                .email(request.email())
+                .password(passwordEncoder.encode(request.password()))
+                .enabled(false)
+                // TODO: request this from Controller
+                .role(request.role())
+                .build();
+        userRepository.saveAndFlush(user);
+        return user;
+    }
+
+    private void createSeller(RegisterRequest request, UserEntity user) {
+        SellerEntity seller = SellerEntity
+                .builder()
+                .sellerName(request.details().sellerName())
+                .companyName(request.details().companyName())
+                .user(user)
+                .build();
+        sellerRepository.save(seller);
+    }
+
+    private void validateEmailNotInUse(String email) {
+        if (userRepository.existsByEmail(email)) {
+            throw new UserExistsException(FinalMessagesUsers.EMAIL_IS_ALREADY_IN_USE);
         }
+    }
 
+    private void sendVerificationEmail(UserEntity user) {
+        String verificationCode = UUID.randomUUID().toString();
+        emailSender.sendSimpleMessage(user.getEmail(),
+                FinalMessagesUsers.VERIFICATION_CODE_SUBJECT,
+                String.format(FinalMessagesUsers.VERIFICATION_CODE_TEXT, verificationCode));
+        user.setConfirmationToken(verificationCode);
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void confirmUser(ConfirmationRequest request) {
+        UserEntity user = getUserForEmail(request.email());
+        validateConfirmationToken(request, user);
+        updateConfirmationToken(user);
+    }
+
+    private void validateConfirmationToken(ConfirmationRequest request, UserEntity user) {
+        if (Boolean.FALSE.equals(
+                request.confirmationToken().equals(user.getConfirmationToken()))) {
+            throw new IllegalArgumentException(FinalMessagesUsers.NOT_VALID_CONFIRMATION_TOKEN);
+        }
+    }
+
+    private void updateConfirmationToken(UserEntity user) {
         user.setEnabled(true);
         user.setConfirmationToken(null);
 
@@ -123,42 +174,35 @@ public class AuthenticationService {
     }
 
     @Transactional
-    public void updatePassword(String jwt, PasswordUpdateRequest passwordUpdateRequest) {
-        DecodedJWT decodedJWT = jwtVerifier.verify(jwt);
-        String emailFromToken = decodedJWT.getSubject();
-        if(!emailFromToken.equals(passwordUpdateRequest.email())) {
-            throw new UserNotFoundException("Цей токен не належить цьому користувачу.");
-        }
-        UserDetailsImpl userDetails = (UserDetailsImpl) userDetailsServices.loadUserByUsername(emailFromToken);
-        UserEntity user = userDetails.getUser();
-
-        String encodeNewPassword = passwordEncoder.encode(passwordUpdateRequest.newPassword());
-        user.setPassword(encodeNewPassword);
+    public void updatePassword(Principal principal, PasswordUpdateRequest passwordUpdateRequest) {
+        UserEntity user = getUserForPrincipal(principal);
+        user.setPassword(passwordEncoder.encode(passwordUpdateRequest.newPassword()));
         userRepository.save(user);
     }
+
+    private UserEntity getUserForPrincipal(Principal principal) {
+        String email = principal.getName();
+        return getUserForEmail(email);
+    }
+
     @Transactional
-    public void recoveryPassword(String jwt, PasswordRecoveryRequest passwordRecoveryRequest) {
-        DecodedJWT decodedJWT = jwtVerifier.verify(jwt);
-        String emailFromToken = decodedJWT.getSubject();
-        if (!emailFromToken.equals(passwordRecoveryRequest.email())) {
-            throw new UserNotFoundException("Цей токен не належить цьому користувачу.");
-        }
+    public void recoveryPassword(Principal principal) {
 
         // Генеруємо новий тимчасовий пароль
         String temporaryPassword = generateTemporaryPassword();
         String encodedPassword = passwordEncoder.encode(temporaryPassword);
 
         // Оновлюємо пароль у базі даних
-        UserEntity user = userRepository.findByEmail(emailFromToken)
-                .orElseThrow(() -> new UserNotFoundException("Користувач з таким email не знайдений " + emailFromToken));
+        UserEntity user = getUserForPrincipal(principal);
         user.setPassword(encodedPassword);
         userRepository.save(user);
 
         // Відправляємо тимчасовий пароль на email користувача
-        emailSender.sendSimpleMessage(passwordRecoveryRequest.email(), "Відновлення паролю",
-                "Ваш тимчасовий пароль: " + temporaryPassword);
+        emailSender.sendSimpleMessage(user.getEmail(), FinalMessagesUsers.RECOVERY_PASSWORD_SUBJECT,
+                String.format(FinalMessagesUsers.RECOVERY_PASSWORD_TEXT, temporaryPassword));
 
     }
+
     private String generateTemporaryPassword() {
         return UUID.randomUUID().toString().substring(0, 8);
     }

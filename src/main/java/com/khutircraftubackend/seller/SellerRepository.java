@@ -1,6 +1,6 @@
 package com.khutircraftubackend.seller;
 
-import com.khutircraftubackend.seller.Seller;
+import com.khutircraftubackend.auth.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -9,5 +9,7 @@ import org.springframework.stereotype.Repository;
  */
 
 @Repository
-public interface SellerRepository extends JpaRepository<Seller, Long> {
+public interface SellerRepository extends JpaRepository<SellerEntity, Long> {
+
+    SellerEntity findByUser(UserEntity user);
 }

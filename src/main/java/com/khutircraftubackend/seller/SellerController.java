@@ -1,14 +1,11 @@
 package com.khutircraftubackend.seller;
 
-import com.khutircraftubackend.seller.SellerDTO;
-import com.khutircraftubackend.seller.SellerService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.security.Principal;
 
 /**
  * Клас SellerController обробляє запити, пов'язані з продавцями.
@@ -21,10 +18,9 @@ public class SellerController {
 
     private final SellerService sellerService;
 
-    @PostMapping
-    ResponseEntity<SellerDTO> createSeller(@Valid @RequestBody SellerDTO sellerDTO) {
-        SellerDTO createdSeller = sellerService.saveSeller(sellerDTO);
-        return ResponseEntity.ok(createdSeller);
+    @GetMapping ("/info")
+    public SellerResponse getInfoSeller(Principal principal){
+        return sellerService.getInfoSeller(principal);
     }
 
 }

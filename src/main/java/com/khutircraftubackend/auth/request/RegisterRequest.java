@@ -1,6 +1,7 @@
 package com.khutircraftubackend.auth.request;
 
 import com.khutircraftubackend.auth.Role;
+import com.khutircraftubackend.seller.SellerDTO;
 import jakarta.validation.constraints.*;
 
 public record RegisterRequest(
@@ -14,6 +15,8 @@ public record RegisterRequest(
         String password,
 
         @NotNull(message = "Роль не може бути порожньою")
-        Role role
+        Role role,
+
+        SellerDTO details
 ) {
 }
