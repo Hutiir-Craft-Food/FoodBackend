@@ -46,7 +46,7 @@ public class ProductServiceTest {
     @BeforeEach
     void setUp() {
         seller = new SellerEntity();
-        seller.setCompany("Test company");
+        seller.setCompanyName("Test company");
         seller.setId(1L);
 
         product = new ProductEntity();
@@ -75,11 +75,11 @@ public class ProductServiceTest {
     @Test
     void testCreateProduct_Success() throws IOException {
         SellerEntity currentSeller = SellerEntity.builder()
-                .company("CompanyA")
+                .companyName("CompanyA")
                 .build();
 
         SellerEntity requestSeller = SellerEntity.builder()
-                .company("CompanyA")
+                .companyName("CompanyA")
                 .build();
 
         Long sellerId = 1L;
@@ -116,11 +116,11 @@ public class ProductServiceTest {
     @Test
     void testCreateProduct_AccessDenied() {
         SellerEntity currentSeller = SellerEntity.builder()
-                .company("CompanyA")
+                .companyName("CompanyA")
                 .build();
 
         SellerEntity requestSeller = SellerEntity.builder()
-                .company("CompanyB")
+                .companyName("CompanyB")
                 .build();
 
         ProductCreateRequest request = ProductCreateRequest.builder()

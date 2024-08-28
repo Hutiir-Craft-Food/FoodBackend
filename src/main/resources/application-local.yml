@@ -12,7 +12,7 @@ spring:
 
 
 jwt:
-  expiration: 60_000 # 1 minute
+  expiration: 600_000 # 10 minute
 
 logging:
   level:
