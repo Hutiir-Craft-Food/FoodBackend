@@ -1,6 +1,6 @@
-CREATE TABLE receive_advertising(
+CREATE TABLE marketing_campaign(
     id SERIAL PRIMARY KEY,
-    receiveAdvertising BOOLEAN,
+    subscribed BOOLEAN,
     category VARCHAR(40),
     user_id BIGINT,
     FOREIGN KEY (user_id) REFERENCES users(id)
