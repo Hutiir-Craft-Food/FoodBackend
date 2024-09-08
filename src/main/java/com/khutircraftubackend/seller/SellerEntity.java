@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 /**
- * Клас Seller є моделлю продавця і відображає таблицю продавців у базі даних.
+ * Клас SellerEntity є моделлю продавця і відображає таблицю продавців у базі даних.
  */
 
 @Entity
@@ -14,21 +14,24 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Table
-public class Seller {
+@Table(name = "sellers")
+public class SellerEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "company")
     private String company;
 
-    private String tax_code;
+    @Column(name = "tax_code")
+    private String taxCode;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "phone_number", nullable = false, unique = true)
     private String phoneNumber;
 
     @OneToOne
     @JoinColumn(name = "user_id")
     private UserEntity user;
+
 }

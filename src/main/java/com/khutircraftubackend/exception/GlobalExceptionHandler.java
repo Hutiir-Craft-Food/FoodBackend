@@ -4,23 +4,28 @@ import com.khutircraftubackend.exception.jwt.*;
 import com.khutircraftubackend.exception.user.BadCredentialsException;
 import com.khutircraftubackend.exception.user.UnauthorizedException;
 import com.khutircraftubackend.exception.user.UserNotFoundException;
-import jakarta.persistence.EntityNotFoundException;
+import com.khutircraftubackend.seller.SellerNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
+import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 
 /**
  * Global exception handler for handling JWT validation exceptions.
  */
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
+    public record ErrorResponse ( String message ) {}
 
     /**
      * Handle unauthorized exception response entity.
@@ -147,18 +152,6 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Handle entity not found exception response entity.
-     *
-     * @param ex      the ex
-     * @param request the request
-     * @return the response entity
-     */
-    @ExceptionHandler(EntityNotFoundException.class)//виняток коли відсутня сутність у БД
-    public ResponseEntity<?> handleEntityNotFoundException(EntityNotFoundException ex, WebRequest request) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Сутність не знайдена: " + ex.getMessage());
-    }
-
-    /**
      * Handle constraint violation exception response entity.
      *
      * @param ex      the ex
@@ -220,6 +213,19 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleGenericException(Exception ex) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body("Глобальне повідомлення: Внутрішня помилка сервера. Будь ласка, спробуйте пізніше.");
+    }
+
+    @ExceptionHandler(IOException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public String handleIOException(IOException e) {
+        log.error("Failed to upload file: ", e);
+        return "Не вдалося завантажити файл";
+    }
+
+    @ExceptionHandler(SellerNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleSellerNotFoundException(SellerNotFoundException e) {
+        return new ErrorResponse("Продавець не знайдений");
     }
 
 }
