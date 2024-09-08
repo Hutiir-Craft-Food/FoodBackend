@@ -1,7 +1,6 @@
 package com.khutircraftubackend.product;
 
 import com.khutircraftubackend.product.request.ProductUpdateRequest;
-import com.khutircraftubackend.seller.SellerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -19,7 +18,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProductController {
     private final ProductService productService;
-    private final SellerService sellerService;
 
     @PostMapping("/")
     @PreAuthorize("hasRole('SELLER')")

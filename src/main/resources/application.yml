@@ -1,18 +1,27 @@
 spring:
   application:
     name: ${SPRING_APPLICATION_NAME:@artifactId@}
+
   config:
     import: optional:file:.env[.properties]
+
   profiles:
     default: local
+
   output:
     ansi:
       enabled: ALWAYS
+
   datasource:
     driver-class-name: org.postgresql.Driver
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
 
   jpa:
     hibernate:
