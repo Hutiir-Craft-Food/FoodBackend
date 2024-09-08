@@ -1,12 +1,9 @@
 package com.khutircraftubackend.auth;
 
-import com.khutircraftubackend.auth.request.ConfirmationRequest;
 import com.khutircraftubackend.auth.request.LoginRequest;
 import com.khutircraftubackend.auth.request.RegisterRequest;
 import com.khutircraftubackend.auth.response.AuthResponse;
-import com.khutircraftubackend.auth.security.PasswordRecoveryRequest;
 import com.khutircraftubackend.auth.security.PasswordUpdateRequest;
-import com.khutircraftubackend.exception.user.UnauthorizedException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -17,6 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
 
 /**
  * Клас AuthenticationController обробляє запити, пов'язані з користувачами.
@@ -42,8 +41,8 @@ public class AuthenticationController {
     })
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Parameter(description = "Login request containing email and password") @Valid @RequestBody LoginRequest loginRequest) {
-            AuthResponse authResponse = authenticationService.authenticate(loginRequest);
-            return ResponseEntity.ok(authResponse);
+        AuthResponse authResponse = authenticationService.authenticate(loginRequest);
+        return ResponseEntity.ok(authResponse);
     }
 
     @Operation(summary = "Register a new user", description = "Register a new user with email and password.")
@@ -53,19 +52,19 @@ public class AuthenticationController {
     })
     @PostMapping("/register")
     public ResponseEntity<?> register(@Parameter(description = "Registration request containing user details") @Valid @RequestBody RegisterRequest registerRequest) {
-            AuthResponse authResponse = authenticationService.registerNewUser(registerRequest);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Завершіть реєстрацію підтвердженням з переходом на пошту");
+        authenticationService.registerNewUser(registerRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body("Завершіть реєстрацію підтвердженням з переходом на пошту");
     }
-
+    //TODO Need update swagger
     @Operation(summary = "Confirm user registration", description = "Confirm user registration with email and confirmation token.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User confirmed successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid confirmation details")
     })
-    @PostMapping("/confirm")
-    public ResponseEntity<String> confirmUser(@Parameter(description = "Confirmation request containing email and token") @RequestBody ConfirmationRequest confirmationRequest) {
-            authenticationService.confirmUser(confirmationRequest.email(), confirmationRequest.confirmationToken());
-            return ResponseEntity.ok("User confirmed successfully.");
+    @GetMapping("/confirm")
+    public ResponseEntity<String> confirmUser(@RequestParam String email, @RequestParam String key) {
+        authenticationService.confirmUser(email, key);
+        return ResponseEntity.ok("User confirmed successfully.");
     }
 
     @Operation(summary = "Update user password", description = "Update password with a valid authorization token.")
@@ -75,15 +74,9 @@ public class AuthenticationController {
     })
     @PatchMapping("/update-password")
     public ResponseEntity<String> updatePassword(@Parameter(description = "Password update request containing new password")
-                                                     @Valid @RequestBody PasswordUpdateRequest passwordUpdateRequest,
-                                                 @RequestHeader("Authorization") String authorizationHeader) {
-        String token = authorizationHeader.startsWith("Bearer ") ?
-                authorizationHeader.substring(7) : null;
-        if(token == null) {
-            throw new UnauthorizedException("Authorization token is missing");
-        }
-
-        authenticationService.updatePassword(token, passwordUpdateRequest);
+                                                 @Valid @RequestBody PasswordUpdateRequest passwordUpdateRequest,
+                                                 Principal principal) {
+        authenticationService.updatePassword(principal, passwordUpdateRequest);
         return ResponseEntity.ok("Password updated successfully");
     }
 
@@ -92,17 +85,13 @@ public class AuthenticationController {
             @ApiResponse(responseCode = "200", description = "Password recovery initiated successfully"),
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
+
+    //TODO Need to update logic after design
     @PostMapping("/recovery-password")
-    public ResponseEntity<String> recoveryPassword(@Parameter(description = "Password recovery request containing new password") @Valid @RequestBody PasswordRecoveryRequest passwordRecoveryRequest,
-                                                   @RequestHeader("Authorization") String authorizationHeader) {
-        String token = authorizationHeader.startsWith("Bearer ") ?
-                authorizationHeader.substring(7) : null;
-        if(token == null) {
-            throw new UnauthorizedException("Authorization token is missing");
-        }
-        authenticationService.recoveryPassword(token, passwordRecoveryRequest);
+    public ResponseEntity<String> recoveryPassword(Principal principal) {
+        authenticationService.recoveryPassword(principal);
         return ResponseEntity.ok("Password recovery successfully " + "\n" +
-                                " go to email to get new password and change password " +
+                " go to email to get new password and change password " +
                 "to yours when logging in for security");
     }
 }
