@@ -3,6 +3,7 @@ package com.khutircraftubackend.seller;
 import com.khutircraftubackend.auth.AuthenticationService;
 import com.khutircraftubackend.auth.UserEntity;
 import com.khutircraftubackend.auth.UserRepository;
+import com.khutircraftubackend.auth.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -24,10 +25,10 @@ public class SellerService {
 
     private final UserRepository userRepository;
     private final SellerRepository sellerRepository;
-    private final AuthenticationService authenticationService;
+    private final UserService userService;
 
     public SellerResponse getSellerInfo(Principal principal) {
-        UserEntity user = authenticationService.getUserForPrincipal(principal);
+        UserEntity user =userService.findUserForPrincipal(principal);
 
         SellerEntity seller = sellerRepository.findByUser(user)
                 .orElseThrow(() -> new SellerNotFoundException("User is not a valid Seller"));

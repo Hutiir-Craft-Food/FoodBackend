@@ -42,6 +42,8 @@ class AuthenticationServiceTest {
     private EmailSender emailSender;
     @Mock
     private AuthenticationManager authenticationManager;
+    @Mock
+    private UserService userService;
     @InjectMocks
     private AuthenticationService authenticationService;
 
@@ -58,7 +60,7 @@ class AuthenticationServiceTest {
                 .role(Role.SELLER)
                 .build();
 
-        when(userRepository.findByEmail(request.email())).thenReturn(Optional.of(expectedUser));
+        when(userService.getUserForEmail(request.email())).thenReturn(expectedUser);
         when(jwtUtils.generateJwtToken(expectedUser.getEmail())).thenReturn("mocked-jwt-token");
 
         AuthResponse result = authenticationService.authenticate(request);
@@ -67,7 +69,7 @@ class AuthenticationServiceTest {
         assertEquals(request.email(), result.email());
         assertEquals(AuthResponseMessages.USER_ENABLED, result.message());
 
-        verify(userRepository).findByEmail(request.email());
+        verify(userService).getUserForEmail(request.email());
         verify(jwtUtils).generateJwtToken(expectedUser.getEmail());
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
     }
@@ -78,10 +80,10 @@ class AuthenticationServiceTest {
 
         LoginRequest request = new LoginRequest("test@test", "test");
 
-        when(userRepository.findByEmail(request.email())).thenReturn(Optional.empty());
+        when(userService.getUserForEmail(request.email())).thenThrow(new UserNotFoundException("User not found"));
 
         assertThrows(UserNotFoundException.class, () -> authenticationService.authenticate(request));
-        verify(userRepository, times(1)).findByEmail(request.email());
+        verify(userService, times(1)).getUserForEmail(request.email());
     }
 
     @Test
@@ -97,7 +99,7 @@ class AuthenticationServiceTest {
                 .role(Role.SELLER)
                 .build();
 
-        when(userRepository.findByEmail(request.email())).thenReturn(Optional.of(expectedUser));
+        when(userService.getUserForEmail(request.email())).thenReturn(expectedUser);
 
         AuthResponse result = authenticationService.authenticate(request);
         boolean isResult = expectedUser.isEnabled();
@@ -107,7 +109,7 @@ class AuthenticationServiceTest {
         assertEquals(isResult, expectedUser.isEnabled());
         assertNull(null, result.jwt());
 
-        verify(userRepository, times(1)).findByEmail(request.email());
+        verify(userService, times(1)).getUserForEmail(request.email());
         verify(authenticationManager, never()).authenticate(any());
     }
 
@@ -123,7 +125,7 @@ class AuthenticationServiceTest {
                 .role(Role.SELLER)
                 .build();
 
-        when(userRepository.findByEmail(request.email())).thenReturn(Optional.of(expectedUser));
+        when(userService.getUserForEmail(request.email())).thenReturn(expectedUser);
 
         doThrow(new BadCredentialsException("Invalid credentials"))
                 .when(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
@@ -132,7 +134,7 @@ class AuthenticationServiceTest {
             authenticationService.authenticate(request)
         );
 
-        verify(userRepository, times(1)).findByEmail(request.email());
+        verify(userService, times(1)).getUserForEmail(request.email());
         verify(authenticationManager, times(1))
                 .authenticate(any(UsernamePasswordAuthenticationToken.class));
     }

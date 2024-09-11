@@ -1,11 +1,11 @@
 package com.khutircraftubackend.auth;
 
 import com.khutircraftubackend.exception.user.UserExistsException;
-import com.khutircraftubackend.exception.user.UserNotFoundException;
 import com.khutircraftubackend.auth.request.LoginRequest;
 import com.khutircraftubackend.auth.request.RegisterRequest;
 import com.khutircraftubackend.auth.response.AuthResponse;
 import com.khutircraftubackend.auth.security.PasswordUpdateRequest;
+import com.khutircraftubackend.exception.user.UserNotFoundException;
 import com.khutircraftubackend.jwtToken.JwtUtils;
 import com.khutircraftubackend.mail.EmailSender;
 import com.khutircraftubackend.marketing.MarketingCampaignEntity;
@@ -40,6 +40,7 @@ public class AuthenticationService {
     private final UserRepository userRepository;
     private final SellerRepository sellerRepository;
     private final MarketingCampaignRepository marketingCampaignRepository;
+    private final UserService userService;
     private final JwtUtils jwtUtils;
     private final PasswordEncoder passwordEncoder;
     private final EmailSender emailSender;
@@ -58,7 +59,7 @@ public class AuthenticationService {
     @Transactional
     public AuthResponse authenticate(LoginRequest request) {
 
-        UserEntity user = getUserForEmail(request.email());
+        UserEntity user = userService.getUserForEmail(request.email());
         if (!user.isEnabled()) {
             return buildResponseForBlockedUser(user);
         }
@@ -66,11 +67,6 @@ public class AuthenticationService {
         authenticateUser(request.email(), request.password());
         String token = jwtUtils.generateJwtToken(user.getEmail());
         return buildResponseForAllowedUser(user, token);
-    }
-
-    private UserEntity getUserForEmail(String email) {
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException(String.format(AuthResponseMessages.USER_NOT_FOUND, email)));
     }
 
     private void authenticateUser(String email, String password) {
@@ -161,10 +157,15 @@ public class AuthenticationService {
     }
 
     @Transactional
-    public void confirmUser(String email, String key) {
-        UserEntity user = getUserForEmail(email);
+    public void confirmUser(String key) {
+        UserEntity user = getUserForConfirmationToken(key);
         validateConfirmationToken(key, user);
         updateConfirmationToken(user);
+    }
+
+    private UserEntity getUserForConfirmationToken(String key) {
+        return userRepository.findByConfirmationToken(key)
+                .orElseThrow(() -> new UserNotFoundException(String.format(AuthResponseMessages.USER_NOT_FOUND, key)));
     }
 
     private void validateConfirmationToken(String key, UserEntity user) {
@@ -184,15 +185,9 @@ public class AuthenticationService {
 
     @Transactional
     public void updatePassword(Principal principal, PasswordUpdateRequest passwordUpdateRequest) {
-        UserEntity user = getUserForPrincipal(principal);
+        UserEntity user = userService.findUserForPrincipal(principal);
         user.setPassword(passwordEncoder.encode(passwordUpdateRequest.password()));
         userRepository.save(user);
-    }
-
-    //TODO Вынести в отдельный клас этот метод? Используеться в SellerService
-    public UserEntity getUserForPrincipal(Principal principal) {
-        String email = principal.getName();
-        return getUserForEmail(email);
     }
 
     @Transactional
@@ -203,7 +198,7 @@ public class AuthenticationService {
         String encodedPassword = passwordEncoder.encode(temporaryPassword);
 
         // Оновлюємо пароль у базі даних
-        UserEntity user = getUserForPrincipal(principal);
+        UserEntity user = userService.findUserForPrincipal(principal);
         user.setPassword(encodedPassword);
         userRepository.save(user);
 

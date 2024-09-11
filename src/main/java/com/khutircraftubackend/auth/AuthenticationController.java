@@ -62,8 +62,8 @@ public class AuthenticationController {
             @ApiResponse(responseCode = "400", description = "Invalid confirmation details")
     })
     @GetMapping("/confirm")
-    public ResponseEntity<String> confirmUser(@RequestParam String email, @RequestParam String key) {
-        authenticationService.confirmUser(email, key);
+    public ResponseEntity<String> confirmUser(@RequestParam String key) {
+        authenticationService.confirmUser(key);
         return ResponseEntity.ok("User confirmed successfully.");
     }
 
