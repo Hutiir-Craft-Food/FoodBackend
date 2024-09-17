@@ -1,5 +1,6 @@
 package com.khutircraftubackend.auth;
 
+import com.khutircraftubackend.config.AuthConfig;
 import com.khutircraftubackend.exception.user.UserExistsException;
 import com.khutircraftubackend.auth.request.LoginRequest;
 import com.khutircraftubackend.auth.request.RegisterRequest;
@@ -45,7 +46,7 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final EmailSender emailSender;
     private final AuthenticationManager authenticationManager;
-    private final Random random;
+    private final AuthConfig authConfig;
 
     /**
      * Аутентифікує користувача за вказаними email та паролем.
@@ -155,6 +156,7 @@ public class AuthenticationService {
     }
 
     private String getRandomNumber(){
+        Random random = authConfig.random();
         int randomNumber = 100000 + random.nextInt(900000);
         return String.valueOf(randomNumber);
     }
