@@ -9,7 +9,7 @@ public final class AuthResponseMessages {
             "Цей email зайнятий, використайте інший або ввійдіть під цим";
     public static final String VERIFICATION_CODE_SUBJECT = "Підтвердження реєстрації. ";
     public static final String VERIFICATION_CODE_TEXT =
-            "Будь ласка, підтвердіть вашу реєстрацію за посиланням: <a href=\"%s?email=%s&key=%s\">натисніть тут</a>";
+            "Будь ласка, підтвердіть вашу реєстрацію. Вести 6 значний код %s ";
     public static final String NOT_VALID_CONFIRMATION_TOKEN = "Неправильний код підтвердження.";
     public static final String RECOVERY_PASSWORD_SUBJECT = "Відновлення паролю";
     public static final String RECOVERY_PASSWORD_TEXT = "Ваш тимчасовий пароль: %s";

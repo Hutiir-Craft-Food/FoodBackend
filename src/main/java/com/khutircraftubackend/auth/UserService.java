@@ -14,11 +14,11 @@ public class UserService {
 
     public UserEntity findUserForPrincipal(Principal principal) {
         String email = principal.getName();
-        return getUserForEmail(email);
+        return findUserForEmail(email);
     }
 
-    public UserEntity getUserForEmail(String email) {
+    public UserEntity findUserForEmail(String email) {
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException(String.format(AuthResponseMessages.USER_NOT_FOUND, email)));
+               .orElseThrow(() -> new UserNotFoundException(String.format(AuthResponseMessages.USER_NOT_FOUND, email)));
     }
 }

@@ -5,7 +5,6 @@ import com.khutircraftubackend.auth.request.LoginRequest;
 import com.khutircraftubackend.auth.request.RegisterRequest;
 import com.khutircraftubackend.auth.response.AuthResponse;
 import com.khutircraftubackend.auth.security.PasswordUpdateRequest;
-import com.khutircraftubackend.exception.user.UserNotFoundException;
 import com.khutircraftubackend.jwtToken.JwtUtils;
 import com.khutircraftubackend.mail.EmailSender;
 import com.khutircraftubackend.marketing.MarketingCampaignEntity;
@@ -24,6 +23,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
+import java.util.Random;
 import java.util.UUID;
 
 /**
@@ -45,7 +45,7 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final EmailSender emailSender;
     private final AuthenticationManager authenticationManager;
-    private static final String URL_APP = "localhost:8080/v1/user/confirm";
+    private final Random random;
 
     /**
      * Аутентифікує користувача за вказаними email та паролем.
@@ -59,7 +59,7 @@ public class AuthenticationService {
     @Transactional
     public AuthResponse authenticate(LoginRequest request) {
 
-        UserEntity user = userService.getUserForEmail(request.email());
+        UserEntity user = userService.findUserForEmail(request.email());
         if (!user.isEnabled()) {
             return buildResponseForBlockedUser(user);
         }
@@ -106,7 +106,6 @@ public class AuthenticationService {
             createSeller(request, user);
         }
 
-        //TODO consider returning token at this point
         return AuthResponse.builder()
                 .build();
     }
@@ -120,7 +119,6 @@ public class AuthenticationService {
                 .email(request.email())
                 .password(passwordEncoder.encode(request.password()))
                 .enabled(false)
-                // TODO: request this from Controller
                 .role(request.role())
                 .build();
         userRepository.saveAndFlush(user);
@@ -147,25 +145,25 @@ public class AuthenticationService {
     }
 
     private void sendVerificationEmail(UserEntity user) {
-        String verificationCode = UUID.randomUUID().toString();
+        String verificationCode = getRandomNumber();
         emailSender.sendSimpleMessage(user.getEmail(),
                 AuthResponseMessages.VERIFICATION_CODE_SUBJECT,
                 String.format(
-                        AuthResponseMessages.VERIFICATION_CODE_TEXT, URL_APP, user.getEmail(), verificationCode));
+                        AuthResponseMessages.VERIFICATION_CODE_TEXT, verificationCode));
         user.setConfirmationToken(verificationCode);
         userRepository.save(user);
     }
 
-    @Transactional
-    public void confirmUser(String key) {
-        UserEntity user = getUserForConfirmationToken(key);
-        validateConfirmationToken(key, user);
-        updateConfirmationToken(user);
+    private String getRandomNumber(){
+        int randomNumber = 100000 + random.nextInt(900000);
+        return String.valueOf(randomNumber);
     }
 
-    private UserEntity getUserForConfirmationToken(String key) {
-        return userRepository.findByConfirmationToken(key)
-                .orElseThrow(() -> new UserNotFoundException(String.format(AuthResponseMessages.USER_NOT_FOUND, key)));
+    @Transactional
+    public void confirmUser(String email, String key) {
+        UserEntity user = userService.findUserForEmail(email);
+        validateConfirmationToken(key, user);
+        updateConfirmationToken(user);
     }
 
     private void validateConfirmationToken(String key, UserEntity user) {
@@ -178,8 +176,6 @@ public class AuthenticationService {
     private void updateConfirmationToken(UserEntity user) {
         user.setEnabled(true);
         user.setConfirmationToken(null);
-
-        // TODO: Оновлення ролі користувача
         userRepository.save(user);
     }
 
