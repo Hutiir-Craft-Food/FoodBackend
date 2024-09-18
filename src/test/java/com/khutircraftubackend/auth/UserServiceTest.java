@@ -33,7 +33,7 @@ class UserServiceTest {
 
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(expectedUser));
 
-        UserEntity actualUser = userService.findUserForEmail(email);
+        UserEntity actualUser = userService.findByEmail(email);
 
         assertEquals(expectedUser, actualUser);
         verify(userRepository, times(1)).findByEmail(email);
@@ -45,7 +45,7 @@ class UserServiceTest {
 
         when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
 
-        assertThrows(UserNotFoundException.class, () -> userService.findUserForEmail(email));
+        assertThrows(UserNotFoundException.class, () -> userService.findByEmail(email));
 
         verify(userRepository, times(1)).findByEmail(email);
     }

@@ -60,7 +60,7 @@ public class AuthenticationService {
     @Transactional
     public AuthResponse authenticate(LoginRequest request) {
 
-        UserEntity user = userService.findUserForEmail(request.email());
+        UserEntity user = userService.findByEmail(request.email());
         if (!user.isEnabled()) {
             return buildResponseForBlockedUser(user);
         }
@@ -163,7 +163,7 @@ public class AuthenticationService {
 
     @Transactional
     public void confirmUser(ConfirmUserRequest request) {
-        UserEntity user = userService.findUserForEmail(request.email());
+        UserEntity user = userService.findByEmail(request.email());
         validateConfirmationToken(request.confirmationToken(), user);
         updateConfirmationToken(user);
     }
@@ -183,7 +183,7 @@ public class AuthenticationService {
 
     @Transactional
     public void updatePassword(Principal principal, PasswordUpdateRequest passwordUpdateRequest) {
-        UserEntity user = userService.findUserForPrincipal(principal);
+        UserEntity user = userService.findByPrincipal(principal);
         user.setPassword(passwordEncoder.encode(passwordUpdateRequest.password()));
         userRepository.save(user);
     }
@@ -196,7 +196,7 @@ public class AuthenticationService {
         String encodedPassword = passwordEncoder.encode(temporaryPassword);
 
         // Оновлюємо пароль у базі даних
-        UserEntity user = userService.findUserForPrincipal(principal);
+        UserEntity user = userService.findByPrincipal(principal);
         user.setPassword(encodedPassword);
         userRepository.save(user);
 

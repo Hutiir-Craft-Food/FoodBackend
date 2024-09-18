@@ -12,12 +12,12 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    public UserEntity findUserForPrincipal(Principal principal) {
+    public UserEntity findByPrincipal(Principal principal) {
         String email = principal.getName();
-        return findUserForEmail(email);
+        return findByEmail(email);
     }
 
-    public UserEntity findUserForEmail(String email) {
+    public UserEntity findByEmail(String email) {
         return userRepository.findByEmail(email)
                .orElseThrow(() -> new UserNotFoundException(String.format(AuthResponseMessages.USER_NOT_FOUND, email)));
     }

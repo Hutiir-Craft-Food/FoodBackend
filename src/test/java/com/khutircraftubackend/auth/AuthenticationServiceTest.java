@@ -60,7 +60,7 @@ class AuthenticationServiceTest {
                 .role(Role.SELLER)
                 .build();
 
-        when(userService.findUserForEmail(request.email())).thenReturn(expectedUser);
+        when(userService.findByEmail(request.email())).thenReturn(expectedUser);
         when(jwtUtils.generateJwtToken(expectedUser.getEmail())).thenReturn("mocked-jwt-token");
 
         AuthResponse result = authenticationService.authenticate(request);
@@ -69,7 +69,7 @@ class AuthenticationServiceTest {
         assertEquals(request.email(), result.email());
         assertEquals(AuthResponseMessages.USER_ENABLED, result.message());
 
-        verify(userService).findUserForEmail(request.email());
+        verify(userService).findByEmail(request.email());
         verify(jwtUtils).generateJwtToken(expectedUser.getEmail());
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
     }
@@ -80,10 +80,10 @@ class AuthenticationServiceTest {
 
         LoginRequest request = new LoginRequest("test@test", "test");
 
-        when(userService.findUserForEmail(request.email())).thenThrow(new UserNotFoundException("User not found"));
+        when(userService.findByEmail(request.email())).thenThrow(new UserNotFoundException("User not found"));
 
         assertThrows(UserNotFoundException.class, () -> authenticationService.authenticate(request));
-        verify(userService, times(1)).findUserForEmail(request.email());
+        verify(userService, times(1)).findByEmail(request.email());
     }
 
     @Test
@@ -99,7 +99,7 @@ class AuthenticationServiceTest {
                 .role(Role.SELLER)
                 .build();
 
-        when(userService.findUserForEmail(request.email())).thenReturn(expectedUser);
+        when(userService.findByEmail(request.email())).thenReturn(expectedUser);
 
         AuthResponse result = authenticationService.authenticate(request);
         boolean isResult = expectedUser.isEnabled();
@@ -109,7 +109,7 @@ class AuthenticationServiceTest {
         assertEquals(isResult, expectedUser.isEnabled());
         assertNull(null, result.jwt());
 
-        verify(userService, times(1)).findUserForEmail(request.email());
+        verify(userService, times(1)).findByEmail(request.email());
         verify(authenticationManager, never()).authenticate(any());
     }
 
@@ -125,7 +125,7 @@ class AuthenticationServiceTest {
                 .role(Role.SELLER)
                 .build();
 
-        when(userService.findUserForEmail(request.email())).thenReturn(expectedUser);
+        when(userService.findByEmail(request.email())).thenReturn(expectedUser);
 
         doThrow(new BadCredentialsException("Invalid credentials"))
                 .when(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
@@ -134,7 +134,7 @@ class AuthenticationServiceTest {
             authenticationService.authenticate(request)
         );
 
-        verify(userService, times(1)).findUserForEmail(request.email());
+        verify(userService, times(1)).findByEmail(request.email());
         verify(authenticationManager, times(1))
                 .authenticate(any(UsernamePasswordAuthenticationToken.class));
     }

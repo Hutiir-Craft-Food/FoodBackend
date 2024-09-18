@@ -1,6 +1,5 @@
 package com.khutircraftubackend.seller;
 
-import com.khutircraftubackend.auth.AuthenticationService;
 import com.khutircraftubackend.auth.UserEntity;
 import com.khutircraftubackend.auth.UserRepository;
 import com.khutircraftubackend.auth.UserService;
@@ -28,7 +27,7 @@ public class SellerService {
     private final UserService userService;
 
     public SellerResponse getSellerInfo(Principal principal) {
-        UserEntity user =userService.findUserForPrincipal(principal);
+        UserEntity user =userService.findByPrincipal(principal);
 
         SellerEntity seller = sellerRepository.findByUser(user)
                 .orElseThrow(() -> new SellerNotFoundException("User is not a valid Seller"));
