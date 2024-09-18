@@ -1,6 +1,6 @@
 package com.khutircraftubackend.auth;
 
-import com.khutircraftubackend.config.AuthConfig;
+import com.khutircraftubackend.auth.request.ConfirmUserRequest;
 import com.khutircraftubackend.exception.user.UserExistsException;
 import com.khutircraftubackend.auth.request.LoginRequest;
 import com.khutircraftubackend.auth.request.RegisterRequest;
@@ -46,7 +46,7 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final EmailSender emailSender;
     private final AuthenticationManager authenticationManager;
-    private final AuthConfig authConfig;
+    private final Random random = new Random();
 
     /**
      * Аутентифікує користувача за вказаними email та паролем.
@@ -140,6 +140,7 @@ public class AuthenticationService {
                 .builder()
                 .sellerName(request.details().sellerName())
                 .companyName(request.details().companyName())
+                .phoneNumber(request.details().phoneNumber())
                 .user(user)
                 .build();
         sellerRepository.save(seller);
@@ -156,15 +157,14 @@ public class AuthenticationService {
     }
 
     private String getRandomNumber(){
-        Random random = authConfig.random();
         int randomNumber = 100000 + random.nextInt(900000);
         return String.valueOf(randomNumber);
     }
 
     @Transactional
-    public void confirmUser(String email, String key) {
-        UserEntity user = userService.findUserForEmail(email);
-        validateConfirmationToken(key, user);
+    public void confirmUser(ConfirmUserRequest request) {
+        UserEntity user = userService.findUserForEmail(request.email());
+        validateConfirmationToken(request.confirmationToken(), user);
         updateConfirmationToken(user);
     }
 

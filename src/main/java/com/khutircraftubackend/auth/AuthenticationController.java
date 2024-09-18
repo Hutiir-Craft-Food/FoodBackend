@@ -1,5 +1,6 @@
 package com.khutircraftubackend.auth;
 
+import com.khutircraftubackend.auth.request.ConfirmUserRequest;
 import com.khutircraftubackend.auth.request.LoginRequest;
 import com.khutircraftubackend.auth.request.RegisterRequest;
 import com.khutircraftubackend.auth.response.AuthResponse;
@@ -62,8 +63,8 @@ public class AuthenticationController {
             @ApiResponse(responseCode = "400", description = "Invalid confirmation details")
     })
     @PostMapping("/confirm")
-    public ResponseEntity<String> confirmUser(@RequestBody String email, @RequestBody String key) {
-        authenticationService.confirmUser(email, key);
+    public ResponseEntity<String> confirmUser(@Valid @RequestBody ConfirmUserRequest request) {
+        authenticationService.confirmUser(request);
         return ResponseEntity.ok("User confirmed successfully.");
     }
 
