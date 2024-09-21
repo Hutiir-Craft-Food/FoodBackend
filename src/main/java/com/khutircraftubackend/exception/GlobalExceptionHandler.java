@@ -1,5 +1,7 @@
 package com.khutircraftubackend.exception;
 
+import com.khutircraftubackend.exception.category.CategoryDeletionException;
+import com.khutircraftubackend.exception.category.CategoryNotFoundException;
 import com.khutircraftubackend.exception.jwt.*;
 import com.khutircraftubackend.exception.user.BadCredentialsException;
 import com.khutircraftubackend.exception.user.UnauthorizedException;
@@ -226,6 +228,21 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleSellerNotFoundException(SellerNotFoundException e) {
         return new ErrorResponse("Продавець не знайдений");
+    }
+
+    @ExceptionHandler(CategoryNotFoundException.class)
+    public ResponseEntity<String> handleCategoryNotFoundException(CategoryNotFoundException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<String> handleIllegalStateException(IllegalStateException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(CategoryDeletionException.class)
+    public ResponseEntity<String> handleCategoryDeletionException(CategoryDeletionException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
     }
 
 }
