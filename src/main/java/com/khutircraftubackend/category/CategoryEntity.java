@@ -1,6 +1,5 @@
 package com.khutircraftubackend.category;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,12 +19,13 @@ public class CategoryEntity {
     @Column(name = "name", nullable = false, unique = true)
     private String name;
 
+    @Column(name = "description")
     private String description;
 
+    @Column(name = "icon_url")
     private String iconUrl;
 
     @ManyToOne
     @JoinColumn(name = "parent_id")
-    @JsonBackReference
     private CategoryEntity parentCategory;
 }
