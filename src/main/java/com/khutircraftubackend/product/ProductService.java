@@ -35,11 +35,11 @@ public class ProductService {
     public boolean canModifyProduct(Long productId) {
         ProductEntity existingProduct = findProductById(productId);
         SellerEntity currentSeller = sellerService.getCurrentSeller();
-        return (existingProduct.getSeller().getCompany().equals(currentSeller.getCompany()));
+        return (existingProduct.getSeller().getCompanyName().equals(currentSeller.getCompanyName()));
     }
 
     private void validateSellerCompany(SellerEntity currentSeller, SellerEntity requestSeller) throws AccessDeniedException {
-        if (!currentSeller.getCompany().equals(requestSeller.getCompany())) {
+        if (!currentSeller.getCompanyName().equals(requestSeller.getCompanyName())) {
             throw new AccessDeniedException("You do not have permission to create for this company.");
         }
     }

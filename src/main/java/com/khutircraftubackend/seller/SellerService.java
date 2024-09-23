@@ -2,7 +2,7 @@ package com.khutircraftubackend.seller;
 
 import com.khutircraftubackend.auth.UserEntity;
 import com.khutircraftubackend.auth.UserRepository;
-import jakarta.transaction.Transactional;
+import com.khutircraftubackend.auth.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -10,6 +10,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+
+import java.security.Principal;
 
 /**
  * Клас SellerService реалізує бізнес-логіку для роботи з продавцями.
@@ -20,8 +22,24 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class SellerService {
 
-    private final SellerRepository sellerRepository;
     private final UserRepository userRepository;
+    private final SellerRepository sellerRepository;
+    private final UserService userService;
+
+    public SellerResponse getSellerInfo(Principal principal) {
+        UserEntity user =userService.findByPrincipal(principal);
+
+        SellerEntity seller = sellerRepository.findByUser(user)
+                .orElseThrow(() -> new SellerNotFoundException("User is not a valid Seller"));
+
+        return SellerResponse.builder()
+                .sellerName(seller.getSellerName())
+                .companyName(seller.getCompanyName())
+                .phoneNumber(seller.getPhoneNumber())
+                .creationDate(seller.getCreationDate())
+                .email(user.getEmail())
+                .build();
+    }
 
     public SellerEntity getCurrentSeller() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -37,10 +55,4 @@ public class SellerService {
                 .orElseThrow(() -> new SellerNotFoundException("Seller not found"));
     }
 
-    @Transactional
-    public SellerDTO saveSeller(SellerDTO sellerDTO) {
-        SellerEntity seller = SellerMapper.INSTANCE.SellerDTOToSeller(sellerDTO);
-        SellerEntity savedSeller = sellerRepository.save(seller);
-        return SellerMapper.INSTANCE.SellerToSellerDTO(savedSeller);
-    }
 }

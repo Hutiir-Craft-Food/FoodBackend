@@ -4,28 +4,30 @@ import com.khutircraftubackend.auth.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 /**
  * Клас SellerEntity є моделлю продавця і відображає таблицю продавців у базі даних.
  */
 
 @Entity
+@Table (name = "sellers")
 @Setter
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Table(name = "sellers")
 public class SellerEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "company")
-    private String company;
+    @Column(name = "seller_name")
+    private String sellerName;
 
-    @Column(name = "tax_code")
-    private String taxCode;
+    @Column(name = "company_name")
+    private String companyName;
 
     @Column(name = "phone_number", nullable = false, unique = true)
     private String phoneNumber;
@@ -34,4 +36,11 @@ public class SellerEntity {
     @JoinColumn(name = "user_id")
     private UserEntity user;
 
+    @Column (name = "creation_date")
+    private LocalDateTime creationDate;
+
+    @PrePersist
+    protected void onCreate(){
+        creationDate = LocalDateTime.now();
+    }
 }
