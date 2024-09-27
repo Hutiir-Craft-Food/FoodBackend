@@ -1,4 +1,4 @@
-package com.khutircraftubackend.exception.product;
+package com.khutircraftubackend.product.exception.product;
 
 public class ProductValidationMessages {
     public static final String NAME_NULL_OR_EMPTY = "Product name cannot be null or empty";

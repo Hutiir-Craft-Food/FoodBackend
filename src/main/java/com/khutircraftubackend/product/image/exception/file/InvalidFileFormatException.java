@@ -1,4 +1,4 @@
-package com.khutircraftubackend.exception.file;
+package com.khutircraftubackend.product.image.exception.file;
 
 import java.io.IOException;
 

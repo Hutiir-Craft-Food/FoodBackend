@@ -1,6 +1,6 @@
 package com.khutircraftubackend.auth;
 
-import com.khutircraftubackend.exception.user.UserNotFoundException;
+import com.khutircraftubackend.auth.exception.user.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

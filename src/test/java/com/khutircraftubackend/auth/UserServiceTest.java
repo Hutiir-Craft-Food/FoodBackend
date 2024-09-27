@@ -1,6 +1,6 @@
 package com.khutircraftubackend.auth;
 
-import com.khutircraftubackend.exception.user.UserNotFoundException;
+import com.khutircraftubackend.auth.exception.user.UserNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

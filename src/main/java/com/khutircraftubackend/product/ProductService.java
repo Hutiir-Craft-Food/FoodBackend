@@ -1,6 +1,6 @@
 package com.khutircraftubackend.product;
 
-import com.khutircraftubackend.exception.product.ProductNotFoundException;
+import com.khutircraftubackend.product.exception.product.ProductNotFoundException;
 import com.khutircraftubackend.product.image.FileConverterService;
 import com.khutircraftubackend.product.image.FileUploadService;
 import com.khutircraftubackend.product.request.ProductCreateRequest;

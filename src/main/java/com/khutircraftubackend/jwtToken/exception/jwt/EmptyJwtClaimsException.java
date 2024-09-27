@@ -1,4 +1,4 @@
-package com.khutircraftubackend.exception.jwt;
+package com.khutircraftubackend.jwtToken.exception.jwt;
 
 /**
  * Exception thrown when the JWT claims string is empty.

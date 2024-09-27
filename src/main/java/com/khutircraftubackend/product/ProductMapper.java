@@ -1,6 +1,6 @@
 package com.khutircraftubackend.product;
 
-import com.khutircraftubackend.exception.product.ProductValidationMessages;
+import com.khutircraftubackend.product.exception.product.ProductValidationMessages;
 import com.khutircraftubackend.product.image.FileConverterService;
 import com.khutircraftubackend.product.request.ProductCreateRequest;
 import com.khutircraftubackend.product.request.ProductUpdateRequest;
