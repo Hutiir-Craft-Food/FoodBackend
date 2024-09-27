@@ -2,6 +2,7 @@ package com.khutircraftubackend.exception;
 
 import com.khutircraftubackend.exception.category.CategoryDeletionException;
 import com.khutircraftubackend.exception.category.CategoryNotFoundException;
+import com.khutircraftubackend.exception.file.InvalidFileFormatException;
 import com.khutircraftubackend.exception.jwt.*;
 import com.khutircraftubackend.exception.user.BadCredentialsException;
 import com.khutircraftubackend.exception.user.UnauthorizedException;
@@ -243,6 +244,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(CategoryDeletionException.class)
     public ResponseEntity<String> handleCategoryDeletionException(CategoryDeletionException ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(InvalidFileFormatException.class)
+    public ResponseEntity<String> handleInvalidFileFormatException(InvalidFileFormatException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
 
 }
