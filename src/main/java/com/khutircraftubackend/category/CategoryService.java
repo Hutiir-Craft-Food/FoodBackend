@@ -1,10 +1,11 @@
 package com.khutircraftubackend.category;
 
+import com.khutircraftubackend.category.exception.category.CategoryDeletionException;
+import com.khutircraftubackend.category.exception.category.CategoryExceptionMessages;
+import com.khutircraftubackend.category.exception.category.CategoryNotFoundException;
 import com.khutircraftubackend.category.request.CategoryCreateRequest;
 import com.khutircraftubackend.category.request.CategoryUpdateRequest;
 import com.khutircraftubackend.category.response.CategoryResponse;
-import com.khutircraftubackend.category.exception.category.CategoryExceptionMessages;
-import com.khutircraftubackend.category.exception.category.CategoryNotFoundException;
 import com.khutircraftubackend.product.image.FileConverterService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +33,7 @@ public class CategoryService {
         return fileConverterService.convert(iconFile);
     }
 
-    private CategoryEntity findCategoryId(Long id) {
+    private CategoryEntity findCategoryById(Long id) {
 
         return categoryRepository.findById(id).orElseThrow(() ->
                 new CategoryNotFoundException(CategoryExceptionMessages.CATEGORY_NOT_FOUND));
@@ -57,7 +58,7 @@ public class CategoryService {
         category.setIconUrl(handleIcon(iconFile));
 
         if (request.parentCategoryId() != null) {
-            CategoryEntity parentCategory = findCategoryId(request.parentCategoryId());
+            CategoryEntity parentCategory = findCategoryById(request.parentCategoryId());
 
             category.setParentCategory(parentCategory);
         } else {
@@ -69,7 +70,7 @@ public class CategoryService {
 
     @Transactional
     public CategoryEntity updateCategory(Long id, CategoryUpdateRequest request, MultipartFile iconFile) throws IOException {
-        CategoryEntity existingCategory = findCategoryId(id);
+        CategoryEntity existingCategory = findCategoryById(id);
 
         if (iconFile != null && !iconFile.isEmpty()) {
             existingCategory.setIconUrl(handleIcon(iconFile));
@@ -79,7 +80,7 @@ public class CategoryService {
         categoryMapper.updateCategoryEntity(existingCategory, request);
 
         if (request.parentCategoryId() != null) {
-            CategoryEntity parentCategory = findCategoryId(request.parentCategoryId());
+            CategoryEntity parentCategory = findCategoryById(request.parentCategoryId());
             existingCategory.setParentCategory(parentCategory);
         } else {
             existingCategory.setParentCategory(null);
@@ -88,24 +89,29 @@ public class CategoryService {
         return categoryRepository.save(existingCategory);
     }
 
-    @Transactional
     public void deleteCategory(Long id) {
-        CategoryEntity category = findCategoryId(id);
+        deleteCategory(id, false);
+    }
+
+    @Transactional
+    public void deleteCategory(Long id, boolean forceDelete) {
+        // check if category with the given id exists.
+        // if not, them method below will throw an error:
+        findCategoryById(id);
 
         List<CategoryEntity> childCategories = categoryRepository.findAllByParentCategory_Id(id);
 
-        if (category.getParentCategory() != null && !childCategories.isEmpty()) {
-            throw new CategoryNotFoundException(CategoryExceptionMessages.CATEGORY_HAS_SUBCATEGORIES_OR_PRODUCTS);
+        if (childCategories.isEmpty()) {
+            categoryRepository.deleteById(id);
         }
 
-        if (!childCategories.isEmpty()) {
-
+        if (!childCategories.isEmpty() && forceDelete) {
             for (CategoryEntity child : childCategories) {
-
-                deleteCategory(child.getId());
+                deleteCategory(child.getId(), forceDelete);
             }
+            categoryRepository.deleteById(id);
+        } else if(!childCategories.isEmpty()){
+            throw new CategoryDeletionException(CategoryExceptionMessages.CATEGORY_HAS_SUBCATEGORIES_OR_PRODUCTS);
         }
-        categoryRepository.deleteById(id);
     }
-
 }

@@ -1,5 +1,6 @@
 package com.khutircraftubackend.category;
 
+import com.khutircraftubackend.category.exception.category.CategoryDeletionException;
 import com.khutircraftubackend.category.request.CategoryCreateRequest;
 import com.khutircraftubackend.category.request.CategoryUpdateRequest;
 import com.khutircraftubackend.category.response.CategoryResponse;
@@ -392,7 +393,7 @@ class CategoryServiceTest {
         childCategory.setId(2L);
         when(categoryRepository.findAllByParentCategory_Id(1L)).thenReturn(List.of(childCategory));
 
-        assertThrows(CategoryNotFoundException.class, () -> {
+        assertThrows(CategoryDeletionException.class, () -> {
             categoryService.deleteCategory(1L);
         });
     }
