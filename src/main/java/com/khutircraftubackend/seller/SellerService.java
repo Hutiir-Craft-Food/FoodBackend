@@ -3,6 +3,7 @@ package com.khutircraftubackend.seller;
 import com.khutircraftubackend.auth.UserEntity;
 import com.khutircraftubackend.auth.UserRepository;
 import com.khutircraftubackend.auth.UserService;
+import com.khutircraftubackend.seller.exception.seller.SellerNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;

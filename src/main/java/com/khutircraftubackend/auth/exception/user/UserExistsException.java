@@ -1,4 +1,4 @@
-package com.khutircraftubackend.exception.user;
+package com.khutircraftubackend.auth.exception.user;
 
 public class UserExistsException extends RuntimeException {
 

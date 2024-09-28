@@ -1,7 +1,7 @@
 package com.khutircraftubackend.auth;
 
 import com.khutircraftubackend.auth.request.ConfirmUserRequest;
-import com.khutircraftubackend.exception.user.UserExistsException;
+import com.khutircraftubackend.auth.exception.user.UserExistsException;
 import com.khutircraftubackend.auth.request.LoginRequest;
 import com.khutircraftubackend.auth.request.RegisterRequest;
 import com.khutircraftubackend.auth.response.AuthResponse;
