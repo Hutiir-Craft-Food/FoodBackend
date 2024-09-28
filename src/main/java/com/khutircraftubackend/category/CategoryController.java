@@ -62,17 +62,8 @@ public class CategoryController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public ResponseEntity<Void> deleteCategory(
-            @PathVariable Long id) {
-        categoryService.deleteCategory(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<Void> deleteCategory(@PathVariable Long id,
-                                               @RequestParam() boolean forceDelete) {
+                                               @RequestParam(value = "false", required = false) boolean forceDelete) {
         categoryService.deleteCategory(id, forceDelete);
         return ResponseEntity.noContent().build();
     }
