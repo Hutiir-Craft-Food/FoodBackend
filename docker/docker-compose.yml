@@ -4,9 +4,9 @@ services:
     depends_on:
       - db
     environment:
-      SPRING_DATASOURCE_URL: "jdbc:postgresql://db:5432/khutir_craftu"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://db:5432/khutir_craft"
     ports:
-      - "8081:8080"
+      - "8080:8080"
     env_file:
       - ../.env.local
     build:
