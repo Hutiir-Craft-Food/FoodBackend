@@ -1,6 +1,9 @@
 package com.khutircraftubackend.product;
 
+import com.khutircraftubackend.product.request.ProductCreateRequest;
 import com.khutircraftubackend.product.request.ProductUpdateRequest;
+import com.khutircraftubackend.product.response.ProductResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -18,57 +21,67 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProductController {
     private final ProductService productService;
+    private final ProductMapper productMapper;
 
     @PostMapping("/")
     @PreAuthorize("hasRole('SELLER')")
-    public ResponseEntity<ProductEntity> createProduct(
-            @ModelAttribute("name") String name,
-            @ModelAttribute("thumbnailImage") MultipartFile thumbnailImage,
-            @ModelAttribute("image") MultipartFile image,
-            @ModelAttribute("available") Boolean available,
-            @ModelAttribute("description") String description,
-            @ModelAttribute("categoryId") Long categoryId,
-            @ModelAttribute("sellerId") Long sellerId) throws IOException {
+    @ResponseStatus(HttpStatus.CREATED)
+    public ProductResponse createProduct(
+            @Valid
+            @ModelAttribute ProductCreateRequest request,
+            @RequestPart(value = "thumbnailImage", required = false) MultipartFile thumbnailImage,
+            @RequestPart(value = "image", required = false) MultipartFile image) throws IOException {
 
-        ProductEntity newProduct = productService.createProduct(name, thumbnailImage, image, available, description, sellerId, categoryId);
+        ProductEntity newProduct = productService.createProduct(request, thumbnailImage, image);
 
-        return new ResponseEntity<>(newProduct, HttpStatus.CREATED);
+        return productMapper.toProductResponse(newProduct);
     }
 
     @PatchMapping("/{productId}")
     @PreAuthorize("hasRole('SELLER') and @productService.canModifyProduct(#productId)")
-    public ResponseEntity<ProductEntity> patchProduct(@PathVariable Long productId,
-                                                      @ModelAttribute ProductUpdateRequest request,
-                                                      @RequestParam("thumbnailImage") MultipartFile thumbnailImage,
-                                                      @RequestParam("images") MultipartFile image) throws IOException {
+    @ResponseStatus(HttpStatus.OK)
+    public ProductResponse patchProduct(
+            @Valid
+            @PathVariable Long productId,
+            @ModelAttribute ProductUpdateRequest request,
+            @RequestPart(value = "thumbnailImage", required = false) MultipartFile thumbnailImage,
+            @RequestPart(value = "image", required = false) MultipartFile image) throws IOException {
 
         ProductEntity patchedProduct = productService.patchProduct(productId, request, thumbnailImage, image);
 
-        return ResponseEntity.ok(patchedProduct);
+        return productMapper.toProductResponse(patchedProduct);
     }
 
     @PutMapping("/{productId}")
     @PreAuthorize("hasRole('SELLER') and @productService.canModifyProduct(#productId)")
-    public ResponseEntity<ProductEntity> updateProduct(@PathVariable Long productId,
-                                                       @ModelAttribute ProductUpdateRequest request,
-                                                       @RequestParam("thumbnailImage") MultipartFile thumbnailImage,
-                                                       @RequestParam("images") MultipartFile image) throws IOException {
+    @ResponseStatus(HttpStatus.OK)
+    public ProductResponse updateProduct(
+            @Valid
+            @PathVariable Long productId,
+            @ModelAttribute ProductUpdateRequest request,
+            @RequestPart(value = "thumbnailImage", required = false) MultipartFile thumbnailImage,
+            @RequestPart(value = "image", required = false) MultipartFile image) throws IOException {
+
         ProductEntity updatedProduct = productService.updateProduct(productId, request, thumbnailImage, image);
 
-        return ResponseEntity.ok(updatedProduct);
+        return productMapper.toProductResponse(updatedProduct);
     }
 
     @DeleteMapping("/{productId}")
     @PreAuthorize("hasRole('SELLER') and @productService.canModifyProduct(#productId)")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long productId) throws IOException {
+
         productService.deleteProduct(productId);
+
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/delete-all")
     @PreAuthorize("hasRole('SELLER')")
     public ResponseEntity<Void> deleteAllProductsForCurrentSeller() throws IOException {
+
         productService.deleteAllProductsForCurrentSeller();
+
         return ResponseEntity.noContent().build();
     }
 
@@ -76,6 +89,7 @@ public class ProductController {
     public List<ProductEntity> getAllProducts(
             @RequestParam(defaultValue = "0") int offset,
             @RequestParam(defaultValue = "4") int limit) {
+
         return productService.getProducts(offset, limit);
     }
 

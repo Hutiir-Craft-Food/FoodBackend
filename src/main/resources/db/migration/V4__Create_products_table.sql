@@ -7,6 +7,6 @@ CREATE TABLE IF NOT EXISTS products (
     description VARCHAR(255),
     created_at TIMESTAMP NOT NULL DEFAULT now(),
     updated_at TIMESTAMP(6),
-    category_id BIGINT REFERENCES categories,
-    seller_id BIGINT REFERENCES sellers
+    category_id BIGINT REFERENCES categories(id),
+    seller_id BIGINT REFERENCES sellers(id)
 );
