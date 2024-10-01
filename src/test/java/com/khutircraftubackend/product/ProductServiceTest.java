@@ -1,5 +1,7 @@
 package com.khutircraftubackend.product;
 
+import com.khutircraftubackend.category.CategoryEntity;
+import com.khutircraftubackend.category.CategoryService;
 import com.khutircraftubackend.product.exception.product.ProductNotFoundException;
 import com.khutircraftubackend.product.image.FileConverterService;
 import com.khutircraftubackend.product.image.FileUploadService;
@@ -33,14 +35,17 @@ public class ProductServiceTest {
     private ProductRepository productRepository;
     @Mock
     private SellerService sellerService;
-    @InjectMocks
-    private ProductService productService;
-    private SellerEntity seller;
-    private ProductEntity product;
     @Mock
     private FileConverterService fileConverterService;
     @Mock
     private FileUploadService fileUploadService;
+    
+    @Mock
+    private CategoryService categoryService;
+    @InjectMocks
+    private ProductService productService;
+    private SellerEntity seller;
+    private ProductEntity product;
 
     @BeforeEach
     void setUp() {
@@ -92,17 +97,24 @@ public class ProductServiceTest {
         when(productRepository.save(any(ProductEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(fileConverterService.convert(mockThumbnailFile)).thenReturn("uploaded-thumbnail-url");
         when(fileConverterService.convert(mockImageFile)).thenReturn("uploaded-image-url");
+    
+        CategoryEntity mockCategory = CategoryEntity.builder()
+                .id(categoryId)
+                .name("Test Category")
+                .build();
+        when(categoryService.getCategoryById(anyLong())).thenReturn(mockCategory);
+        
+        ProductCreateRequest request = ProductCreateRequest.builder()
+                .name("Test product")
+                .thumbnailImage(mockThumbnailFile)
+                .image(mockImageFile)
+                .available(true)
+                .description("Test description")
+                .sellerId(sellerId)
+                .categoryId(categoryId)
+                .build();
 
-        ProductEntity createdProduct = productService.createProduct(
-                "Test product",
-                mockThumbnailFile,
-                mockImageFile,
-                true,
-                "Test description",
-                sellerId,
-                categoryId
-
-        );
+        ProductEntity createdProduct = productService.createProduct(request, mockThumbnailFile, mockImageFile);
 
         assertNotNull(createdProduct, "Created product should not be null");
         assertEquals("Test product", createdProduct.getName());
@@ -113,41 +125,38 @@ public class ProductServiceTest {
         verify(fileConverterService).convert(mockImageFile);
         verify(productRepository).save(any(ProductEntity.class));
         verify(sellerService).getSellerId(sellerId);
+        verify(categoryService).getCategoryById(anyLong());
     }
 
     @Test
     void testCreateProduct_AccessDenied() {
         SellerEntity currentSeller = SellerEntity.builder()
                 .companyName("CompanyA")
+                .id(2L)
                 .build();
 
         SellerEntity requestSeller = SellerEntity.builder()
                 .companyName("CompanyB")
+                .id(1L)
                 .build();
 
         ProductCreateRequest request = ProductCreateRequest.builder()
                 .name("Test product")
                 .description("Test description")
-                .seller(requestSeller)
+                .thumbnailImage(null)
+                .image(null)
+                .available(true)
+                .sellerId(requestSeller.getId())
+                .categoryId(1L)
                 .build();
 
-        Long sellerId = 2L;
-        Long categoryId = 1L;
-
         when(sellerService.getCurrentSeller()).thenReturn(currentSeller);
-        when(sellerService.getSellerId(sellerId)).thenReturn(requestSeller);
+        when(sellerService.getSellerId(requestSeller.getId())).thenReturn(requestSeller);
 
         assertThrows(AccessDeniedException.class, () ->
-                productService.createProduct(
-                        "Test product",
-                        null,
-                        null,
-                        true,
-                        "Test description",
-                        sellerId,
-                        categoryId
-                )
+                productService.createProduct(request, null, null)
         );
+
         verify(productRepository, never()).save(any(ProductEntity.class));
     }
 

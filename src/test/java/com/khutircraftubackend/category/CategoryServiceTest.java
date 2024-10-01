@@ -1,13 +1,12 @@
 package com.khutircraftubackend.category;
 
 import com.khutircraftubackend.category.exception.category.CategoryDeletionException;
+import com.khutircraftubackend.category.exception.category.CategoryNotFoundException;
 import com.khutircraftubackend.category.request.CategoryCreateRequest;
 import com.khutircraftubackend.category.request.CategoryUpdateRequest;
 import com.khutircraftubackend.category.response.CategoryResponse;
-import com.khutircraftubackend.category.exception.category.CategoryNotFoundException;
-import com.khutircraftubackend.product.ProductRepository;
-import com.khutircraftubackend.product.image.exception.file.InvalidFileFormatException;
 import com.khutircraftubackend.product.image.FileConverterService;
+import com.khutircraftubackend.product.image.exception.file.InvalidFileFormatException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -40,10 +39,7 @@ class CategoryServiceTest {
 
     @Mock
     private FileConverterService fileConverterService;
-
-    @Mock
-    private ProductRepository productRepository;
-
+    
     @Test
     void getAllRootCategories() {
         CategoryEntity rootCategory = new CategoryEntity();
@@ -53,7 +49,6 @@ class CategoryServiceTest {
         rootCategory.setParentCategory(null);
 
         CategoryResponse response = CategoryResponse.builder()
-                .id(1L)
                 .name("TestNameNew")
                 .description("TestDescriptionNew")
                 .parentId(null)
@@ -87,7 +82,6 @@ class CategoryServiceTest {
         childCategory.setParentCategory(parentCategory);
 
         CategoryResponse response = CategoryResponse.builder()
-                .id(childCategory.getId())
                 .name(childCategory.getName())
                 .parentId(parentCategory.getId())
                 .build();
