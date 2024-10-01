@@ -1,5 +1,8 @@
 package com.khutircraftubackend.product;
 
+import com.khutircraftubackend.category.CategoryRepository;
+import com.khutircraftubackend.category.exception.category.CategoryExceptionMessages;
+import com.khutircraftubackend.category.exception.category.CategoryNotFoundException;
 import com.khutircraftubackend.product.exception.product.ProductNotFoundException;
 import com.khutircraftubackend.product.image.FileConverterService;
 import com.khutircraftubackend.product.image.FileUploadService;
@@ -26,6 +29,7 @@ public class ProductService {
     private final SellerService sellerService;
     private final FileUploadService fileUploadService;
     private final FileConverterService fileConverterService;
+    private final CategoryRepository categoryRepository;
 
     private ProductEntity findProductById(Long productId) {
         return productRepository.findProductById(productId)
@@ -46,11 +50,11 @@ public class ProductService {
 
 
     @Transactional
-    public ProductEntity createProduct(String name, MultipartFile thumbnailImage, MultipartFile image, Boolean available, String description, Long sellerId) throws IOException {
+    public ProductEntity createProduct(String name, MultipartFile thumbnailImage, MultipartFile image, Boolean available, String description, Long sellerId, Long categoryId) throws IOException {
 
         SellerEntity seller = sellerService.getSellerId(sellerId);
 
-        ProductCreateRequest request = new ProductCreateRequest(name, thumbnailImage, image, available, description, seller);
+        ProductCreateRequest request = new ProductCreateRequest(name, thumbnailImage, image, available, description, seller, categoryId);
 
         SellerEntity currentSeller = sellerService.getCurrentSeller();
         validateSellerCompany(currentSeller, request.seller());
@@ -84,6 +88,10 @@ public class ProductService {
         }
         if (request.description() != null) {
             existingProduct.setDescription(request.description());
+        }
+        if(request.categoryId() != null) {
+            existingProduct.setCategory(categoryRepository.findById(request.categoryId()).orElseThrow(() ->
+            new CategoryNotFoundException(CategoryExceptionMessages.CATEGORY_NOT_FOUND)));
         }
         return productRepository.save(existingProduct);
     }

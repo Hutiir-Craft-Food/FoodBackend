@@ -39,7 +39,6 @@ public class ProductServiceTest {
     private ProductEntity product;
     @Mock
     private FileConverterService fileConverterService;
-
     @Mock
     private FileUploadService fileUploadService;
 
@@ -83,6 +82,7 @@ public class ProductServiceTest {
                 .build();
 
         Long sellerId = 1L;
+        Long categoryId = 2L;
 
         MultipartFile mockThumbnailFile = new MockMultipartFile("thumbnail", "test-thumbnail.jpg", "image/jpeg", "Test thumbnail content".getBytes());
         MultipartFile mockImageFile = new MockMultipartFile("image", "test-image.jpg", "image/jpeg", "Test image content".getBytes());
@@ -99,7 +99,9 @@ public class ProductServiceTest {
                 mockImageFile,
                 true,
                 "Test description",
-                sellerId
+                sellerId,
+                categoryId
+
         );
 
         assertNotNull(createdProduct, "Created product should not be null");
@@ -130,6 +132,7 @@ public class ProductServiceTest {
                 .build();
 
         Long sellerId = 2L;
+        Long categoryId = 1L;
 
         when(sellerService.getCurrentSeller()).thenReturn(currentSeller);
         when(sellerService.getSellerId(sellerId)).thenReturn(requestSeller);
@@ -141,7 +144,8 @@ public class ProductServiceTest {
                         null,
                         true,
                         "Test description",
-                        sellerId
+                        sellerId,
+                        categoryId
                 )
         );
         verify(productRepository, never()).save(any(ProductEntity.class));

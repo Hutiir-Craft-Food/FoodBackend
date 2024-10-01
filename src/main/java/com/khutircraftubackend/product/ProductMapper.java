@@ -44,6 +44,9 @@ public interface ProductMapper {
         if (request.seller() == null) {
             throw new IllegalArgumentException(ProductValidationMessages.SELLER_NULL);
         }
+        if(request.categoryId() == null) {
+            throw new IllegalArgumentException(ProductValidationMessages.CATEGORY_NULL_OR_EMPTY);
+        }
     }
 
     default void validateUpdateRequest(ProductUpdateRequest request) {
@@ -62,6 +65,9 @@ public interface ProductMapper {
         if (request.available() != null) {
             throw new IllegalArgumentException(ProductValidationMessages.AVAILABLE_NULL);
         }
+        if (request.categoryId() != null) {
+            throw new IllegalArgumentException(ProductValidationMessages.CATEGORY_NULL_OR_EMPTY);
+        }
     }
 
     @Mapping(target = "name", source = "request.name")
@@ -69,6 +75,7 @@ public interface ProductMapper {
     @Mapping(target = "thumbnailImageUrl", source = "request.thumbnailImage")
     @Mapping(target = "available", source = "request.available")
     @Mapping(target = "description", source = "request.description")
+    @Mapping(target = "category.id", source = "request.categoryId")
     void updateProductFromRequest(@MappingTarget ProductEntity product, ProductUpdateRequest request);
 
 }

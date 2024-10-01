@@ -1,5 +1,6 @@
 package com.khutircraftubackend.product;
 
+import com.khutircraftubackend.category.CategoryEntity;
 import com.khutircraftubackend.seller.SellerEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -39,6 +40,10 @@ public class ProductEntity {
     @ManyToOne
     @JoinColumn(name = "seller_id")
     SellerEntity seller;
+
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    CategoryEntity category;
 
     @Column(name = "created_at")
     @CreationTimestamp
