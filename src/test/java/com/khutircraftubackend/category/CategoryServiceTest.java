@@ -370,6 +370,8 @@ class CategoryServiceTest {
         existingCategory.setName("Updated Name");
         existingCategory.setDescription("Updated Description");
 
+        when(productRepository.findAllByCategory(existingCategory)).thenReturn(List.of());
+        when(categoryRepository.findById(1L)).thenReturn(Optional.of(existingCategory));
         when(categoryRepository.findAllByParentCategory_Id(1L)).thenReturn(List.of());
 
         categoryService.deleteCategory(1L);
@@ -384,6 +386,7 @@ class CategoryServiceTest {
         existingCategory.setName("Updated Name");
         existingCategory.setDescription("Updated Description");
 
+        when(categoryRepository.findById(1L)).thenReturn(Optional.of(existingCategory));
         CategoryEntity childCategory = new CategoryEntity();
         childCategory.setId(2L);
         when(categoryRepository.findAllByParentCategory_Id(1L)).thenReturn(List.of(childCategory));
