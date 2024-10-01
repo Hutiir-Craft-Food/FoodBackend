@@ -9,6 +9,7 @@ public record ProductUpdateRequest(
         MultipartFile thumbnailImage,
         MultipartFile image,
         Boolean available,
-        String description
+        String description,
+        Long categoryId
 ) {
 }

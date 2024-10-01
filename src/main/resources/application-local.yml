@@ -9,10 +9,12 @@ spring:
         show-sql: true
         format_sql: true
 
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
 
-
-jwt:
-  expiration: 600_000 # 10 minute
 
 logging:
   level:

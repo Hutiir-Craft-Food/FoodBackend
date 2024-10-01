@@ -12,6 +12,7 @@ public record ProductCreateRequest(
         MultipartFile image,
         Boolean available,
         String description,
-        SellerEntity seller
+        SellerEntity seller,
+        Long categoryId
 ) {
 }

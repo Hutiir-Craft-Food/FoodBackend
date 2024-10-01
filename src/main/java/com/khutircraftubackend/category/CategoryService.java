@@ -6,6 +6,8 @@ import com.khutircraftubackend.category.exception.category.CategoryNotFoundExcep
 import com.khutircraftubackend.category.request.CategoryCreateRequest;
 import com.khutircraftubackend.category.request.CategoryUpdateRequest;
 import com.khutircraftubackend.category.response.CategoryResponse;
+import com.khutircraftubackend.product.ProductEntity;
+import com.khutircraftubackend.product.ProductRepository;
 import com.khutircraftubackend.product.image.FileConverterService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,7 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
     private final FileConverterService fileConverterService;
+    private final ProductRepository productRepository;
 
     private String handleIcon(MultipartFile iconFile) throws IOException {
         if (iconFile == null) {
@@ -95,15 +98,18 @@ public class CategoryService {
 
     @Transactional
     public void deleteCategory(Long id, boolean forceDelete) {
-        // check if category with the given id exists.
-        // if not, them method below will throw an error:
-        findCategoryById(id);
+        List<ProductEntity> products = productRepository.findAllByCategory(findCategoryById(id));
+
+        if (!products.isEmpty()) {
+            throw new CategoryDeletionException(CategoryExceptionMessages.CATEGORY_HAS_PRODUCTS);
+        }
 
         List<CategoryEntity> childCategories = categoryRepository.findAllByParentCategory_Id(id);
 
         if (childCategories.isEmpty()) {
             categoryRepository.deleteById(id);
         }
+
 
         if (!childCategories.isEmpty() && forceDelete) {
             for (CategoryEntity child : childCategories) {
