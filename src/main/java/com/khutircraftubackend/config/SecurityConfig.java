@@ -1,6 +1,6 @@
 package com.khutircraftubackend.config;
 
-import com.khutircraftubackend.jwtToken.JwtAuthenticationFilter;
+import com.khutircraftubackend.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
