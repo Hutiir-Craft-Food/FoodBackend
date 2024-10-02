@@ -1,17 +1,17 @@
-package com.khutircraftubackend.auth;
+package com.khutircraftubackend.security;
 
+import com.khutircraftubackend.auth.UserEntity;
+import com.khutircraftubackend.auth.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Component;
 
 /**
  * Клас UserDetailsServices реалізує бізнес-логіку для роботи з деталями користувача.
  */
 
-@Component
 @Slf4j
 @RequiredArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {

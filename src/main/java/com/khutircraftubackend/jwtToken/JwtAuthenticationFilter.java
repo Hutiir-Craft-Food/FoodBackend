@@ -4,10 +4,10 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.khutircraftubackend.auth.UserDetailsImpl;
-import com.khutircraftubackend.auth.UserDetailsServiceImpl;
+import com.khutircraftubackend.config.UserDetailsConfig;
 import com.khutircraftubackend.jwtToken.exception.jwt.MalformedJwtTokenException;
 import com.khutircraftubackend.jwtToken.exception.jwt.UnsupportedJwtTokenException;
+import com.khutircraftubackend.security.UserDetailsImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,7 +29,7 @@ import java.io.IOException;
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JWTVerifier jwtVerifier;
-    private final UserDetailsServiceImpl userDetailsServices;
+    private final UserDetailsConfig userDetailsConfig;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
@@ -49,7 +49,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 token = authHeader.substring(7);
                 DecodedJWT jwt = jwtVerifier.verify(token);
                 String email = jwt.getSubject();
-                UserDetailsImpl userDetails = (UserDetailsImpl) userDetailsServices.loadUserByUsername(email);
+                UserDetailsImpl userDetails = (UserDetailsImpl) userDetailsConfig.userDetailsService().loadUserByUsername(email);
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
                 authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
