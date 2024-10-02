@@ -1,16 +1,17 @@
 package com.khutircraftubackend.config;
 
-import com.khutircraftubackend.auth.UserDetailsServiceImpl;
 import com.khutircraftubackend.jwtToken.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -26,9 +27,11 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
+@Import({JwtConfig.class, UserDetailsConfig.class})
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final UserDetailsService userDetailsService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -41,16 +44,13 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, UserDetailsServiceImpl userDetailsService) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(c -> corsConfigurationSource())
                 .authorizeHttpRequests(auth -> auth
-                        // Дозволяємо доступ до Swagger UI та API документації
                         .requestMatchers("/swagger-ui/index.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        // Дозволяємо доступ до інших ресурсів
                         .requestMatchers("/v1/user/login", "/v1/user/register", "/v1/user/confirm", "/error").permitAll()
-                        // Визначаємо доступ для різних ролей
                         .requestMatchers(HttpMethod.GET,"/products/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/products/**").hasRole("SELLER")
                         .requestMatchers(HttpMethod.DELETE, "/products/**").hasRole("SELLER")
@@ -60,13 +60,6 @@ public class SecurityConfig {
                         .requestMatchers("/buyer/**").hasRole("BUYER")
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
-                .formLogin(form -> form.loginPage("/login")
-                        .loginProcessingUrl("/process_login")
-                        .defaultSuccessUrl("/index", true)
-                        .failureUrl("/login?error"))
-                .rememberMe(rememberMe -> rememberMe.userDetailsService(userDetailsService))
-                .logout(logout -> logout.logoutUrl("/logout")
-                        .logoutSuccessUrl("/login").permitAll())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

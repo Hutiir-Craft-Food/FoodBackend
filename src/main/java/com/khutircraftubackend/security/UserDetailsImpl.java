@@ -1,5 +1,6 @@
-package com.khutircraftubackend.auth;
+package com.khutircraftubackend.security;
 
+import com.khutircraftubackend.auth.UserEntity;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
