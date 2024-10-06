@@ -4,23 +4,21 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ControllerAdvice
 @Slf4j
+@ResponseStatus(HttpStatus.UNAUTHORIZED)
 public class JwtExceptionHandler {
 
-    @ExceptionHandler(JWTVerificationException.class)
-        public ResponseEntity<String> handleJWTVerificationException(JWTVerificationException e) {
+    @ExceptionHandler({JWTVerificationException.class,
+                        TokenExpiredException.class
+    })
+        public String handleJWTException(RuntimeException e) {
         log.error("JWT Exception: {}", e.getMessage());
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+        return "Помилка аутентифікації";
     }
 
-    @ExceptionHandler(TokenExpiredException.class)
-    public ResponseEntity<String> handleTokenExpiredException(TokenExpiredException e) {
-        log.error("JWT Exception: {}", e.getMessage());
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
-    }
 }

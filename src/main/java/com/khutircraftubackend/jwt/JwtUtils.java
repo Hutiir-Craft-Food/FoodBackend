@@ -18,14 +18,14 @@ import java.util.Date;
 public class JwtUtils {
 
     @Value("${jwt.expiration}")
-    private long jwtExpirationSec;
+    private long jwtExpirationMillis;
     private final Algorithm algorithm;
 
     public String generateJwtToken(String email) {
         return JWT.create()
                 .withSubject(email)
                 .withIssuedAt(new Date(System.currentTimeMillis()))
-                .withExpiresAt(new Date(System.currentTimeMillis() + jwtExpirationSec))
+                .withExpiresAt(new Date(System.currentTimeMillis() + jwtExpirationMillis))
                 .sign(algorithm);
     }
 }
