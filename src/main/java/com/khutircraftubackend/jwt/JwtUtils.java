@@ -22,6 +22,7 @@ public class JwtUtils {
     private final Algorithm algorithm;
 
     public String generateJwtToken(String email) {
+        
         return JWT.create()
                 .withSubject(email)
                 .withIssuedAt(new Date(System.currentTimeMillis()))

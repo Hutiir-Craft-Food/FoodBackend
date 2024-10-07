@@ -25,36 +25,36 @@ import java.io.IOException;
 @RequiredArgsConstructor
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    private final JWTVerifier jwtVerifier;
-    private final UserDetailsConfig userDetailsConfig;
-
-    @Override
-    protected void doFilterInternal(@NonNull HttpServletRequest request,
-                                    @NonNull HttpServletResponse response,
-                                    @NonNull FilterChain filterChain)
-            throws ServletException, IOException {
-
-        String authHeader = request.getHeader("Authorization");
-
-        if (StringUtils.startsWith(authHeader, "Bearer ")) {
-
-        String token = authHeader.substring(7);
-        DecodedJWT jwt = jwtVerifier.verify(token);
-        String email = jwt.getSubject();
-
-        if (StringUtils.isBlank(email)) {
-            throw new JWTVerificationException("JWT Token is missing subject claim");
-        }
-
-            UserDetailsImpl userDetails = (UserDetailsImpl) userDetailsConfig
-                    .userDetailsService().loadUserByUsername(email);
-
-            UsernamePasswordAuthenticationToken authenticationToken =
-                    new UsernamePasswordAuthenticationToken(
-                            userDetails, null, userDetails.getAuthorities());
-            authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-        }
-        filterChain.doFilter(request, response);
-    }
+	private final JWTVerifier jwtVerifier;
+	private final UserDetailsConfig userDetailsConfig;
+	
+	@Override
+	protected void doFilterInternal(@NonNull HttpServletRequest request,
+									@NonNull HttpServletResponse response,
+									@NonNull FilterChain filterChain)
+			throws ServletException, IOException {
+		
+		String authHeader = request.getHeader("Authorization");
+		
+		if (StringUtils.startsWith(authHeader, "Bearer ")) {
+			
+			String token = authHeader.substring(7);
+			DecodedJWT jwt = jwtVerifier.verify(token);
+			String email = jwt.getSubject();
+			
+			if (StringUtils.isBlank(email)) {
+				throw new JWTVerificationException("JWT Token is missing subject claim");
+			}
+			
+			UserDetailsImpl userDetails = (UserDetailsImpl) userDetailsConfig
+					.userDetailsService().loadUserByUsername(email);
+			
+			UsernamePasswordAuthenticationToken authenticationToken =
+					new UsernamePasswordAuthenticationToken(
+							userDetails, null, userDetails.getAuthorities());
+			authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+			SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+		}
+		filterChain.doFilter(request, response);
+	}
 }

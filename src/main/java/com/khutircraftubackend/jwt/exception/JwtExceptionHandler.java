@@ -10,14 +10,16 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ControllerAdvice
 @Slf4j
-@ResponseStatus(HttpStatus.UNAUTHORIZED)
 public class JwtExceptionHandler {
 
     @ExceptionHandler({JWTVerificationException.class,
                         TokenExpiredException.class
     })
-        public String handleJWTException(RuntimeException e) {
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public String handleJWTException(RuntimeException e) {
+        
         log.error("JWT Exception: {}", e.getMessage());
+        
         return "Помилка аутентифікації";
     }
 
