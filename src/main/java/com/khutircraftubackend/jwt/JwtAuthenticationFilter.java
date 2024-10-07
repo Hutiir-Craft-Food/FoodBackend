@@ -36,19 +36,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader("Authorization");
 
-        if (StringUtils.isBlank(authHeader) || !StringUtils.startsWith(authHeader, "Bearer ")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
+        if (StringUtils.startsWith(authHeader, "Bearer ")) {
 
         String token = authHeader.substring(7);
         DecodedJWT jwt = jwtVerifier.verify(token);
         String email = jwt.getSubject();
+
         if (StringUtils.isBlank(email)) {
             throw new JWTVerificationException("JWT Token is missing subject claim");
         }
 
-        if (SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetailsImpl userDetails = (UserDetailsImpl) userDetailsConfig
                     .userDetailsService().loadUserByUsername(email);
 
