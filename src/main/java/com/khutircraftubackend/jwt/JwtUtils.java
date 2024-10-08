@@ -16,18 +16,18 @@ import java.util.Date;
 @Component
 @RequiredArgsConstructor
 public class JwtUtils {
-
-    @Value("${jwt.expiration}")
-    private long jwtExpirationMillis;
-    private final Algorithm algorithm;
-
-    public String generateJwtToken(String email) {
-        
-        return JWT.create()
-                .withSubject(email)
-                .withIssuedAt(new Date(System.currentTimeMillis()))
-                .withExpiresAt(new Date(System.currentTimeMillis() + jwtExpirationMillis))
-                .sign(algorithm);
-    }
+	
+	private final Algorithm algorithm;
+	@Value("${jwt.expiration}")
+	private long jwtExpirationMillis;
+	
+	public String generateJwtToken(String email) {
+		
+		return JWT.create()
+				.withSubject(email)
+				.withIssuedAt(new Date(System.currentTimeMillis()))
+				.withExpiresAt(new Date(System.currentTimeMillis() + jwtExpirationMillis))
+				.sign(algorithm);
+	}
 }
 
