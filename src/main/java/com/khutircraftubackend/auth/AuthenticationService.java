@@ -6,7 +6,7 @@ import com.khutircraftubackend.auth.request.LoginRequest;
 import com.khutircraftubackend.auth.request.RegisterRequest;
 import com.khutircraftubackend.auth.response.AuthResponse;
 import com.khutircraftubackend.auth.security.PasswordUpdateRequest;
-import com.khutircraftubackend.jwtToken.JwtUtils;
+import com.khutircraftubackend.jwt.JwtUtils;
 import com.khutircraftubackend.mail.EmailSender;
 import com.khutircraftubackend.marketing.MarketingCampaignEntity;
 import com.khutircraftubackend.marketing.MarketingCampaignRepository;

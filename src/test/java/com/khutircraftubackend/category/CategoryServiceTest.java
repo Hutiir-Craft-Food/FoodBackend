@@ -5,6 +5,7 @@ import com.khutircraftubackend.category.request.CategoryCreateRequest;
 import com.khutircraftubackend.category.request.CategoryUpdateRequest;
 import com.khutircraftubackend.category.response.CategoryResponse;
 import com.khutircraftubackend.category.exception.category.CategoryNotFoundException;
+import com.khutircraftubackend.product.ProductRepository;
 import com.khutircraftubackend.product.image.exception.file.InvalidFileFormatException;
 import com.khutircraftubackend.product.image.FileConverterService;
 import org.junit.jupiter.api.Test;
@@ -39,6 +40,9 @@ class CategoryServiceTest {
 
     @Mock
     private FileConverterService fileConverterService;
+
+    @Mock
+    private ProductRepository productRepository;
 
     @Test
     void getAllRootCategories() {
@@ -164,9 +168,8 @@ class CategoryServiceTest {
         when(categoryMapper.toCategoryEntity(request)).thenReturn(new CategoryEntity());
         when(categoryRepository.findById(1L)).thenReturn(Optional.empty());
 
-        Exception exception = assertThrows(CategoryNotFoundException.class, () -> {
-            categoryService.createCategory(request, multipartFile);
-        });
+        Exception exception = assertThrows(CategoryNotFoundException.class, () ->
+                categoryService.createCategory(request, multipartFile));
 
         assertEquals("Category not found", exception.getMessage());
 
@@ -278,9 +281,8 @@ class CategoryServiceTest {
         when(fileConverterService.convert(multipartFile)).thenThrow(new InvalidFileFormatException("File is not a valid image"));
         when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(existingCategory));
 
-        assertThrows(InvalidFileFormatException.class, () -> {
-            categoryService.updateCategory(categoryId, request,multipartFile);
-        });
+        assertThrows(InvalidFileFormatException.class, () ->
+                categoryService.updateCategory(categoryId, request,multipartFile));
         assertNull(existingCategory.getIconUrl());
     }
 
@@ -304,9 +306,8 @@ class CategoryServiceTest {
 
         when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(existingCategory));
 
-        assertThrows(IOException.class, () -> {
-            categoryService.updateCategory(categoryId, categoryUpdateRequest, multipartFile);
-        });
+        assertThrows(IOException.class, () ->
+                categoryService.updateCategory(categoryId, categoryUpdateRequest, multipartFile));
 
         assertNull(existingCategory.getIconUrl());
     }
@@ -324,9 +325,8 @@ class CategoryServiceTest {
                 .parentCategoryId(2L)
                 .build();
 
-        assertThrows(CategoryNotFoundException.class, () -> {
-            categoryService.updateCategory(1L, request, null);
-        });
+        assertThrows(CategoryNotFoundException.class, () ->
+                categoryService.updateCategory(1L, request, null));
     }
 
     @Test
@@ -334,9 +334,8 @@ class CategoryServiceTest {
         CategoryUpdateRequest request = CategoryUpdateRequest.builder()
                 .build();
 
-        assertThrows(CategoryNotFoundException.class, () -> {
-            categoryService.updateCategory(1L, request, null);
-        });
+        assertThrows(CategoryNotFoundException.class, () ->
+                categoryService.updateCategory(1L, request, null));
     }
 
     @Test
@@ -345,9 +344,8 @@ class CategoryServiceTest {
                 .parentCategoryId(999L)
                 .build();
 
-        assertThrows(CategoryNotFoundException.class, () -> {
-            categoryService.updateCategory(999L, request, null);
-        });
+        assertThrows(CategoryNotFoundException.class, () ->
+                categoryService.updateCategory(999L, request, null));
     }
 
     @Test
@@ -361,9 +359,8 @@ class CategoryServiceTest {
 
         when(categoryRepository.findById(1L)).thenReturn(Optional.empty());
 
-        assertThrows(CategoryNotFoundException.class, () -> {
-            categoryService.updateCategory(1L, request, null);
-        });
+        assertThrows(CategoryNotFoundException.class, () ->
+                categoryService.updateCategory(1L, request, null));
     }
 
     @Test
@@ -373,7 +370,6 @@ class CategoryServiceTest {
         existingCategory.setName("Updated Name");
         existingCategory.setDescription("Updated Description");
 
-        when(categoryRepository.findById(1L)).thenReturn(Optional.of(existingCategory));
         when(categoryRepository.findAllByParentCategory_Id(1L)).thenReturn(List.of());
 
         categoryService.deleteCategory(1L);
@@ -388,14 +384,12 @@ class CategoryServiceTest {
         existingCategory.setName("Updated Name");
         existingCategory.setDescription("Updated Description");
 
-        when(categoryRepository.findById(1L)).thenReturn(Optional.of(existingCategory));
         CategoryEntity childCategory = new CategoryEntity();
         childCategory.setId(2L);
         when(categoryRepository.findAllByParentCategory_Id(1L)).thenReturn(List.of(childCategory));
 
-        assertThrows(CategoryDeletionException.class, () -> {
-            categoryService.deleteCategory(1L);
-        });
+        assertThrows(CategoryDeletionException.class, () ->
+                categoryService.deleteCategory(1L));
     }
 
 }

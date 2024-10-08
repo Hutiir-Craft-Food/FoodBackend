@@ -27,9 +27,10 @@ public class ProductController {
             @ModelAttribute("image") MultipartFile image,
             @ModelAttribute("available") Boolean available,
             @ModelAttribute("description") String description,
+            @ModelAttribute("categoryId") Long categoryId,
             @ModelAttribute("sellerId") Long sellerId) throws IOException {
 
-        ProductEntity newProduct = productService.createProduct(name, thumbnailImage, image, available, description, sellerId);
+        ProductEntity newProduct = productService.createProduct(name, thumbnailImage, image, available, description, sellerId, categoryId);
 
         return new ResponseEntity<>(newProduct, HttpStatus.CREATED);
     }

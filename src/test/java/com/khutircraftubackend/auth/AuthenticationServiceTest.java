@@ -4,7 +4,7 @@ import com.khutircraftubackend.auth.request.LoginRequest;
 import com.khutircraftubackend.auth.response.AuthResponse;
 import com.khutircraftubackend.auth.exception.user.BadCredentialsException;
 import com.khutircraftubackend.auth.exception.user.UserNotFoundException;
-import com.khutircraftubackend.jwtToken.JwtUtils;
+import com.khutircraftubackend.jwt.JwtUtils;
 import com.khutircraftubackend.mail.EmailSender;
 import com.khutircraftubackend.marketing.MarketingCampaignRepository;
 import com.khutircraftubackend.seller.SellerRepository;
