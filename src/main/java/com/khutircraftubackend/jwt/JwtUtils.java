@@ -1,4 +1,4 @@
-package com.khutircraftubackend.jwtToken;
+package com.khutircraftubackend.jwt;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -16,17 +16,17 @@ import java.util.Date;
 @Component
 @RequiredArgsConstructor
 public class JwtUtils {
-
-    @Value("${jwt.expiration}")
-    private long jwtExpirationSec;
-    private final Algorithm algorithm;
-
-    public String generateJwtToken(String email) {
-        return JWT.create()
-                .withSubject(email)
-                .withIssuedAt(new Date(System.currentTimeMillis()))
-                .withExpiresAt(new Date(System.currentTimeMillis() + jwtExpirationSec))
-                .sign(algorithm);
-    }
+	
+	private final Algorithm algorithm;
+	@Value("${jwt.expiration}")
+	private long jwtExpirationMillis;
+	
+	public String generateJwtToken(String email) {
+		return JWT.create()
+				.withSubject(email)
+				.withIssuedAt(new Date(System.currentTimeMillis()))
+				.withExpiresAt(new Date(System.currentTimeMillis() + jwtExpirationMillis))
+				.sign(algorithm);
+	}
 }
 
