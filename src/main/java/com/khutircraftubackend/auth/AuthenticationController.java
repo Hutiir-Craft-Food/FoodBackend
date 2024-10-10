@@ -53,8 +53,8 @@ public class AuthenticationController {
     })
     @PostMapping("/register")
     public ResponseEntity<?> register(@Parameter(description = "Registration request containing user details") @Valid @RequestBody RegisterRequest registerRequest) {
-        authenticationService.registerNewUser(registerRequest);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Завершіть реєстрацію підтвердженням з переходом на пошту");
+        AuthResponse authResponse = authenticationService.registerNewUser(registerRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(authResponse);
     }
     //TODO Need update swagger
     @Operation(summary = "Confirm user registration", description = "Confirm user registration with email and confirmation token.")
@@ -66,6 +66,12 @@ public class AuthenticationController {
     public ResponseEntity<String> confirmUser(@Valid @RequestBody ConfirmUserRequest request) {
         authenticationService.confirmUser(request);
         return ResponseEntity.ok("User confirmed successfully.");
+    }
+
+    @PostMapping("re-confirm")
+    public ResponseEntity<String> reConfirmToken(Principal principal){
+        authenticationService.reConfirmToken(principal);
+        return ResponseEntity.ok("Код відправлен");
     }
 
     @Operation(summary = "Update user password", description = "Update password with a valid authorization token.")

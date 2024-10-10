@@ -1,5 +1,6 @@
 package com.khutircraftubackend.auth;
 
+import com.khutircraftubackend.auth.exception.user.UnauthorizedException;
 import com.khutircraftubackend.auth.request.ConfirmUserRequest;
 import com.khutircraftubackend.auth.exception.user.UserExistsException;
 import com.khutircraftubackend.auth.request.LoginRequest;
@@ -24,6 +25,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
+import java.time.LocalDateTime;
 import java.util.Random;
 import java.util.UUID;
 
@@ -47,6 +49,8 @@ public class AuthenticationService {
     private final EmailSender emailSender;
     private final AuthenticationManager authenticationManager;
     private final Random random = new Random();
+    private static final Long TOKEN_LIFETIME = 5L;
+    private static final Long RE_UPDATE_TOKEN = 3L;
 
     /**
      * Аутентифікує користувача за вказаними email та паролем.
@@ -107,7 +111,12 @@ public class AuthenticationService {
             createSeller(request, user);
         }
 
+        String token = jwtUtils.generateJwtToken(user.getEmail());
+
         return AuthResponse.builder()
+                .jwt(token)
+                .email(user.getEmail())
+                .message(AuthResponseMessages.REGISTER_GO_EMAIL)
                 .build();
     }
 
@@ -153,6 +162,7 @@ public class AuthenticationService {
                 String.format(
                         AuthResponseMessages.VERIFICATION_CODE_TEXT, verificationCode));
         user.setConfirmationToken(verificationCode);
+        user.setLifeConfirmationToken(LocalDateTime.now().plusMinutes(TOKEN_LIFETIME));
         userRepository.save(user);
     }
 
@@ -165,7 +175,14 @@ public class AuthenticationService {
     public void confirmUser(ConfirmUserRequest request) {
         UserEntity user = userService.findByEmail(request.email());
         validateConfirmationToken(request.confirmationToken(), user);
+        validateLifeConfirmationToken(user);
         updateConfirmationToken(user);
+    }
+
+    private void validateLifeConfirmationToken(UserEntity user){
+        if (LocalDateTime.now().isAfter(user.getLifeConfirmationToken())){
+            throw new UnauthorizedException(AuthResponseMessages.LIFE_IS_AFTER);
+        }
     }
 
     private void validateConfirmationToken(String key, UserEntity user) {
@@ -176,8 +193,12 @@ public class AuthenticationService {
     }
 
     private void updateConfirmationToken(UserEntity user) {
+        if(user.getRole().equals(Role.UNDER_BUYER)){
+            user.setRole(Role.BUYER);
+        }
         user.setEnabled(true);
         user.setConfirmationToken(null);
+        user.setLifeConfirmationToken(null);
         userRepository.save(user);
     }
 
@@ -210,6 +231,13 @@ public class AuthenticationService {
         return UUID.randomUUID().toString().substring(0, 8);
     }
 
+    public void reConfirmToken(Principal principal) {
+        UserEntity user = userService.findByPrincipal(principal);
+        if(user.getLifeConfirmationToken().isAfter(LocalDateTime.now().plusMinutes(RE_UPDATE_TOKEN))){
+            throw new UnauthorizedException(AuthResponseMessages.RE_UPDATE_TOKEN);
+        }
+        sendVerificationEmail(user);
+    }
 }
 
 
