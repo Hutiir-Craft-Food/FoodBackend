@@ -102,7 +102,7 @@ public class ProductServiceTest {
                 .id(categoryId)
                 .name("Test Category")
                 .build();
-        when(categoryService.getCategoryById(anyLong())).thenReturn(mockCategory);
+        when(categoryService.findCategoryById(anyLong())).thenReturn(mockCategory);
         
         ProductCreateRequest request = ProductCreateRequest.builder()
                 .name("Test product")
@@ -125,7 +125,7 @@ public class ProductServiceTest {
         verify(fileConverterService).convert(mockImageFile);
         verify(productRepository).save(any(ProductEntity.class));
         verify(sellerService).getSellerId(sellerId);
-        verify(categoryService).getCategoryById(anyLong());
+        verify(categoryService).findCategoryById(anyLong());
     }
 
     @Test

@@ -1,8 +1,8 @@
 package com.khutircraftubackend.category;
 
 import com.khutircraftubackend.category.request.CategoryCreateRequest;
-import com.khutircraftubackend.category.response.CategoryResponse;
 import com.khutircraftubackend.category.request.CategoryUpdateRequest;
+import com.khutircraftubackend.category.response.CategoryResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -19,53 +19,62 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class CategoryController {
-
-    private final CategoryService categoryService;
-    private final CategoryMapper categoryMapper;
-
-    @GetMapping("/")
-    public List<CategoryResponse> getAllRootCategories() {
-        return categoryService.getAllRootCategories();
-    }
-
-    @GetMapping("/parent-id/{id}")
-    public List<CategoryResponse> getAllCategoriesByParentId(
-            @PathVariable Long id) {
-        return categoryService.getAllByParentCategoryId(id);
-    }
-
-    @PostMapping("/")
-    @PreAuthorize("hasRole('ADMIN')")
-    @ResponseStatus(HttpStatus.OK)
-    public CategoryResponse createCategory(
-            @ModelAttribute CategoryCreateRequest request,
-            @RequestPart(value = "iconFile", required = false) MultipartFile iconFile) throws IOException {
-
-        CategoryEntity category = categoryService.createCategory(request, iconFile);
-
-        return categoryMapper.toCategoryResponse(category);
-    }
-
-    @PatchMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    @ResponseStatus(HttpStatus.OK)
-    public CategoryResponse updateCategory(
-            @PathVariable Long id,
-            @ModelAttribute CategoryUpdateRequest request,
-            @RequestPart(value = "iconFile", required = false) MultipartFile iconFile) throws IOException {
-
-        CategoryEntity updateCategory = categoryService.updateCategory(id, request, iconFile);
-
-        return categoryMapper.toCategoryResponse(updateCategory);
-    }
-
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public ResponseEntity<Void> deleteCategory(@PathVariable Long id,
-                                               @RequestParam(required = false) boolean forceDelete) {
-        categoryService.deleteCategory(id, forceDelete);
-        return ResponseEntity.noContent().build();
-    }
-
+	
+	private final CategoryService categoryService;
+	private final CategoryMapper categoryMapper;
+	
+	@GetMapping("/")
+	public List<CategoryResponse> getAllRootCategories() {
+		
+		List<CategoryEntity> categoryEntityList = categoryService.getAllRootCategories();
+		
+		return  categoryMapper.toCategoryResponseList(categoryEntityList);
+	}
+	
+	@GetMapping("/parent-id/{id}")
+	public List<CategoryResponse> getAllCategoriesByParentId(
+			@PathVariable Long id) {
+		
+		List<CategoryEntity> categoryEntityList = categoryService.getAllByParentCategoryId(id);
+		
+		return categoryMapper.toCategoryResponseList(categoryEntityList);
+	}
+	
+	@PostMapping("/")
+	@PreAuthorize("hasRole('ADMIN')")
+	@ResponseStatus(HttpStatus.OK)
+	public CategoryResponse createCategory(
+			@ModelAttribute CategoryCreateRequest request,
+			@RequestPart(value = "iconFile", required = false) MultipartFile iconFile) throws IOException {
+		
+		CategoryEntity category = categoryService.createCategory(request, iconFile);
+		
+		return categoryMapper.toCategoryResponse(category);
+	}
+	
+	@PatchMapping("/{id}")
+	@PreAuthorize("hasRole('ADMIN')")
+	@ResponseStatus(HttpStatus.OK)
+	public CategoryResponse updateCategory(
+			@PathVariable Long id,
+			@ModelAttribute CategoryUpdateRequest request,
+			@RequestPart(value = "iconFile", required = false) MultipartFile iconFile) throws IOException {
+		
+		CategoryEntity updateCategory = categoryService.updateCategory(id, request, iconFile);
+		
+		return categoryMapper.toCategoryResponse(updateCategory);
+	}
+	
+	@DeleteMapping("/{id}")
+	@PreAuthorize("hasRole('ADMIN')")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public ResponseEntity<Void> deleteCategory(
+			@PathVariable Long id,
+			@RequestParam(required = false) boolean forceDelete) {
+		
+		categoryService.deleteCategory(id, forceDelete);
+		
+		return ResponseEntity.noContent().build();
+	}
+	
 }

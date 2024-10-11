@@ -4,7 +4,6 @@ import com.khutircraftubackend.category.exception.category.CategoryDeletionExcep
 import com.khutircraftubackend.category.exception.category.CategoryNotFoundException;
 import com.khutircraftubackend.category.request.CategoryCreateRequest;
 import com.khutircraftubackend.category.request.CategoryUpdateRequest;
-import com.khutircraftubackend.category.response.CategoryResponse;
 import com.khutircraftubackend.product.image.FileConverterService;
 import com.khutircraftubackend.product.image.exception.file.InvalidFileFormatException;
 import org.junit.jupiter.api.Test;
@@ -33,6 +32,9 @@ class CategoryServiceTest {
 
     @Mock
     private CategoryMapper categoryMapper;
+    
+    @Mock
+    private CategoryController categoryController;
 
     @Mock
     private MultipartFile multipartFile;
@@ -48,28 +50,19 @@ class CategoryServiceTest {
         rootCategory.setDescription("TestDescription");
         rootCategory.setParentCategory(null);
 
-        CategoryResponse response = CategoryResponse.builder()
-                .name("TestNameNew")
-                .description("TestDescriptionNew")
-                .parentId(null)
-                .iconUrl(null)
-                .build();
-
         List<CategoryEntity> categoryEntityList = Collections.singletonList(rootCategory);
 
         when(categoryRepository.findAllByParentCategoryIsNull()).thenReturn(categoryEntityList);
-        when(categoryMapper.toCategoryResponse(rootCategory)).thenReturn(response);
 
-        List<CategoryResponse> result = categoryService.getAllRootCategories();
+        List<CategoryEntity> result = categoryService.getAllRootCategories();
 
         assertEquals(1, result.size());
 
         verify(categoryRepository).findAllByParentCategoryIsNull();
-        verify(categoryMapper).toCategoryResponse(rootCategory);
     }
-
+    
     @Test
-    void getAllByParentCategoryId() {
+    void getAllCategoriesByParentId() {
         Long id = 1L;
 
         CategoryEntity parentCategory = new CategoryEntity();
@@ -81,25 +74,18 @@ class CategoryServiceTest {
         childCategory.setName("TestChildCategory");
         childCategory.setParentCategory(parentCategory);
 
-        CategoryResponse response = CategoryResponse.builder()
-                .name(childCategory.getName())
-                .parentId(parentCategory.getId())
-                .build();
-
         List<CategoryEntity> categoryEntityList = Collections.singletonList(childCategory);
 
         when(categoryRepository.findAllByParentCategory_Id(id)).thenReturn(categoryEntityList);
-        when(categoryMapper.toCategoryResponse(childCategory)).thenReturn(response);
 
-        List<CategoryResponse> result = categoryService.getAllByParentCategoryId(id);
+        List<CategoryEntity> result = categoryService.getAllByParentCategoryId(id);
 
         assertEquals(1, result.size());
-        assertEquals(response, result.get(0));
+        assertEquals(childCategory, result.get(0));
 
         verify(categoryRepository).findAllByParentCategory_Id(id);
-        verify(categoryMapper).toCategoryResponse(childCategory);
     }
-
+    
     @Test
     void createCategory_ShouldCreateCategoryWithoutParent() throws IOException {
         CategoryCreateRequest request = CategoryCreateRequest.builder()
@@ -359,6 +345,7 @@ class CategoryServiceTest {
 
     @Test
     void testDeleteCategory_Success() {
+        boolean forceDelete = true;
         CategoryEntity existingCategory = new CategoryEntity();
         existingCategory.setId(1L);
         existingCategory.setName("Updated Name");
@@ -366,13 +353,15 @@ class CategoryServiceTest {
 
         when(categoryRepository.findAllByParentCategory_Id(1L)).thenReturn(List.of());
 
-        categoryService.deleteCategory(1L);
+        categoryService.deleteCategory(1L, forceDelete);
 
         verify(categoryRepository).deleteById(1L);
     }
 
     @Test
     void testDeleteCategory_WithChildCategories() {
+        boolean forceDelete = false;
+        
         CategoryEntity existingCategory = new CategoryEntity();
         existingCategory.setId(1L);
         existingCategory.setName("Updated Name");
@@ -380,10 +369,13 @@ class CategoryServiceTest {
 
         CategoryEntity childCategory = new CategoryEntity();
         childCategory.setId(2L);
+        
         when(categoryRepository.findAllByParentCategory_Id(1L)).thenReturn(List.of(childCategory));
 
         assertThrows(CategoryDeletionException.class, () ->
-                categoryService.deleteCategory(1L));
+                categoryService.deleteCategory(1L, forceDelete));
+        
+        verify(categoryRepository, never()).deleteById(1L);
     }
 
 }

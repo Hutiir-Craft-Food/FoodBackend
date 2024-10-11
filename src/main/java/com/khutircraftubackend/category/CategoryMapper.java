@@ -8,6 +8,9 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Mapper(componentModel = "spring")
 public interface CategoryMapper {
 
@@ -27,5 +30,9 @@ public interface CategoryMapper {
     @Mapping(target = "parentCategory.id", source = "request.parentCategoryId", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateCategoryEntity(@MappingTarget CategoryEntity category, CategoryUpdateRequest request);
 
-
+ default List<CategoryResponse> toCategoryResponseList(List<CategoryEntity> categoryEntityList) {
+     return categoryEntityList.stream()
+             .map(this::toCategoryResponse)
+             .collect(Collectors.toList());
+ }
 }

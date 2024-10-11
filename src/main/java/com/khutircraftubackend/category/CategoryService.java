@@ -5,7 +5,6 @@ import com.khutircraftubackend.category.exception.category.CategoryExceptionMess
 import com.khutircraftubackend.category.exception.category.CategoryNotFoundException;
 import com.khutircraftubackend.category.request.CategoryCreateRequest;
 import com.khutircraftubackend.category.request.CategoryUpdateRequest;
-import com.khutircraftubackend.category.response.CategoryResponse;
 import com.khutircraftubackend.product.image.FileConverterService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +14,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -35,29 +33,21 @@ public class CategoryService {
 		return fileConverterService.convert(iconFile);
 	}
 	
-	private CategoryEntity findCategoryById(Long id) {
+	public CategoryEntity findCategoryById(Long id) {
 		
 		return categoryRepository.findById(id).orElseThrow(() ->
 				new CategoryNotFoundException(CategoryExceptionMessages.CATEGORY_NOT_FOUND));
 	}
 	
-	public CategoryEntity getCategoryById(Long id) {
+	
+	public List<CategoryEntity> getAllRootCategories() {
 		
-		return findCategoryById(id);
+		return categoryRepository.findAllByParentCategoryIsNull();
 	}
 	
-	public List<CategoryResponse> getAllRootCategories() {
+	public List<CategoryEntity> getAllByParentCategoryId(Long id) {
 		
-		return categoryRepository.findAllByParentCategoryIsNull().stream().map(
-				categoryMapper::toCategoryResponse
-		).collect(Collectors.toList());
-	}
-	
-	public List<CategoryResponse> getAllByParentCategoryId(Long id) {
-		
-		return categoryRepository.findAllByParentCategory_Id(id).stream().map(
-				categoryMapper::toCategoryResponse
-		).collect(Collectors.toList());
+		return categoryRepository.findAllByParentCategory_Id(id);
 	}
 	
 	@Transactional
@@ -101,10 +91,6 @@ public class CategoryService {
 		}
 		
 		return categoryRepository.save(existingCategory);
-	}
-	
-	public void deleteCategory(Long id) {
-		deleteCategory(id, false);
 	}
 	
 	@Transactional

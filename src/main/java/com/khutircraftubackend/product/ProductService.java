@@ -79,7 +79,7 @@ public class ProductService {
 		
 		ProductEntity productEntity = ProductMapper.INSTANCE.toProductEntity(request);
 		
-		CategoryEntity category = categoryService.getCategoryById(request.categoryId());
+		CategoryEntity category = categoryService.findCategoryById(request.categoryId());
 		
 		validateImageFiles(thumbnailImage, image);
 		productEntity.setImageUrl(fileConverterService.convert(image));
