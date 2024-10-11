@@ -93,6 +93,7 @@ public class CategoryService {
 		return categoryRepository.save(existingCategory);
 	}
 	
+	
 	@Transactional
 	public void deleteCategory(Long id, boolean forceDelete) {
 		
@@ -115,4 +116,5 @@ public class CategoryService {
 			throw new CategoryDeletionException(CategoryExceptionMessages.CATEGORY_HAS_SUBCATEGORIES_OR_PRODUCTS);
 		}
 	}
+	
 }
