@@ -6,12 +6,12 @@ import com.khutircraftubackend.category.response.CategoryResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 
 @RestController
@@ -24,20 +24,20 @@ public class CategoryController {
 	private final CategoryMapper categoryMapper;
 	
 	@GetMapping("/")
-	public List<CategoryResponse> getAllRootCategories() {
+	public Collection<CategoryResponse> getAllRootCategories() {
 		
-		List<CategoryEntity> categoryEntityList = categoryService.getAllRootCategories();
+		List<CategoryEntity> categoryEntity = categoryService.getAllRootCategories();
 		
-		return  categoryMapper.toCategoryResponseList(categoryEntityList);
+		return categoryMapper.toCategoryResponse(categoryEntity);
 	}
 	
 	@GetMapping("/parent-id/{id}")
-	public List<CategoryResponse> getAllCategoriesByParentId(
+	public Collection<CategoryResponse> getAllCategoriesByParentId(
 			@PathVariable Long id) {
 		
-		List<CategoryEntity> categoryEntityList = categoryService.getAllByParentCategoryId(id);
+		Collection<CategoryEntity> categoryEntity = categoryService.getAllByParentCategoryId(id);
 		
-		return categoryMapper.toCategoryResponseList(categoryEntityList);
+		return categoryMapper.toCategoryResponse(categoryEntity);
 	}
 	
 	@PostMapping("/")
@@ -68,13 +68,11 @@ public class CategoryController {
 	@DeleteMapping("/{id}")
 	@PreAuthorize("hasRole('ADMIN')")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public ResponseEntity<Void> deleteCategory(
+	public void deleteCategory(
 			@PathVariable Long id,
 			@RequestParam(required = false) boolean forceDelete) {
 		
 		categoryService.deleteCategory(id, forceDelete);
-		
-		return ResponseEntity.noContent().build();
 	}
 	
 }
