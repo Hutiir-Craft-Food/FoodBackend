@@ -1,7 +1,6 @@
 package com.khutircraftubackend.userprofile;
 
 import com.khutircraftubackend.userprofile.request.ChangeOfEmailRequest;
-import com.khutircraftubackend.userprofile.UserProfileService;
 import com.khutircraftubackend.userprofile.request.ConfirmEmailRequest;
 import com.khutircraftubackend.userprofile.response.ChangeOfEmailResponse;
 import jakarta.validation.Valid;
@@ -29,7 +28,7 @@ public class UserProfileController {
         return userProfileService.changeOfEmail(principal, request);
     }
 
-    @PostMapping ("confirm_email")
+    @PostMapping ("confirm-email")
     @ResponseStatus (HttpStatus.NO_CONTENT)
     public void confirmEmail(Principal principal, @Valid ConfirmEmailRequest request){
         userProfileService.confirmEmail(principal, request);
