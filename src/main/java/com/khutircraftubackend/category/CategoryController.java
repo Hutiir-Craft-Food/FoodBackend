@@ -26,18 +26,18 @@ public class CategoryController {
 	@GetMapping("/")
 	public Collection<CategoryResponse> getAllRootCategories() {
 		
-		List<CategoryEntity> categoryEntity = categoryService.getAllRootCategories();
+		List<CategoryEntity> categoryEntities = categoryService.getAllRootCategories();
 		
-		return categoryMapper.toCategoryResponse(categoryEntity);
+		return categoryMapper.toCategoryResponse(categoryEntities);
 	}
 	
 	@GetMapping("/parent-id/{id}")
 	public Collection<CategoryResponse> getAllCategoriesByParentId(
 			@PathVariable Long id) {
 		
-		Collection<CategoryEntity> categoryEntity = categoryService.getAllByParentCategoryId(id);
+		Collection<CategoryEntity> categoryEntities = categoryService.getAllByParentCategoryId(id);
 		
-		return categoryMapper.toCategoryResponse(categoryEntity);
+		return categoryMapper.toCategoryResponse(categoryEntities);
 	}
 	
 	@PostMapping("/")

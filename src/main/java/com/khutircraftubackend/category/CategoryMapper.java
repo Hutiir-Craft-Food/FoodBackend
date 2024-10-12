@@ -8,7 +8,6 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
@@ -35,7 +34,7 @@ public interface CategoryMapper {
 		
 		return categoryEntities.stream()
 				.map(this::toCategoryResponse)
-				.collect(Collectors.toCollection(ArrayList::new));
+				.collect(Collectors.toList());
 	}
 	
 }
