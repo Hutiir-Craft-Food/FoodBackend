@@ -11,9 +11,10 @@ import com.khutircraftubackend.userprofile.response.ChangeOfEmailResponse;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Map;
 
 @RequiredArgsConstructor
@@ -25,7 +26,7 @@ public class UserProfileService {
     private final UserRepository userRepository;
     private final AuthenticationService authenticationService;
     private final EmailSender emailSender;
-    private Map<UserEntity, String> confirmEmail;
+    private Map<String, EmailTokenInfo> confirmEmail;
 
     public ChangeOfEmailResponse changeOfEmail(Principal principal, ChangeOfEmailRequest request) {
         UserEntity user = userService.findByPrincipal(principal);
@@ -34,7 +35,8 @@ public class UserProfileService {
         }
         String randomNumber = authenticationService.getRandomNumber(); //вынести метод в юзерсервисе -> getRandomNumber
         emailSender.sendSimpleMessage(request.newEmail(), "NEW CONFIRM TOKEN", randomNumber);
-        confirmEmail.put(user, randomNumber);
+        EmailTokenInfo emailTokenInfo = new EmailTokenInfo(randomNumber);
+        confirmEmail.put(request.newEmail(), emailTokenInfo);
         return ChangeOfEmailResponse.builder()
                 .newEmail(request.newEmail())
                 .confirmToken(randomNumber)
@@ -45,20 +47,26 @@ public class UserProfileService {
         return user.equals(request);
     }
 
-    @Transactional
     public void confirmEmail(Principal principal, ConfirmEmailRequest request) {
         UserEntity user = userService.findByPrincipal(principal);
-        String confirmToken = confirmEmail.get(user);
-        if (Boolean.FALSE.equals(equalsEmailOrConfirm(request.confirmToken(), confirmToken))) {
+        cleanExpiredEntries();
+        EmailTokenInfo emailTokenInfo = confirmEmail.get(request.newEmail());
+        if (Boolean.FALSE.equals(equalsEmailOrConfirm(request.confirmToken(), emailTokenInfo.getToken()))) {
             throw new IllegalArgumentException("Invalid confirm Token");
         }
 
         user.setEmail(request.newEmail());
         userRepository.save(user);
-        cleanMap(user);
+        cleanMap(request.newEmail());
     }
 
-    private void cleanMap(UserEntity user) {
-        confirmEmail.remove(user);
+    private void cleanMap(String key) {
+        confirmEmail.remove(key);
+    }
+
+    private void cleanExpiredEntries() {
+        LocalDateTime now = LocalDateTime.now();
+        confirmEmail.entrySet().removeIf(entry ->
+                Duration.between(entry.getValue().getTimestamp(), now).toMinutes() > 5);
     }
 }
