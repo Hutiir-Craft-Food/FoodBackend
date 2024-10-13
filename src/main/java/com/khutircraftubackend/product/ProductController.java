@@ -7,7 +7,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,7 +15,7 @@ import java.io.IOException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/products")
+@RequestMapping("/product")
 @Slf4j
 @RequiredArgsConstructor
 public class ProductController {
@@ -69,20 +68,20 @@ public class ProductController {
 
     @DeleteMapping("/{productId}")
     @PreAuthorize("hasRole('SELLER') and @productService.canModifyProduct(#productId)")
-    public ResponseEntity<Void> deleteProduct(@PathVariable Long productId) throws IOException {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteProduct(@PathVariable Long productId) throws IOException {
 
         productService.deleteProduct(productId);
 
-        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/delete-all")
     @PreAuthorize("hasRole('SELLER')")
-    public ResponseEntity<Void> deleteAllProductsForCurrentSeller() throws IOException {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteAllProductsForCurrentSeller() throws IOException {
 
         productService.deleteAllProductsForCurrentSeller();
 
-        return ResponseEntity.noContent().build();
     }
 
     @GetMapping
