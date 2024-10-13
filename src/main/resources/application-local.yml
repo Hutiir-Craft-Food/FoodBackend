@@ -2,8 +2,13 @@ spring:
   config:
     import: optional:file:.env.local[.properties]
 
+  flyway:
+    enabled: false
+
   jpa:
-    generate-ddl: false
+    generate-ddl: true
+    hibernate:
+      ddl-auto: update
     properties:
       hibernate:
         show-sql: true
