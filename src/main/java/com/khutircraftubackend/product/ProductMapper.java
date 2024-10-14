@@ -11,6 +11,9 @@ import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Collection;
+import java.util.stream.Collectors;
+
 @Mapper(componentModel = "spring", uses = {FileConverterService.class, ProductMapper.class})
 public interface ProductMapper {
 
@@ -42,5 +45,13 @@ public interface ProductMapper {
     @Mapping(target = "seller", source = "productEntity.seller")
     @Mapping(target = "category", source = "productEntity.category")
     ProductResponse toProductResponse(ProductEntity productEntity);
-
+    
+    default Collection<ProductResponse> toProductResponse(Collection<ProductEntity> productEntities) {
+        
+        return productEntities.stream()
+                .map(this::toProductResponse)
+                .collect(Collectors.toList());
+    }
+    
+    
 }
