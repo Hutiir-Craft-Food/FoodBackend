@@ -50,19 +50,24 @@ public class CategoryService {
 		return categoryRepository.findAllByParentCategory_Id(id);
 	}
 	
+	private void setParentCategory(CategoryEntity category, Long parentCategoryId) {
+		
+		if (parentCategoryId != null) {
+			CategoryEntity parentCategory = findCategoryById(parentCategoryId);
+			category.setParentCategory(parentCategory);
+		} else {
+			category.setParentCategory(null);
+		}
+		
+	}
+	
 	@Transactional
 	public CategoryEntity createCategory(CategoryCreateRequest request, MultipartFile iconFile) throws IOException {
 		
 		CategoryEntity category = categoryMapper.toCategoryEntity(request);
 		category.setIconUrl(handleIcon(iconFile));
 		
-		if (request.parentCategoryId() != null) {
-			CategoryEntity parentCategory = findCategoryById(request.parentCategoryId());
-			
-			category.setParentCategory(parentCategory);
-		} else {
-			category.setParentCategory(null);
-		}
+		setParentCategory(category, request.parentCategoryId());
 		
 		return categoryRepository.save(category);
 	}
@@ -74,21 +79,13 @@ public class CategoryService {
 		
 		if (iconFile != null && !iconFile.isEmpty()) {
 			existingCategory.setIconUrl(handleIcon(iconFile));
-			
 		} else if (request.iconFile() != null) {
 			existingCategory.setIconUrl(handleIcon(iconFile));
 		}
 		
 		categoryMapper.updateCategoryEntity(existingCategory, request);
 		
-		if (request.parentCategoryId() != null) {
-			CategoryEntity parentCategory = findCategoryById(request.parentCategoryId());
-			existingCategory.setParentCategory(parentCategory);
-			
-		} else {
-			
-			existingCategory.setParentCategory(null);
-		}
+		setParentCategory(existingCategory, request.parentCategoryId());
 		
 		return categoryRepository.save(existingCategory);
 	}
@@ -101,18 +98,12 @@ public class CategoryService {
 		
 		if (childCategories.isEmpty()) {
 			categoryRepository.deleteById(id);
-		}
-		
-		
-		if (!childCategories.isEmpty() && forceDelete) {
-			
+		} else if (forceDelete) {
 			for (CategoryEntity child : childCategories) {
 				deleteCategory(child.getId(), forceDelete);
 			}
-			
 			categoryRepository.deleteById(id);
-			
-		} else if (!childCategories.isEmpty()) {
+		} else {
 			throw new CategoryDeletionException(CategoryExceptionMessages.CATEGORY_HAS_SUBCATEGORIES_OR_PRODUCTS);
 		}
 	}
