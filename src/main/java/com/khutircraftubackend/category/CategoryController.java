@@ -3,6 +3,7 @@ package com.khutircraftubackend.category;
 import com.khutircraftubackend.category.request.CategoryCreateRequest;
 import com.khutircraftubackend.category.request.CategoryUpdateRequest;
 import com.khutircraftubackend.category.response.CategoryResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -15,7 +16,7 @@ import java.util.Collection;
 import java.util.List;
 
 @RestController
-@RequestMapping("/v1/category")
+@RequestMapping("/v1/categories")
 @RequiredArgsConstructor
 @Slf4j
 public class CategoryController {
@@ -44,7 +45,7 @@ public class CategoryController {
 	@PreAuthorize("hasRole('ADMIN')")
 	@ResponseStatus(HttpStatus.OK)
 	public CategoryResponse createCategory(
-			@ModelAttribute CategoryCreateRequest request,
+			@Valid @ModelAttribute CategoryCreateRequest request,
 			@RequestPart(value = "iconFile", required = false) MultipartFile iconFile) throws IOException {
 		
 		CategoryEntity category = categoryService.createCategory(request, iconFile);
@@ -57,7 +58,7 @@ public class CategoryController {
 	@ResponseStatus(HttpStatus.OK)
 	public CategoryResponse updateCategory(
 			@PathVariable Long id,
-			@ModelAttribute CategoryUpdateRequest request,
+			@Valid @ModelAttribute CategoryUpdateRequest request,
 			@RequestPart(value = "iconFile", required = false) MultipartFile iconFile) throws IOException {
 		
 		CategoryEntity updateCategory = categoryService.updateCategory(id, request, iconFile);
