@@ -2,9 +2,6 @@ spring:
   config:
     import: optional:file:.env.local[.properties]
 
-  flyway:
-    enabled: false
-
   jpa:
     generate-ddl: true
     hibernate:
@@ -13,6 +10,14 @@ spring:
       hibernate:
         show-sql: true
         format_sql: true
+
+  flyway:
+    enabled: false
+    placeholders:
+      email: ${FLYWAY_EMAIL}
+      password: ${FLYWAY_PASSWAORD}
+      role: ${FLYWAY_ROLE}
+      enabled: ${FLYWAY_ENABLED}
 
 logging:
   level:
@@ -55,6 +60,7 @@ management:
     web:
       exposure:
         include: "info, loggers, health, auditevents, logfile, metrics, sessions"
+      base-path: /adminac
   endpoint:
     health:
       show-details: always
