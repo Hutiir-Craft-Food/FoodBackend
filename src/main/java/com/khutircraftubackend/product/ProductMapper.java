@@ -1,9 +1,13 @@
 package com.khutircraftubackend.product;
 
+import com.khutircraftubackend.category.CategoryEntity;
+import com.khutircraftubackend.category.response.CategoryResponse;
 import com.khutircraftubackend.product.image.FileConverterService;
 import com.khutircraftubackend.product.request.ProductCreateRequest;
 import com.khutircraftubackend.product.request.ProductUpdateRequest;
 import com.khutircraftubackend.product.response.ProductResponse;
+import com.khutircraftubackend.seller.SellerEntity;
+import com.khutircraftubackend.seller.SellerResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -36,15 +40,48 @@ public interface ProductMapper {
     @Mapping(target = "description", source = "request.description")
     @Mapping(target = "category.id", source = "request.categoryId")
     void updateProductFromRequest(@MappingTarget ProductEntity product, ProductUpdateRequest request);
-
-    @Mapping(target = "name", source = "productEntity.name")
-    @Mapping(target = "thumbnailImageUrl", source = "productEntity.thumbnailImageUrl")
-    @Mapping(target = "imageUrl", source = "productEntity.imageUrl")
-    @Mapping(target = "available", source = "productEntity.available")
-    @Mapping(target = "description", source = "productEntity.description")
-    @Mapping(target = "seller", source = "productEntity.seller")
-    @Mapping(target = "category", source = "productEntity.category")
+    
+    
+    @Mapping(target = "seller", source = "productEntity.seller", qualifiedByName = "toSellerResponse")
+    @Mapping(target = "category", source = "productEntity.category", qualifiedByName = "toCategoryResponse")
     ProductResponse toProductResponse(ProductEntity productEntity);
+    
+    @Named("toSellerResponse")
+    default SellerResponse toSellerResponse(SellerEntity seller) {
+        
+        if (seller == null) {
+            
+            return null;
+        }
+        
+        return SellerResponse.builder()
+                .id(seller.getId())
+                .sellerName(seller.getSellerName())
+                .companyName(seller.getCompanyName())
+                .phoneNumber(seller.getPhoneNumber())
+                .email(seller.getUser().getEmail())
+                .creationDate(seller.getCreationDate())
+                .build();
+    }
+    
+    @Named("toCategoryResponse")
+    default CategoryResponse toCategoryResponse(CategoryEntity category) {
+        
+        if (category == null) {
+            
+            return null;
+        }
+        
+        Long parentId = (category.getParentCategory() != null) ? category.getParentCategory().getId() : null;
+        
+        return CategoryResponse.builder()
+                .id(category.getId())
+                .name(category.getName())
+                .description(category.getDescription())
+                .parentId(parentId)
+                .iconUrl(category.getIconUrl())
+                .build();
+    }
     
     default Collection<ProductResponse> toProductResponse(Collection<ProductEntity> productEntities) {
         

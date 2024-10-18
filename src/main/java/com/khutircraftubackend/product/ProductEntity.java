@@ -52,4 +52,5 @@ public class ProductEntity {
     @Column(name = "updated_at")
     @UpdateTimestamp
     LocalDateTime updatedAt;
+    
 }

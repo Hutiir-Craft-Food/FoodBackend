@@ -1,18 +1,18 @@
 package com.khutircraftubackend.product.response;
 
-import com.khutircraftubackend.category.CategoryEntity;
-import com.khutircraftubackend.seller.SellerEntity;
+import com.khutircraftubackend.category.response.CategoryResponse;
+import com.khutircraftubackend.seller.SellerResponse;
 import lombok.Builder;
 
 @Builder
 public record ProductResponse(
-        Long id,
+		Long id,
         String name,
         String thumbnailImageUrl,
         String imageUrl,
         boolean available,
         String description,
-        SellerEntity seller,
-        CategoryEntity category
+        SellerResponse seller,
+        CategoryResponse category
 ) {
 }
