@@ -45,14 +45,23 @@ public class ProductService {
 		
 		ProductEntity existingProduct = findProductById(productId);
 		
-		SellerEntity currentSeller = sellerService.getCurrentSeller();
+		try {
+			validateSeller(existingProduct.getSeller());
+			
+			return true;
+			
+		} catch (AccessDeniedException e) {
+			
+			return false;
+		}
 		
-		return (existingProduct.getSeller().getCompanyName().equals(currentSeller.getCompanyName()));
 	}
 	
-	private void validateSellerCompany(SellerEntity currentSeller, SellerEntity requestSeller) throws AccessDeniedException {
+	private void validateSeller(SellerEntity requestSeller) throws AccessDeniedException {
 		
-		if (!currentSeller.getCompanyName().equals(requestSeller.getCompanyName())) {
+		SellerEntity currentSeller = sellerService.getCurrentSeller();
+
+		if (!currentSeller.equals(requestSeller)) {
 			throw new AccessDeniedException("You do not have permission to create for this company.");
 		}
 		
@@ -75,18 +84,19 @@ public class ProductService {
 		
 		SellerEntity seller = sellerService.getSellerId(request.sellerId());
 		SellerEntity currentSeller = sellerService.getCurrentSeller();
-		validateSellerCompany(currentSeller, seller);
+		
+		validateSeller(seller);
 		
 		ProductEntity productEntity = ProductMapper.INSTANCE.toProductEntity(request);
 		
 		CategoryEntity category = categoryService.findCategoryById(request.categoryId());
 		
 		validateImageFiles(thumbnailImage, image);
+		
 		productEntity.setImageUrl(fileConverterService.convert(image));
 		productEntity.setThumbnailImageUrl(fileConverterService.convert(thumbnailImage));
 		
 		productEntity.setCategory(category);
-		
 		productEntity.setSeller(currentSeller);
 		
 		return productRepository.save(productEntity);

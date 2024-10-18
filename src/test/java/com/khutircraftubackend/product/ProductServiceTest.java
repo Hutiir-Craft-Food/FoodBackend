@@ -2,6 +2,7 @@ package com.khutircraftubackend.product;
 
 import com.khutircraftubackend.category.CategoryEntity;
 import com.khutircraftubackend.category.CategoryService;
+import com.khutircraftubackend.category.exception.category.CategoryNotFoundException;
 import com.khutircraftubackend.product.exception.product.ProductNotFoundException;
 import com.khutircraftubackend.product.image.FileConverterService;
 import com.khutircraftubackend.product.image.FileUploadService;
@@ -58,9 +59,34 @@ public class ProductServiceTest {
         product.setName("Test product");
         product.setSeller(seller);
     }
-
+    @Test
+    public void testCanModifyProduct_Success() {
+        
+        when(sellerService.getCurrentSeller()).thenReturn(seller);
+        when(productRepository.findProductById(1L)).thenReturn(Optional.of(product));
+        
+        boolean canModify = productService.canModifyProduct(1L);
+        
+        assertTrue(canModify);
+    }
+    @Test
+    public void testCanModifyProduct_Failure() {
+        
+        SellerEntity otherSeller = new SellerEntity();
+        otherSeller.setId(2L);
+        otherSeller.setCompanyName("Company B");
+        
+        when(sellerService.getCurrentSeller()).thenReturn(otherSeller);
+        when(productRepository.findProductById(1L)).thenReturn(Optional.of(product));
+        
+        boolean canModify = productService.canModifyProduct(1L);
+        
+        assertFalse(canModify);
+    }
+    
     @Test
     void testCanModifyProduct_ProductExistsAndBelongsToCurrentSeller() {
+        
         when(productRepository.findProductById(1L)).thenReturn(Optional.of(product));
         when(sellerService.getCurrentSeller()).thenReturn(seller);
 
@@ -71,6 +97,7 @@ public class ProductServiceTest {
 
     @Test
     void testCanModifyProduct_ProductNotFound() {
+        
         when(productRepository.findProductById(1L)).thenReturn(Optional.empty());
 
         assertThrows(ProductNotFoundException.class, () -> productService.canModifyProduct(1L));
@@ -158,6 +185,33 @@ public class ProductServiceTest {
         );
 
         verify(productRepository, never()).save(any(ProductEntity.class));
+    }
+    
+    @Test
+    public void testCreateProduct_CategoryNotFound() {
+        
+        SellerEntity requestSeller = SellerEntity.builder()
+                .companyName("CompanyB")
+                .id(1L)
+                .build();
+        
+        ProductCreateRequest request = ProductCreateRequest.builder()
+                .name("Test product")
+                .description("Test description")
+                .thumbnailImage(null)
+                .image(null)
+                .available(true)
+                .sellerId(requestSeller.getId())
+                .categoryId(2L)
+                .build();
+        
+        when(sellerService.getSellerId(requestSeller.getId())).thenReturn(requestSeller);
+        when(sellerService.getCurrentSeller()).thenReturn(requestSeller);
+        when(categoryService.findCategoryById(request.categoryId())).thenThrow(new CategoryNotFoundException("Category not found"));
+        
+        assertThrows(CategoryNotFoundException.class, () -> {
+            productService.createProduct(request, null, null);
+        });
     }
 
     @Test
