@@ -1,5 +1,8 @@
 package com.khutircraftubackend.product;
 
+import com.khutircraftubackend.category.CategoryEntity;
+import com.khutircraftubackend.category.CategoryService;
+import com.khutircraftubackend.category.exception.category.CategoryNotFoundException;
 import com.khutircraftubackend.product.exception.product.ProductNotFoundException;
 import com.khutircraftubackend.product.image.FileConverterService;
 import com.khutircraftubackend.product.image.FileUploadService;
@@ -33,14 +36,17 @@ public class ProductServiceTest {
     private ProductRepository productRepository;
     @Mock
     private SellerService sellerService;
-    @InjectMocks
-    private ProductService productService;
-    private SellerEntity seller;
-    private ProductEntity product;
     @Mock
     private FileConverterService fileConverterService;
     @Mock
     private FileUploadService fileUploadService;
+    
+    @Mock
+    private CategoryService categoryService;
+    @InjectMocks
+    private ProductService productService;
+    private SellerEntity seller;
+    private ProductEntity product;
 
     @BeforeEach
     void setUp() {
@@ -53,9 +59,34 @@ public class ProductServiceTest {
         product.setName("Test product");
         product.setSeller(seller);
     }
-
+    @Test
+    public void testCanModifyProduct_Success() {
+        
+        when(sellerService.getCurrentSeller()).thenReturn(seller);
+        when(productRepository.findProductById(1L)).thenReturn(Optional.of(product));
+        
+        boolean canModify = productService.canModifyProduct(1L);
+        
+        assertTrue(canModify);
+    }
+    @Test
+    public void testCanModifyProduct_Failure() {
+        
+        SellerEntity otherSeller = new SellerEntity();
+        otherSeller.setId(2L);
+        otherSeller.setCompanyName("Company B");
+        
+        when(sellerService.getCurrentSeller()).thenReturn(otherSeller);
+        when(productRepository.findProductById(1L)).thenReturn(Optional.of(product));
+        
+        boolean canModify = productService.canModifyProduct(1L);
+        
+        assertFalse(canModify);
+    }
+    
     @Test
     void testCanModifyProduct_ProductExistsAndBelongsToCurrentSeller() {
+        
         when(productRepository.findProductById(1L)).thenReturn(Optional.of(product));
         when(sellerService.getCurrentSeller()).thenReturn(seller);
 
@@ -66,6 +97,7 @@ public class ProductServiceTest {
 
     @Test
     void testCanModifyProduct_ProductNotFound() {
+        
         when(productRepository.findProductById(1L)).thenReturn(Optional.empty());
 
         assertThrows(ProductNotFoundException.class, () -> productService.canModifyProduct(1L));
@@ -92,17 +124,24 @@ public class ProductServiceTest {
         when(productRepository.save(any(ProductEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(fileConverterService.convert(mockThumbnailFile)).thenReturn("uploaded-thumbnail-url");
         when(fileConverterService.convert(mockImageFile)).thenReturn("uploaded-image-url");
+    
+        CategoryEntity mockCategory = CategoryEntity.builder()
+                .id(categoryId)
+                .name("Test Category")
+                .build();
+        when(categoryService.findCategoryById(anyLong())).thenReturn(mockCategory);
+        
+        ProductCreateRequest request = ProductCreateRequest.builder()
+                .name("Test product")
+                .thumbnailImage(mockThumbnailFile)
+                .image(mockImageFile)
+                .available(true)
+                .description("Test description")
+                .sellerId(sellerId)
+                .categoryId(categoryId)
+                .build();
 
-        ProductEntity createdProduct = productService.createProduct(
-                "Test product",
-                mockThumbnailFile,
-                mockImageFile,
-                true,
-                "Test description",
-                sellerId,
-                categoryId
-
-        );
+        ProductEntity createdProduct = productService.createProduct(request, mockThumbnailFile, mockImageFile);
 
         assertNotNull(createdProduct, "Created product should not be null");
         assertEquals("Test product", createdProduct.getName());
@@ -113,42 +152,66 @@ public class ProductServiceTest {
         verify(fileConverterService).convert(mockImageFile);
         verify(productRepository).save(any(ProductEntity.class));
         verify(sellerService).getSellerId(sellerId);
+        verify(categoryService).findCategoryById(anyLong());
     }
 
     @Test
     void testCreateProduct_AccessDenied() {
         SellerEntity currentSeller = SellerEntity.builder()
                 .companyName("CompanyA")
+                .id(2L)
                 .build();
 
         SellerEntity requestSeller = SellerEntity.builder()
                 .companyName("CompanyB")
+                .id(1L)
                 .build();
 
         ProductCreateRequest request = ProductCreateRequest.builder()
                 .name("Test product")
                 .description("Test description")
-                .seller(requestSeller)
+                .thumbnailImage(null)
+                .image(null)
+                .available(true)
+                .sellerId(requestSeller.getId())
+                .categoryId(1L)
                 .build();
 
-        Long sellerId = 2L;
-        Long categoryId = 1L;
-
         when(sellerService.getCurrentSeller()).thenReturn(currentSeller);
-        when(sellerService.getSellerId(sellerId)).thenReturn(requestSeller);
+        when(sellerService.getSellerId(requestSeller.getId())).thenReturn(requestSeller);
 
         assertThrows(AccessDeniedException.class, () ->
-                productService.createProduct(
-                        "Test product",
-                        null,
-                        null,
-                        true,
-                        "Test description",
-                        sellerId,
-                        categoryId
-                )
+                productService.createProduct(request, null, null)
         );
+
         verify(productRepository, never()).save(any(ProductEntity.class));
+    }
+    
+    @Test
+    public void testCreateProduct_CategoryNotFound() {
+        
+        SellerEntity requestSeller = SellerEntity.builder()
+                .companyName("CompanyB")
+                .id(1L)
+                .build();
+        
+        ProductCreateRequest request = ProductCreateRequest.builder()
+                .name("Test product")
+                .description("Test description")
+                .thumbnailImage(null)
+                .image(null)
+                .available(true)
+                .sellerId(requestSeller.getId())
+                .categoryId(2L)
+                .build();
+        
+        when(sellerService.getSellerId(requestSeller.getId())).thenReturn(requestSeller);
+        when(sellerService.getCurrentSeller()).thenReturn(requestSeller);
+        when(categoryService.findCategoryById(request.categoryId())).thenThrow(new CategoryNotFoundException("Category not found"));
+        
+        assertThrows(CategoryNotFoundException.class, () -> {
+            productService.createProduct(request, null, null);
+        });
     }
 
     @Test
