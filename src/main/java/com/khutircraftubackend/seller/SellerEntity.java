@@ -50,22 +50,15 @@ public class SellerEntity {
         
         if (this == o) return true;
         
-        if (o == null || getClass() != o.getClass())
-            
-            return false;
+        if (o == null || getClass() != o.getClass()) return false;
         
         SellerEntity seller = (SellerEntity) o;
         
-        return Objects.equals (companyName, seller.companyName);
-        
+        return Objects.equals(id, seller.id) && Objects.equals(companyName, seller.companyName);
     }
     
     @Override
     public int hashCode() {
-        
-        return Objects.hash(
-                companyName);
-                
+        return Objects.hash(id, companyName);
     }
-    
 }
