@@ -12,12 +12,7 @@ spring:
         format_sql: true
 
   flyway:
-    enabled: false
-    placeholders:
-      email: ${FLYWAY_EMAIL}
-      password: ${FLYWAY_PASSWAORD}
-      role: ${FLYWAY_ROLE}
-      enabled: ${FLYWAY_ENABLED}
+    enabled: true
 
 logging:
   level:
@@ -27,18 +22,5 @@ logging:
   file:
     name: logs/latest.log
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "info, loggers, health, auditevents, logfile, metrics, sessions"
-      base-path: /adminac
-  endpoint:
-    health:
-      show-details: always
-  prometheus:
-    metrics:
-      export:
-        enabled: true
 
 
