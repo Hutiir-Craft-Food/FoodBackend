@@ -41,30 +41,16 @@ public class ProductService {
 				.orElseThrow(() -> new ProductNotFoundException("Product with id " + productId + " not found"));
 	}
 	
-	public boolean canModifyProduct(Long productId) {
+	public boolean canModifyProduct(Long productId) throws AccessDeniedException {
 		
 		ProductEntity existingProduct = findProductById(productId);
-		
-		try {
-			validateSeller(existingProduct.getSeller());
-			
-			return true;
-			
-		} catch (AccessDeniedException e) {
-			
-			return false;
-		}
-		
-	}
-	
-	private void validateSeller(SellerEntity requestSeller) throws AccessDeniedException {
-		
 		SellerEntity currentSeller = sellerService.getCurrentSeller();
-
-		if (!currentSeller.equals(requestSeller)) {
+		
+		if (!currentSeller.equals(existingProduct.getSeller())) {
 			throw new AccessDeniedException("You do not have permission to create for this company.");
 		}
 		
+		return true;
 	}
 	
 	private void validateImageFiles(MultipartFile thumbnailImage, MultipartFile image) {
@@ -82,10 +68,7 @@ public class ProductService {
 	@Transactional
 	public ProductEntity createProduct(ProductCreateRequest request, MultipartFile thumbnailImage, MultipartFile image) throws IOException {
 		
-		SellerEntity seller = sellerService.getSellerId(request.sellerId());
 		SellerEntity currentSeller = sellerService.getCurrentSeller();
-		
-		validateSeller(seller);
 		
 		ProductEntity productEntity = ProductMapper.INSTANCE.toProductEntity(request);
 		

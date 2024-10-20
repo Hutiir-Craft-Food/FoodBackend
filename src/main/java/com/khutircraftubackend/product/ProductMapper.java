@@ -57,6 +57,7 @@ public interface ProductMapper {
                 .id(seller.getId())
                 .sellerName(seller.getSellerName())
                 .companyName(seller.getCompanyName())
+                .phoneNumber(seller.getPhoneNumber())
                 .creationDate(seller.getCreationDate())
                 .build();
     }

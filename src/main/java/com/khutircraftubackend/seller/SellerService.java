@@ -38,7 +38,6 @@ public class SellerService {
                 .companyName(seller.getCompanyName())
                 .phoneNumber(seller.getPhoneNumber())
                 .creationDate(seller.getCreationDate())
-                .email(user.getEmail())
                 .build();
     }
 
