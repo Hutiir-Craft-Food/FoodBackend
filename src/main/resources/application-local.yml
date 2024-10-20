@@ -2,9 +2,6 @@ spring:
   config:
     import: optional:file:.env.local[.properties]
 
-  flyway:
-    enabled: false
-
   jpa:
     generate-ddl: true
     hibernate:
@@ -14,8 +11,16 @@ spring:
         show-sql: true
         format_sql: true
 
+  flyway:
+    enabled: false
+
 logging:
   level:
     root: INFO
     com:
       khutircraftubackend: DEBUG
+  file:
+    name: logs/latest.log
+
+
+

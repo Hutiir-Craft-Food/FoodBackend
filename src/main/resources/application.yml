@@ -22,6 +22,11 @@ spring:
     enabled: true
     locations: classpath:db/migration
     baseline-on-migrate: true
+    placeholders:
+      email: ${FLYWAY_EMAIL}
+      password: ${FLYWAY_PASSWORD}
+      role: ${FLYWAY_ROLE}
+      enabled: ${FLYWAY_ENABLED}
 
   jpa:
     hibernate:
@@ -56,6 +61,19 @@ logging:
     root: WARN
     com:
       khutircraftubackend: INFO
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "info, loggers, health, auditevents, logfile, metrics, sessions"
+  endpoint:
+    health:
+      show-details: always
+  prometheus:
+    metrics:
+      export:
+        enabled: true
 
 server:
   port: 8080
