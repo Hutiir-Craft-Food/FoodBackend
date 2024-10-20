@@ -41,7 +41,6 @@ public interface ProductMapper {
     @Mapping(target = "category.id", source = "request.categoryId")
     void updateProductFromRequest(@MappingTarget ProductEntity product, ProductUpdateRequest request);
     
-    
     @Mapping(target = "seller", source = "productEntity.seller", qualifiedByName = "toSellerResponse")
     @Mapping(target = "category", source = "productEntity.category", qualifiedByName = "toCategoryResponse")
     ProductResponse toProductResponse(ProductEntity productEntity);
@@ -58,8 +57,6 @@ public interface ProductMapper {
                 .id(seller.getId())
                 .sellerName(seller.getSellerName())
                 .companyName(seller.getCompanyName())
-                .phoneNumber(seller.getPhoneNumber())
-                .email(seller.getUser().getEmail())
                 .creationDate(seller.getCreationDate())
                 .build();
     }
