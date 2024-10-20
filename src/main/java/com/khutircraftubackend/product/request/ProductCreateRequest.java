@@ -15,8 +15,6 @@ public record ProductCreateRequest(
         Boolean available,
         @NotBlank(message = "Description cannot be blank")
         String description,
-        @NotNull(message = "Seller ID cannot be null")
-        Long sellerId,
         @NotNull(message = "Category ID cannot be null")
         Long categoryId
 ) {
