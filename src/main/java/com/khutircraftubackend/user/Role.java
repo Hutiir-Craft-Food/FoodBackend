@@ -1,4 +1,4 @@
-package com.khutircraftubackend.auth;
+package com.khutircraftubackend.user;
 
 
 /**
