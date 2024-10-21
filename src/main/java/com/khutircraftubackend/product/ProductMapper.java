@@ -1,7 +1,6 @@
 package com.khutircraftubackend.product;
 
-import com.khutircraftubackend.category.CategoryEntity;
-import com.khutircraftubackend.category.response.CategoryResponse;
+import com.khutircraftubackend.category.CategoryMapper;
 import com.khutircraftubackend.product.image.FileConverterService;
 import com.khutircraftubackend.product.request.ProductCreateRequest;
 import com.khutircraftubackend.product.request.ProductUpdateRequest;
@@ -18,7 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-@Mapper(componentModel = "spring", uses = {FileConverterService.class, ProductMapper.class})
+@Mapper(componentModel = "spring", uses = {FileConverterService.class, CategoryMapper.class})
 public interface ProductMapper {
 
     ProductMapper INSTANCE = Mappers.getMapper(ProductMapper.class);
@@ -39,7 +38,7 @@ public interface ProductMapper {
     void updateProductFromRequest(@MappingTarget ProductEntity product, ProductUpdateRequest request);
     
     @Mapping(target = "seller", source = "productEntity.seller", qualifiedByName = "toSellerResponse")
-    @Mapping(target = "category", source = "productEntity.category", qualifiedByName = "toCategoryResponse")
+    @Mapping(target = "category", source = "productEntity.category")
     ProductResponse toProductResponse(ProductEntity productEntity);
     
     @Named("toSellerResponse")
@@ -56,25 +55,6 @@ public interface ProductMapper {
                 .companyName(seller.getCompanyName())
                 .phoneNumber(seller.getPhoneNumber())
                 .creationDate(seller.getCreationDate())
-                .build();
-    }
-    
-    @Named("toCategoryResponse")
-    default CategoryResponse toCategoryResponse(CategoryEntity category) {
-        
-        if (category == null) {
-            
-            return null;
-        }
-        
-        Long parentId = (category.getParentCategory() != null) ? category.getParentCategory().getId() : null;
-        
-        return CategoryResponse.builder()
-                .id(category.getId())
-                .name(category.getName())
-                .description(category.getDescription())
-                .parentId(parentId)
-                .iconUrl(category.getIconUrl())
                 .build();
     }
     
