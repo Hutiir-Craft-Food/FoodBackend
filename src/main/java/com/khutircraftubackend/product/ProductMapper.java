@@ -34,11 +34,8 @@ public interface ProductMapper {
     }
 
     @Mapping(target = "name", source = "request.name")
-    @Mapping(target = "imageUrl", source = "request.image")
-    @Mapping(target = "thumbnailImageUrl", source = "request.thumbnailImage")
     @Mapping(target = "available", source = "request.available")
     @Mapping(target = "description", source = "request.description")
-    @Mapping(target = "category.id", source = "request.categoryId")
     void updateProductFromRequest(@MappingTarget ProductEntity product, ProductUpdateRequest request);
     
     @Mapping(target = "seller", source = "productEntity.seller", qualifiedByName = "toSellerResponse")
