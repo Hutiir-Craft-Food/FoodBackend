@@ -34,6 +34,7 @@ public class ProductService {
 	private final FileConverterService fileConverterService;
 	private final CategoryRepository categoryRepository;
 	private final CategoryService categoryService;
+	private final ProductMapper productMapper;
 	
 	private ProductEntity findProductById(Long productId) {
 		
@@ -70,7 +71,7 @@ public class ProductService {
 		
 		SellerEntity currentSeller = sellerService.getCurrentSeller();
 		
-		ProductEntity productEntity = ProductMapper.INSTANCE.toProductEntity(request);
+		ProductEntity productEntity = productMapper.toProductEntity(request);
 		
 		CategoryEntity category = categoryService.findCategoryById(request.categoryId());
 		
@@ -126,11 +127,11 @@ public class ProductService {
 	public ProductEntity updateProduct(Long productId, ProductUpdateRequest request,
 									   MultipartFile thumbnailImageFile, MultipartFile imageFile) throws IOException {
 		
-		ProductEntity existingProduct = findProductById(productId);
-		ProductMapper.INSTANCE.updateProductFromRequest(existingProduct, request);
-		
 		validateImageFiles(thumbnailImageFile, imageFile);
-		
+
+		ProductEntity existingProduct = findProductById(productId);
+		productMapper.updateProductFromRequest(existingProduct, request);
+
 		if (!thumbnailImageFile.isEmpty()) {
 			String thumbnailImageUrl = fileConverterService.convert(thumbnailImageFile);
 			existingProduct.setThumbnailImageUrl(thumbnailImageUrl);
@@ -150,12 +151,12 @@ public class ProductService {
 		ProductEntity existingProduct = findProductById(productId);
 		
 		if (existingProduct.getThumbnailImageUrl() != null) {
-			String publicId = extractPublicId(existingProduct.getThumbnailImageUrl());
+			String publicId = extractPublicIdFromImageUrl(existingProduct.getThumbnailImageUrl());
 			fileUploadService.deleteCloudinaryById(publicId);
 		}
 		
 		if (existingProduct.getImageUrl() != null) {
-			String publicId = extractPublicId(existingProduct.getImageUrl());
+			String publicId = extractPublicIdFromImageUrl(existingProduct.getImageUrl());
 			fileUploadService.deleteCloudinaryById(publicId);
 		}
 		
@@ -172,19 +173,19 @@ public class ProductService {
 		for (ProductEntity product : products) {
 			
 			if (product.getThumbnailImageUrl() != null) {
-				String publicId = extractPublicId(product.getThumbnailImageUrl());
+				String publicId = extractPublicIdFromImageUrl(product.getThumbnailImageUrl());
 				fileUploadService.deleteCloudinaryById(publicId);
 			}
 			
 			if (product.getImageUrl() != null) {
-				String publicId = extractPublicId(product.getImageUrl());
+				String publicId = extractPublicIdFromImageUrl(product.getImageUrl());
 				fileUploadService.deleteCloudinaryById(publicId);
 			}
 		}
 		productRepository.deleteBySeller(currentSeller);
 	}
 	
-	private String extractPublicId(String url) {
+	private String extractPublicIdFromImageUrl(String url) {
 		
 		String[] parts = url.split("/");
 		

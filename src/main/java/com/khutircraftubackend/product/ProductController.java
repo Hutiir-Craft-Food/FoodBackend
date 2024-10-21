@@ -22,12 +22,11 @@ public class ProductController {
     private final ProductService productService;
     private final ProductMapper productMapper;
 
-    @PostMapping("/")
+    @PostMapping
     @PreAuthorize("hasRole('SELLER')")
     @ResponseStatus(HttpStatus.CREATED)
     public ProductResponse createProduct(
-            @Valid
-            @ModelAttribute ProductCreateRequest request,
+            @ModelAttribute @Valid ProductCreateRequest request,
             @RequestPart(value = "thumbnailImage", required = false) MultipartFile thumbnailImage,
             @RequestPart(value = "image", required = false) MultipartFile image) throws IOException {
 
@@ -41,7 +40,7 @@ public class ProductController {
     @ResponseStatus(HttpStatus.OK)
     public ProductResponse patchProduct(
             @PathVariable Long productId,
-            @Valid @ModelAttribute ProductUpdateRequest request,
+            @ModelAttribute @Valid ProductUpdateRequest request,
             @RequestPart(value = "thumbnailImage", required = false) MultipartFile thumbnailImage,
             @RequestPart(value = "image", required = false) MultipartFile image) throws IOException {
 
@@ -55,7 +54,7 @@ public class ProductController {
     @ResponseStatus(HttpStatus.OK)
     public ProductResponse updateProduct(
             @PathVariable Long productId,
-            @Valid @ModelAttribute ProductUpdateRequest request,
+            @ModelAttribute @Valid ProductUpdateRequest request,
             @RequestPart(value = "thumbnailImage", required = false) MultipartFile thumbnailImage,
             @RequestPart(value = "image", required = false) MultipartFile image) throws IOException {
 
