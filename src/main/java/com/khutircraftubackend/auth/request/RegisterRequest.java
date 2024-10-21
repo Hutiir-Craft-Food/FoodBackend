@@ -1,6 +1,6 @@
 package com.khutircraftubackend.auth.request;
 
-import com.khutircraftubackend.auth.Role;
+import com.khutircraftubackend.user.Role;
 import com.khutircraftubackend.seller.SellerDTO;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
