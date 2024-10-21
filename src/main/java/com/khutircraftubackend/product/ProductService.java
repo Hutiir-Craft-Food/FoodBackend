@@ -129,6 +129,11 @@ public class ProductService {
 		ProductEntity existingProduct = findProductById(productId);
 		ProductMapper.INSTANCE.updateProductFromRequest(existingProduct, request);
 		
+		if(request.categoryId() != null) {
+			CategoryEntity newCategory = categoryService.findCategoryById(request.categoryId());
+			existingProduct.setCategory(newCategory);
+		}
+		
 		validateImageFiles(thumbnailImageFile, imageFile);
 		
 		if (!thumbnailImageFile.isEmpty()) {
