@@ -14,13 +14,9 @@ import java.util.stream.Collectors;
 @Mapper(componentModel = "spring")
 public interface CategoryMapper {
 	
-	@Mapping(target = "name", source = "name")
-	@Mapping(target = "description", source = "description")
 	@Mapping(target = "parentCategory.id", source = "request.parentCategoryId")
 	CategoryEntity toCategoryEntity(CategoryCreateRequest request);
 	
-	@Mapping(target = "name", source = "name")
-	@Mapping(target = "description", source = "description")
 	@Mapping(target = "parentId", source = "parentCategory.id")
 	@Mapping(target = "iconUrl", source = "iconUrl")
 	CategoryResponse toCategoryResponse(CategoryEntity categoryEntity);
