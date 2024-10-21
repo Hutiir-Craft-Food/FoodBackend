@@ -1,5 +1,8 @@
 package com.khutircraftubackend.product;
 
+import com.khutircraftubackend.category.CategoryEntity;
+import com.khutircraftubackend.category.CategoryService;
+import com.khutircraftubackend.category.exception.category.CategoryNotFoundException;
 import com.khutircraftubackend.product.exception.product.ProductNotFoundException;
 import com.khutircraftubackend.product.image.FileConverterService;
 import com.khutircraftubackend.product.image.FileUploadService;
@@ -33,14 +36,23 @@ public class ProductServiceTest {
     private ProductRepository productRepository;
     @Mock
     private SellerService sellerService;
-    @InjectMocks
-    private ProductService productService;
-    private SellerEntity seller;
-    private ProductEntity product;
     @Mock
     private FileConverterService fileConverterService;
     @Mock
     private FileUploadService fileUploadService;
+    
+    @Mock
+    private MultipartFile mockThumbnailFile;
+    
+    @Mock
+    private MultipartFile mockImageFile;
+    
+    @Mock
+    private CategoryService categoryService;
+    @InjectMocks
+    private ProductService productService;
+    private SellerEntity seller;
+    private ProductEntity product;
 
     @BeforeEach
     void setUp() {
@@ -52,10 +64,37 @@ public class ProductServiceTest {
         product.setId(1L);
         product.setName("Test product");
         product.setSeller(seller);
+    
+        mockThumbnailFile = new MockMultipartFile("thumbnail", "test-thumbnail.jpg", "image/jpeg", "Test thumbnail content".getBytes());
+        mockImageFile = new MockMultipartFile("image", "test-image.jpg", "image/jpeg", "Test image content".getBytes());
+    
     }
-
     @Test
-    void testCanModifyProduct_ProductExistsAndBelongsToCurrentSeller() {
+    public void testCanModifyProduct_Success() throws AccessDeniedException {
+        
+        when(sellerService.getCurrentSeller()).thenReturn(seller);
+        when(productRepository.findProductById(1L)).thenReturn(Optional.of(product));
+        
+        boolean canModify = productService.canModifyProduct(1L);
+        
+        assertTrue(canModify);
+    }
+    @Test
+    public void testCanModifyProduct_Failure() {
+        
+        SellerEntity otherSeller = new SellerEntity();
+        otherSeller.setId(2L);
+        otherSeller.setCompanyName("Company B");
+        
+        when(sellerService.getCurrentSeller()).thenReturn(otherSeller);
+        when(productRepository.findProductById(1L)).thenReturn(Optional.of(product));
+        
+        assertThrows(AccessDeniedException.class, () -> productService.canModifyProduct(1L));
+    }
+    
+    @Test
+    void testCanModifyProduct_ProductExistsAndBelongsToCurrentSeller() throws AccessDeniedException {
+        
         when(productRepository.findProductById(1L)).thenReturn(Optional.of(product));
         when(sellerService.getCurrentSeller()).thenReturn(seller);
 
@@ -66,6 +105,7 @@ public class ProductServiceTest {
 
     @Test
     void testCanModifyProduct_ProductNotFound() {
+        
         when(productRepository.findProductById(1L)).thenReturn(Optional.empty());
 
         assertThrows(ProductNotFoundException.class, () -> productService.canModifyProduct(1L));
@@ -81,28 +121,29 @@ public class ProductServiceTest {
                 .companyName("CompanyA")
                 .build();
 
-        Long sellerId = 1L;
         Long categoryId = 2L;
-
-        MultipartFile mockThumbnailFile = new MockMultipartFile("thumbnail", "test-thumbnail.jpg", "image/jpeg", "Test thumbnail content".getBytes());
-        MultipartFile mockImageFile = new MockMultipartFile("image", "test-image.jpg", "image/jpeg", "Test image content".getBytes());
-
-        when(sellerService.getSellerId(sellerId)).thenReturn(requestSeller);
+        
         when(sellerService.getCurrentSeller()).thenReturn(currentSeller);
         when(productRepository.save(any(ProductEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(fileConverterService.convert(mockThumbnailFile)).thenReturn("uploaded-thumbnail-url");
         when(fileConverterService.convert(mockImageFile)).thenReturn("uploaded-image-url");
+    
+        CategoryEntity mockCategory = CategoryEntity.builder()
+                .id(categoryId)
+                .name("Test Category")
+                .build();
+        when(categoryService.findCategoryById(anyLong())).thenReturn(mockCategory);
+        
+        ProductCreateRequest request = ProductCreateRequest.builder()
+                .name("Test product")
+                .thumbnailImage(mockThumbnailFile)
+                .image(mockImageFile)
+                .available(true)
+                .description("Test description")
+                .categoryId(categoryId)
+                .build();
 
-        ProductEntity createdProduct = productService.createProduct(
-                "Test product",
-                mockThumbnailFile,
-                mockImageFile,
-                true,
-                "Test description",
-                sellerId,
-                categoryId
-
-        );
+        ProductEntity createdProduct = productService.createProduct(request, mockThumbnailFile, mockImageFile);
 
         assertNotNull(createdProduct, "Created product should not be null");
         assertEquals("Test product", createdProduct.getName());
@@ -112,43 +153,25 @@ public class ProductServiceTest {
         verify(fileConverterService).convert(mockThumbnailFile);
         verify(fileConverterService).convert(mockImageFile);
         verify(productRepository).save(any(ProductEntity.class));
-        verify(sellerService).getSellerId(sellerId);
+        verify(categoryService).findCategoryById(anyLong());
     }
 
     @Test
-    void testCreateProduct_AccessDenied() {
-        SellerEntity currentSeller = SellerEntity.builder()
-                .companyName("CompanyA")
-                .build();
-
-        SellerEntity requestSeller = SellerEntity.builder()
-                .companyName("CompanyB")
-                .build();
-
+    public void testCreateProduct_CategoryNotFound() {
+        
         ProductCreateRequest request = ProductCreateRequest.builder()
                 .name("Test product")
                 .description("Test description")
-                .seller(requestSeller)
+                .thumbnailImage(mockThumbnailFile)
+                .image(mockImageFile)
+                .available(true)
+                .categoryId(2L)
                 .build();
-
-        Long sellerId = 2L;
-        Long categoryId = 1L;
-
-        when(sellerService.getCurrentSeller()).thenReturn(currentSeller);
-        when(sellerService.getSellerId(sellerId)).thenReturn(requestSeller);
-
-        assertThrows(AccessDeniedException.class, () ->
-                productService.createProduct(
-                        "Test product",
-                        null,
-                        null,
-                        true,
-                        "Test description",
-                        sellerId,
-                        categoryId
-                )
-        );
-        verify(productRepository, never()).save(any(ProductEntity.class));
+        
+        when(categoryService.findCategoryById(2L)).thenThrow(new CategoryNotFoundException("Category not found"));
+    
+        assertThrows(CategoryNotFoundException.class, () ->
+                productService.createProduct(request, mockThumbnailFile, mockImageFile));
     }
 
     @Test
@@ -161,10 +184,7 @@ public class ProductServiceTest {
                 .available(false)
                 .description("Old description")
                 .build();
-
-        MultipartFile mockImageFile = new MockMultipartFile("image", "updated-image.jpg", "image/jpeg", "Updated image content".getBytes());
-        MultipartFile mockThumbnailFile = new MockMultipartFile("thumbnail", "updated-thumbnail.jpg", "image/jpeg", "Updated thumbnail content".getBytes());
-
+        
         ProductUpdateRequest request = ProductUpdateRequest.builder()
                 .name("Updated name")
                 .thumbnailImage(mockThumbnailFile)
