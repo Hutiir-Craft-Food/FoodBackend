@@ -39,6 +39,9 @@ public class UserEntity {
     @Column( name = "confirmation_token")
     private String confirmationToken;
 
+    @Column ( name = "life_confirmation_token")
+    private LocalDateTime lifeConfirmationToken;
+
   // TODO: remove it from here.
   //  maybe should be moved into another repository with its own Entity
   //  consider using "Cron Scheduler" for removing expired expiration codes.
