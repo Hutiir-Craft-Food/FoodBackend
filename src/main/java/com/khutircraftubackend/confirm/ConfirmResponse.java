@@ -5,6 +5,7 @@ import lombok.Builder;
 @Builder
 public record ConfirmResponse (
 
-        Boolean confirmed
+        Boolean confirmed,
+        String message
 ){
 }

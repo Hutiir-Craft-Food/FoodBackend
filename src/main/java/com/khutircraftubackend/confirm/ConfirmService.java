@@ -1,7 +1,6 @@
 package com.khutircraftubackend.confirm;
 
 import com.khutircraftubackend.auth.AuthResponseMessages;
-import com.khutircraftubackend.auth.exception.user.UserNotFoundException;
 import com.khutircraftubackend.mail.EmailSender;
 import com.khutircraftubackend.user.UserEntity;
 import com.khutircraftubackend.user.UserService;
@@ -37,22 +36,22 @@ public class ConfirmService {
         saveConfirmToken(verificationCode, user);
     }
 
-    private void saveConfirmToken(String token, UserEntity user){
-         ConfirmEntity confirm = ConfirmEntity.builder()
+    private void saveConfirmToken(String token, UserEntity user) {
+        ConfirmEntity confirm = ConfirmEntity.builder()
                 .confirmationToken(token)
                 .user(user)
                 .expiresAt(LocalDateTime.now().plusMinutes(LIFE_TOKEN))
                 .build();
-         confirmRepository.save(confirm);
+        confirmRepository.save(confirm);
     }
 
-    private ConfirmEntity findByUser(UserEntity user){
+    private ConfirmEntity findByUser(UserEntity user) {
         return confirmRepository.findByUser(user)
-                .orElseThrow(() -> new UserNotFoundException(String.format(
-                        AuthResponseMessages.USER_NOT_FOUND, user.getEmail())));
+                .orElseThrow(() ->
+                        new ResponseStatusException(HttpStatus.BAD_REQUEST, ConfirmMessageResponse.CONFIRM_NOT_FOUND));
     }
 
-    private String getRandomNumber(){
+    private String getRandomNumber() {
         int randomNumber = 100000 + random.nextInt(900000);
         return String.valueOf(randomNumber);
     }
@@ -60,8 +59,8 @@ public class ConfirmService {
     @Transactional
     public ConfirmResponse confirmToken(Principal principal, ConfirmRequest request) {
         UserEntity user = userService.findByPrincipal(principal);
-        if (user.isConfirmed()){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "TEST email accepted");
+        if (user.isConfirmed()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ConfirmMessageResponse.EMAIL_ACCEPTED);
         }
         ConfirmEntity confirm = findByUser(user);
         validateConfirmationToken(request.confirmationToken(), confirm);
@@ -70,17 +69,18 @@ public class ConfirmService {
         userService.updateUser(user);
         return ConfirmResponse.builder()
                 .confirmed(true)
+                .message(ConfirmMessageResponse.CONFIRM_ACCEPTED)
                 .build();
     }
 
     private void validateConfirmationToken(String key, ConfirmEntity confirm) {
         if (Boolean.FALSE.equals(
                 key.equals(confirm.getConfirmationToken()))) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "TEST equals");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ConfirmMessageResponse.CONFIRM_NOT_FOUND);
         }
 
-        if (confirm.getExpiresAt().isBefore(LocalDateTime.now())){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "TEST TIME");
+        if (confirm.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ConfirmMessageResponse.CONFIRM_TIME_IS_UP);
         }
     }
 }

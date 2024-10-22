@@ -59,7 +59,8 @@ public class AuthenticationService {
 
         UserEntity user = userService.findByEmail(request.email());
         if (Boolean.FALSE.equals(user.isEnabled())) {
-            throw new ResponseStatusException(HttpStatus.LOCKED, "User Blocked");
+            throw new ResponseStatusException(
+                    HttpStatus.LOCKED, String.format(AuthResponseMessages.USER_BLOCKED, user.getEmail()));
         }
 
         authenticateUser(request.email(), request.password());
@@ -102,7 +103,7 @@ public class AuthenticationService {
     private boolean isSeller(Role role) {
         return role.equals(Role.SELLER);
     }
-
+    //TODO Вінести в отдельный пакет???
     private void createReceiveAdvertising(RegisterRequest request, UserEntity user) {
         MarketingCampaignEntity advertising = MarketingCampaignEntity
                 .builder()

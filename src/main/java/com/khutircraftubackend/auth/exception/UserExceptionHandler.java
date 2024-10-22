@@ -1,19 +1,21 @@
 package com.khutircraftubackend.auth.exception;
 
-import com.khutircraftubackend.auth.exception.user.BadCredentialsException;
 import com.khutircraftubackend.auth.exception.user.UnauthorizedException;
-import com.khutircraftubackend.auth.exception.user.UserNotFoundException;
 import io.swagger.v3.oas.annotations.Hidden;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.util.HashMap;
+import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @ControllerAdvice
 public class UserExceptionHandler {
@@ -29,51 +31,50 @@ public class UserExceptionHandler {
         return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
     }
 
-    /**
-     * Handles UserNotFoundException and returns a response with status 404 (Not Found).
-     *
-     * @param e the exception to handle
-     * @return the response entity with the exception message and status 404
-     */
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<String> handleUserNotFoundException(UserNotFoundException e) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Користувач не знайдений: " + e.getMessage());
-    }
-
-    /**
-     * Handle bad credentials exception response entity.
-     *
-     * @param e the e
-     * @return the response entity
-     */
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<String> handleBadCredentialsException(BadCredentialsException e) {
-        return new ResponseEntity<>("Неправильні облікові дані", HttpStatus.UNAUTHORIZED);
+    public ResponseEntity<Map<String, Object>> handleBadCredentialsException(
+            BadCredentialsException ex, HttpServletRequest request) {
+
+        Map<String, Object> errors = new LinkedHashMap<>();
+        errors.put("timestamp", LocalDateTime.now());
+        errors.put("status", 403);
+        errors.put("reason", "Не правільні облікові дані");
+        errors.put("message", ex.getMessage());
+        errors.put("path", request.getRequestURI());
+
+        return ResponseEntity.status(403).body(errors);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach(error -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
+    public ResponseEntity<Map<String, Object>> handleValidationExceptions(
+            MethodArgumentNotValidException ex, HttpServletRequest request) {
+        Map<String, Object> errors = new LinkedHashMap<>();
+        Map<String, List<String>> errorsMessage = ex.getBindingResult().getFieldErrors().stream()
+                .collect(Collectors.groupingBy(
+                        FieldError::getField,
+                        LinkedHashMap::new,
+                        Collectors.mapping(FieldError::getDefaultMessage, Collectors.toList())
+                ));
+            errors.put("timestamp", LocalDateTime.now());
+            errors.put("status", ex.getStatusCode().value());
+            errors.put("reason", HttpStatus.valueOf(ex.getStatusCode().value()).getReasonPhrase());
+            errors.put("message", errorsMessage);
+            errors.put("path", request.getRequestURI());
+
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 
     @Hidden
     @ExceptionHandler(ResponseStatusException.class)
-    public ResponseEntity<Map<String, String>> handleResponseStatusException(ResponseStatusException ex) {
-        String errorMessage = ex.getMessage();
-        int startIndex = errorMessage.indexOf('"');
-        int endIndex = errorMessage.lastIndexOf('"');
-        if (startIndex != -1 && endIndex != -1 && startIndex != endIndex) {
-            errorMessage = errorMessage.substring(startIndex + 1, endIndex);
-        }
+    public ResponseEntity<Map<String, Object>> getErrorAttributes(
+            ResponseStatusException ex, HttpServletRequest request) {
+        Map<String, Object> errors = new LinkedHashMap<>();
+        errors.put("timestamp", LocalDateTime.now());
+        errors.put("status", ex.getStatusCode().value());
+        errors.put("reason", HttpStatus.valueOf(ex.getStatusCode().value()).getReasonPhrase());
+        errors.put("message", ex.getReason());
+        errors.put("path", request.getRequestURI());
 
-        Map<String, String> errorMap = new HashMap<>();
-        errorMap.put("ERROR TEST",  errorMessage);
-        return ResponseEntity.status(ex.getStatusCode()).body(errorMap);
+        return ResponseEntity.status(ex.getStatusCode()).body(errors);
     }
 }
