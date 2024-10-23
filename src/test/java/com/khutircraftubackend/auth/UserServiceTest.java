@@ -1,6 +1,6 @@
 package com.khutircraftubackend.auth;
 
-import com.khutircraftubackend.auth.exception.user.UserNotFoundException;
+
 import com.khutircraftubackend.user.Role;
 import com.khutircraftubackend.user.UserEntity;
 import com.khutircraftubackend.user.UserRepository;
