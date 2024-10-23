@@ -40,6 +40,6 @@ public class UserService {
     public UserEntity findByEmail(String email) {
         return userRepository.findByEmail(email)
                .orElseThrow(() ->
-                       new ResponseStatusException(HttpStatus.FORBIDDEN, UserMessageResponse.USER_NOT_FOUND));
+                       new ResponseStatusException(HttpStatus.FORBIDDEN, UserResponseMessages.USER_NOT_FOUND));
     }
 }

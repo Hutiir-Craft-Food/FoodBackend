@@ -31,5 +31,10 @@ public class UserController {
         return confirmService.confirmToken(principal, request);
     }
 
-
+    //TODO Need update after design
+    @PostMapping("/password")
+    @ResponseStatus(HttpStatus.OK)
+    public void updatePassword(Principal principal){
+        return;
+    }
 }

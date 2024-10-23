@@ -33,25 +33,27 @@ public class AuthenticationController {
     @Operation(summary = "Authenticate user", description = "Authenticate user with email and password.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User authenticated successfully"),
-            @ApiResponse(responseCode = "401", description = "Invalid credentials")
+            @ApiResponse(responseCode = "403", description = "Invalid credentials"),
+            @ApiResponse(responseCode = "423", description = "User blocked")
     })
     @PostMapping("/login")
     @ResponseStatus(HttpStatus.OK)
-    public AuthResponse authenticateUser(@Parameter(description = "Login request containing email and password") @Valid @RequestBody LoginRequest loginRequest) {
+    public AuthResponse authenticateUser(@Parameter(description = "Login request containing email and password")
+                                         @Valid @RequestBody LoginRequest loginRequest) {
         return authenticationService.authenticate(loginRequest);
     }
 
     @Operation(summary = "Register a new user", description = "Register a new user with email and password.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "User registered successfully"),
-            @ApiResponse(responseCode = "401", description = "User already exists")
+            @ApiResponse(responseCode = "400", description = "User already exists")
     })
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public AuthResponse register(@Parameter(description = "Registration request containing user details") @Valid @RequestBody RegisterRequest registerRequest) {
+    public AuthResponse register(@Parameter(description = "Registration request containing user details")
+                                 @Valid @RequestBody RegisterRequest registerRequest) {
         return authenticationService.registerNewUser(registerRequest);
     }
-
 
     //TODO Need to update logic after design
     @PostMapping("/recovery")

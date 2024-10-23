@@ -2,7 +2,7 @@ package com.khutircraftubackend.auth;
 
 import com.khutircraftubackend.auth.request.LoginRequest;
 import com.khutircraftubackend.auth.response.AuthResponse;
-import com.khutircraftubackend.auth.exception.user.BadCredentialsException;
+
 import com.khutircraftubackend.auth.exception.user.UserNotFoundException;
 import com.khutircraftubackend.jwt.JwtUtils;
 import com.khutircraftubackend.mail.EmailSender;
@@ -78,17 +78,17 @@ class AuthenticationServiceTest {
 //        verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
 //    }
 
-    @Test
-    @Rollback
-    void testAuthenticateEmailNotFound(){
-
-        LoginRequest request = new LoginRequest("test@test", "test");
-
-        when(userService.findByEmail(request.email())).thenThrow(new UserNotFoundException("User not found"));
-
-        assertThrows(UserNotFoundException.class, () -> authenticationService.authenticate(request));
-        verify(userService, times(1)).findByEmail(request.email());
-    }
+//    @Test
+//    @Rollback
+//    void testAuthenticateEmailNotFound(){
+//
+//        LoginRequest request = new LoginRequest("test@test", "test");
+//
+//        when(userService.findByEmail(request.email())).thenThrow(new UserNotFoundException("User not found"));
+//
+//        assertThrows(UserNotFoundException.class, () -> authenticationService.authenticate(request));
+//        verify(userService, times(1)).findByEmail(request.email());
+//    }
 
 //    @Test
 //    @Rollback

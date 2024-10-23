@@ -1,7 +1,6 @@
 package com.khutircraftubackend.auth;
 
 import com.khutircraftubackend.confirm.ConfirmService;
-import com.khutircraftubackend.auth.exception.user.UserExistsException;
 import com.khutircraftubackend.auth.request.LoginRequest;
 import com.khutircraftubackend.auth.request.RegisterRequest;
 import com.khutircraftubackend.auth.response.AuthResponse;
@@ -82,7 +81,7 @@ public class AuthenticationService {
     public AuthResponse registerNewUser(RegisterRequest request) {
 
         if (userRepository.existsByEmail(request.email())) {
-            throw new UserExistsException(AuthResponseMessages.EMAIL_IS_ALREADY_IN_USE);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, AuthResponseMessages.EMAIL_IS_ALREADY_IN_USE);
         }
 
         UserEntity user = userService.createdUser(request);
@@ -103,6 +102,7 @@ public class AuthenticationService {
     private boolean isSeller(Role role) {
         return role.equals(Role.SELLER);
     }
+
     //TODO Вінести в отдельный пакет???
     private void createReceiveAdvertising(RegisterRequest request, UserEntity user) {
         MarketingCampaignEntity advertising = MarketingCampaignEntity
