@@ -1,48 +1,72 @@
 package com.khutircraftubackend.auth.exception;
 
-import com.khutircraftubackend.auth.exception.user.BadCredentialsException;
-import com.khutircraftubackend.auth.exception.user.UnauthorizedException;
-import com.khutircraftubackend.auth.exception.user.UserNotFoundException;
+import io.swagger.v3.oas.annotations.Hidden;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+@Hidden
 @ControllerAdvice
 public class UserExceptionHandler {
 
-    /**
-     * Handle unauthorized exception response entity.
-     *
-     * @param e the e
-     * @return the response entity
-     */
-    @ExceptionHandler(UnauthorizedException.class)
-    public ResponseEntity<String> handleUnauthorizedException(UnauthorizedException e) {
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
-    }
-
-    /**
-     * Handles UserNotFoundException and returns a response with status 404 (Not Found).
-     *
-     * @param e the exception to handle
-     * @return the response entity with the exception message and status 404
-     */
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<String> handleUserNotFoundException(UserNotFoundException e) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Користувач не знайдений: " + e.getMessage());
-    }
-
-    /**
-     * Handle bad credentials exception response entity.
-     *
-     * @param e the e
-     * @return the response entity
-     */
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<String> handleBadCredentialsException(BadCredentialsException e) {
-        return new ResponseEntity<>("Неправильні облікові дані", HttpStatus.UNAUTHORIZED);
+    public ResponseEntity<Map<String, Object>> handleBadCredentialsException(
+            BadCredentialsException ex, HttpServletRequest request) {
+
+        Map<String, Object> errors = setErrors(403, "Не правільні облікові дані.",
+                ex.getMessage(), request.getRequestURI());
+
+        return ResponseEntity.status(403).body(errors);
     }
 
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, Object>> handleValidationExceptions(
+            MethodArgumentNotValidException ex, HttpServletRequest request) {
+        Map<String, List<String>> errorsMessage = ex.getBindingResult().getFieldErrors().stream()
+                .collect(Collectors.groupingBy(
+                        FieldError::getField,
+                        LinkedHashMap::new,
+                        Collectors.mapping(FieldError::getDefaultMessage, Collectors.toList())
+                ));
+        Map<String, Object> errors = setErrors(ex.getStatusCode().value(),
+                HttpStatus.valueOf(ex.getStatusCode().value()).getReasonPhrase(),
+                errorsMessage,
+                request.getRequestURI());
 
+        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<Map<String, Object>> getErrorAttributes(
+            ResponseStatusException ex, HttpServletRequest request) {
+        Map<String, Object> errors = setErrors(ex.getStatusCode().value(),
+                HttpStatus.valueOf(ex.getStatusCode().value()).getReasonPhrase(),
+                ex.getReason(),
+                request.getRequestURI());
+
+        return ResponseEntity.status(ex.getStatusCode()).body(errors);
+    }
+
+    private Map<String, Object> setErrors(int status, String reason, Object message, String path) {
+        Map<String, Object> errors = new LinkedHashMap<>();
+        errors.put("timestamp", LocalDateTime.now());
+        errors.put("status", status);
+        errors.put("reason", reason);
+        errors.put("message", message);
+        errors.put("path", path);
+
+        return errors;
+    }
 }

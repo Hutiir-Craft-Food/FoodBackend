@@ -1,6 +1,6 @@
 package com.khutircraftubackend.config;
 
-import com.khutircraftubackend.auth.UserRepository;
+import com.khutircraftubackend.user.UserRepository;
 import com.khutircraftubackend.security.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
