@@ -2,17 +2,26 @@ spring:
   config:
     import: optional:file:.env.local[.properties]
 
-  flyway:
-    enabled: false
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/khutir_craft}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
 
   jpa:
     generate-ddl: true
     hibernate:
-      ddl-auto: create
+      # ACHTUNG!!! keep `ddl-auto: update` for local profile.
+      # we don't want spring to re-create tables from scratch
+      # every time we start it: https://stackoverflow.com/a/75228882
+      ddl-auto: update
     properties:
       hibernate:
         show-sql: true
         format_sql: true
+
+  flyway:
+    enabled: false
 
   mail:
     host: localhost
@@ -24,6 +33,10 @@ spring:
           starttls:
             enable: false
 
+jwt:
+  secret: ${JWT_SECRET:dummy-secret-phrase}
+  expiration: ${JWT_EXPIRATION:600000}
+
 logging:
   level:
     root: INFO
@@ -34,4 +47,4 @@ logging:
 
 storage:
   local:
-    base-path: ./uploads
+    base-path: ${LOCAL_STORAGE_BASEPATH:'./uploads'}

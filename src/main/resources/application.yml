@@ -12,6 +12,17 @@ spring:
     ansi:
       enabled: ALWAYS
 
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+
   flyway:
     enabled: true
     locations: classpath:db/migration
@@ -22,19 +33,6 @@ spring:
       role: ${FLYWAY_ROLE}
       enabled: ${FLYWAY_ENABLED}
       confirmed: ${FLYWAY_CONFIRMED}
-
-
-  datasource:
-    driver-class-name: org.postgresql.Driver
-    url: ${SPRING_DATASOURCE_URL}
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
-
-
-  jpa:
-    hibernate:
-      ddl-auto: none
-    open-in-view: false
 
   mail:
     host: ${MAIL_HOST}
@@ -58,8 +56,6 @@ jwt:
   expiration: ${JWT_EXPIRATION}
 
 logging:
-  pattern:
-    dateformat: 'yyyy-MM-dd hh:mm:ss.SSS'
   level:
     root: WARN
     com:
@@ -78,8 +74,8 @@ management:
       export:
         enabled: true
 
-
 server:
   port: 8080
   error:
-    include-message: always
+    include-message: ALWAYS
+    include-stacktrace: NEVER

@@ -1,20 +1,23 @@
+name: "khutir-craft"
 services:
   app:
-    container_name: food-backend
+    container_name: "khutir-app"
     depends_on:
       - db
     environment:
+      # this needs to be overridden to work inside the docker network:
       SPRING_DATASOURCE_URL: "jdbc:postgresql://db:5432/khutir_craft"
     ports:
       - "8080:8080"
     env_file:
+      - ../.env
       - ../.env.local
     build:
       context: ../
       dockerfile: docker/Dockerfile
 
   db:
-    container_name: food-database
+    container_name: "khutir-db"
     image: postgres:16.4-alpine3.20
     restart: always
     environment:
@@ -22,16 +25,19 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - pg_marketplace:/var/lib/postgresql/data
-      - ../src/main/sql/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+      - khutir-db-data:/var/lib/postgresql/data
+      - ./dbsetup.sql:/docker-entrypoint-initdb.d/dbsetup.sql
 
   mail:
-    container_name: mailhog-server
-    image: mailhog/mailhog:v1.0.1
+    container_name: "khutir-mail"
+    image: mailhog/mailhog:latest
     restart: always
     ports:
       - "8025:8025"
       - "1025:1025"
 
 volumes:
-  pg_marketplace:
+  khutir-db-data:
+    name: "khutir-db-data"
+    labels:
+      - "com.khutir-craft.db"

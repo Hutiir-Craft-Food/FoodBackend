@@ -20,9 +20,9 @@ This project is a Spring Boot application with PostgreSQL as the database. Docke
 To start the application and the PostgreSQL database using Docker Compose, run:
 
 ```bash
-docker-compose --file ./docker/docker-compose.yml up -d
+docker compose --file ./docker/docker-compose.yml up -d
 ```
-This command will:
+This command will do the below:
 
 	•	Build the image (if not already built).
 	•	Start the PostgreSQL database container.
@@ -50,7 +50,7 @@ After making the change, you will access the application at:
   http://localhost:9090/
 
 ```bash
-docker-compose ps
+docker compose ps
 ```
 This command will show the status of your Docker containers.
 
@@ -86,6 +86,6 @@ docker rmi my-app-image
 To stop the running containers, use the following command:
 
 ```bash
-docker-compose --file ./docker/docker-compose.yml down
+docker compose --file ./docker/docker-compose.yml down
 ```
 This command will stop and remove the containers, but the data stored in the PostgreSQL volume will be preserved.
