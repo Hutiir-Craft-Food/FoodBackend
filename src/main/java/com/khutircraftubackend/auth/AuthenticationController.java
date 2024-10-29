@@ -22,7 +22,7 @@ import java.security.Principal;
  * Клас AuthenticationController обробляє запити, пов'язані з користувачами.
  */
 @RestController
-@RequestMapping("/v1/user")
+@RequestMapping("/v1/users")
 @RequiredArgsConstructor
 @Slf4j
 public class AuthenticationController {
