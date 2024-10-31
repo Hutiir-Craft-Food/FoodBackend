@@ -12,7 +12,7 @@ import java.security.Principal;
  */
 
 @RestController
-@RequestMapping("/v1/seller")
+@RequestMapping("/v1/sellers")
 @RequiredArgsConstructor
 public class SellerController {
 
