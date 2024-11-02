@@ -22,6 +22,7 @@ spring:
       role: ${FLYWAY_ROLE}
       enabled: ${FLYWAY_ENABLED}
 
+
   datasource:
     driver-class-name: org.postgresql.Driver
     url: ${SPRING_DATASOURCE_URL}
@@ -75,6 +76,7 @@ management:
     metrics:
       export:
         enabled: true
+
 
 server:
   port: 8080

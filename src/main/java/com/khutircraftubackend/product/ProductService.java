@@ -1,16 +1,11 @@
 package com.khutircraftubackend.product;
 
 import com.khutircraftubackend.category.CategoryEntity;
-import com.khutircraftubackend.category.CategoryRepository;
 import com.khutircraftubackend.category.CategoryService;
-import com.khutircraftubackend.category.exception.category.CategoryExceptionMessages;
-import com.khutircraftubackend.category.exception.category.CategoryNotFoundException;
 import com.khutircraftubackend.product.exception.product.ProductNotFoundException;
-import com.khutircraftubackend.product.exception.product.ProductValidationMessages;
 import com.khutircraftubackend.product.image.FileConverterService;
 import com.khutircraftubackend.product.image.FileUploadService;
-import com.khutircraftubackend.product.request.ProductCreateRequest;
-import com.khutircraftubackend.product.request.ProductUpdateRequest;
+import com.khutircraftubackend.product.request.ProductRequest;
 import com.khutircraftubackend.seller.SellerEntity;
 import com.khutircraftubackend.seller.SellerService;
 import jakarta.transaction.Transactional;
@@ -32,13 +27,22 @@ public class ProductService {
 	private final SellerService sellerService;
 	private final FileUploadService fileUploadService;
 	private final FileConverterService fileConverterService;
-	private final CategoryRepository categoryRepository;
 	private final CategoryService categoryService;
+	private final ProductMapper productMapper;
 	
 	private ProductEntity findProductById(Long productId) {
 		
 		return productRepository.findProductById(productId)
 				.orElseThrow(() -> new ProductNotFoundException("Product with id " + productId + " not found"));
+	}
+	
+	private String handleIcon(MultipartFile iconFile) throws IOException {
+		
+		if (iconFile != null && !iconFile.isEmpty()) {
+			return fileConverterService.convert(iconFile);
+		}
+		
+		return null;
 	}
 	
 	public boolean canModifyProduct(Long productId) throws AccessDeniedException {
@@ -53,20 +57,8 @@ public class ProductService {
 		return true;
 	}
 	
-	private void validateImageFiles(MultipartFile thumbnailImage, MultipartFile image) {
-		
-		if (thumbnailImage == null || thumbnailImage.isEmpty()) {
-			throw new IllegalArgumentException(ProductValidationMessages.THUMBNAIL_IMAGE_NULL_OR_EMPTY);
-		}
-		
-		if (image == null || image.isEmpty()) {
-			throw new IllegalArgumentException(ProductValidationMessages.IMAGE_NULL_OR_EMPTY);
-		}
-		
-	}
-	
 	@Transactional
-	public ProductEntity createProduct(ProductCreateRequest request, MultipartFile thumbnailImage, MultipartFile image) throws IOException {
+	public ProductEntity createProduct(ProductRequest request, MultipartFile thumbnailImage, MultipartFile image) throws IOException {
 		
 		SellerEntity currentSeller = sellerService.getCurrentSeller();
 		
@@ -74,10 +66,8 @@ public class ProductService {
 		
 		CategoryEntity category = categoryService.findCategoryById(request.categoryId());
 		
-		validateImageFiles(thumbnailImage, image);
-		
-		productEntity.setImageUrl(fileConverterService.convert(image));
-		productEntity.setThumbnailImageUrl(fileConverterService.convert(thumbnailImage));
+		productEntity.setImageUrl(handleIcon(image));
+		productEntity.setThumbnailImageUrl(handleIcon(thumbnailImage));
 		
 		productEntity.setCategory(category);
 		productEntity.setSeller(currentSeller);
@@ -85,66 +75,21 @@ public class ProductService {
 		return productRepository.save(productEntity);
 	}
 	
-	
 	@Transactional
-	public ProductEntity patchProduct(Long productId, ProductUpdateRequest request,
-									  MultipartFile thumbnailImageFile, MultipartFile imageFile) throws IOException {
-		
-		ProductEntity existingProduct = findProductById(productId);
-		
-		if (request.name() != null) {
-			existingProduct.setName(request.name());
-		}
-		
-		if (thumbnailImageFile != null && !thumbnailImageFile.isEmpty()) {
-			String thumbnailImageUrl = fileConverterService.convert(thumbnailImageFile);
-			existingProduct.setThumbnailImageUrl(thumbnailImageUrl);
-		}
-		
-		if (imageFile != null && !imageFile.isEmpty()) {
-			String imageUrl = fileConverterService.convert(imageFile);
-			existingProduct.setImageUrl(imageUrl);
-		}
-		
-		if (request.available() != null) {
-			existingProduct.setAvailable(request.available());
-		}
-		
-		if (request.description() != null) {
-			existingProduct.setDescription(request.description());
-		}
-		
-		if (request.categoryId() != null && request.name() != null) {
-			existingProduct.setCategory(categoryRepository.findById(request.categoryId()).orElseThrow(() ->
-					new CategoryNotFoundException(CategoryExceptionMessages.CATEGORY_NOT_FOUND)));
-		}
-		
-		return productRepository.save(existingProduct);
-	}
-	
-	@Transactional
-	public ProductEntity updateProduct(Long productId, ProductUpdateRequest request,
+	public ProductEntity updateProduct(Long productId, ProductRequest request,
 									   MultipartFile thumbnailImageFile, MultipartFile imageFile) throws IOException {
 		
 		ProductEntity existingProduct = findProductById(productId);
-		ProductMapper.INSTANCE.updateProductFromRequest(existingProduct, request);
 		
-		if(request.categoryId() != null) {
+		productMapper.updateProductFromRequest(existingProduct, request);
+		
+		if (request.categoryId() != null) {
 			CategoryEntity newCategory = categoryService.findCategoryById(request.categoryId());
 			existingProduct.setCategory(newCategory);
 		}
 		
-		validateImageFiles(thumbnailImageFile, imageFile);
-		
-		if (!thumbnailImageFile.isEmpty()) {
-			String thumbnailImageUrl = fileConverterService.convert(thumbnailImageFile);
-			existingProduct.setThumbnailImageUrl(thumbnailImageUrl);
-		}
-		
-		if (!imageFile.isEmpty()) {
-			String imageUrl = fileConverterService.convert(imageFile);
-			existingProduct.setImageUrl(imageUrl);
-		}
+		existingProduct.setThumbnailImageUrl(handleIcon(thumbnailImageFile));
+		existingProduct.setImageUrl(handleIcon(imageFile));
 		
 		return productRepository.save(existingProduct);
 	}
@@ -155,12 +100,12 @@ public class ProductService {
 		ProductEntity existingProduct = findProductById(productId);
 		
 		if (existingProduct.getThumbnailImageUrl() != null) {
-			String publicId = extractPublicId(existingProduct.getThumbnailImageUrl());
+			String publicId = fileUploadService.extractPublicId(existingProduct.getThumbnailImageUrl());
 			fileUploadService.deleteCloudinaryById(publicId);
 		}
 		
 		if (existingProduct.getImageUrl() != null) {
-			String publicId = extractPublicId(existingProduct.getImageUrl());
+			String publicId = fileUploadService.extractPublicId(existingProduct.getImageUrl());
 			fileUploadService.deleteCloudinaryById(publicId);
 		}
 		
@@ -177,24 +122,18 @@ public class ProductService {
 		for (ProductEntity product : products) {
 			
 			if (product.getThumbnailImageUrl() != null) {
-				String publicId = extractPublicId(product.getThumbnailImageUrl());
+				String publicId = fileUploadService.extractPublicId(product.getThumbnailImageUrl());
 				fileUploadService.deleteCloudinaryById(publicId);
 			}
 			
 			if (product.getImageUrl() != null) {
-				String publicId = extractPublicId(product.getImageUrl());
+				String publicId = fileUploadService.extractPublicId(product.getImageUrl());
 				fileUploadService.deleteCloudinaryById(publicId);
 			}
 		}
 		productRepository.deleteBySeller(currentSeller);
 	}
 	
-	private String extractPublicId(String url) {
-		
-		String[] parts = url.split("/");
-		
-		return parts[parts.length - 1].split("\\.")[0];
-	}
 	
 	public List<ProductEntity> getProducts(int offset, int limit) {
 		

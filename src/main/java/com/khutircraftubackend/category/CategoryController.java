@@ -1,12 +1,12 @@
 package com.khutircraftubackend.category;
 
-import com.khutircraftubackend.category.request.CategoryCreateRequest;
-import com.khutircraftubackend.category.request.CategoryUpdateRequest;
+import com.khutircraftubackend.category.request.CategoryRequest;
 import com.khutircraftubackend.category.response.CategoryResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,7 +24,7 @@ public class CategoryController {
 	private final CategoryService categoryService;
 	private final CategoryMapper categoryMapper;
 	
-	@GetMapping("/")
+	@GetMapping
 	public Collection<CategoryResponse> getAllRootCategories() {
 		
 		List<CategoryEntity> categoryEntities = categoryService.getAllRootCategories();
@@ -41,11 +41,11 @@ public class CategoryController {
 		return categoryMapper.toCategoryResponse(categoryEntities);
 	}
 	
-	@PostMapping("/")
+	@PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
 	@PreAuthorize("hasRole('ADMIN')")
 	@ResponseStatus(HttpStatus.OK)
 	public CategoryResponse createCategory(
-			@Valid @ModelAttribute CategoryCreateRequest request,
+			@Valid @ModelAttribute CategoryRequest request,
 			@RequestPart(value = "iconFile", required = false) MultipartFile iconFile) throws IOException {
 		
 		CategoryEntity category = categoryService.createCategory(request, iconFile);
@@ -53,12 +53,12 @@ public class CategoryController {
 		return categoryMapper.toCategoryResponse(category);
 	}
 	
-	@PatchMapping("/{id}")
+	@PutMapping(value = "/{id}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
 	@PreAuthorize("hasRole('ADMIN')")
 	@ResponseStatus(HttpStatus.OK)
 	public CategoryResponse updateCategory(
 			@PathVariable Long id,
-			@Valid @ModelAttribute CategoryUpdateRequest request,
+			@ModelAttribute CategoryRequest request,
 			@RequestPart(value = "iconFile", required = false) MultipartFile iconFile) throws IOException {
 		
 		CategoryEntity updateCategory = categoryService.updateCategory(id, request, iconFile);

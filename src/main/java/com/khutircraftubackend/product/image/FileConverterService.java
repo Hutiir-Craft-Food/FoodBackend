@@ -9,10 +9,11 @@ import java.io.IOException;
 @Service
 @RequiredArgsConstructor
 public class FileConverterService {
-    private final FileUploadService fileUploadService;
-
-    public String convert(MultipartFile file) throws IOException {
-        if (file == null || file.isEmpty()) return null;
-        return fileUploadService.uploadImage(file);
-    }
+	private final FileUploadService fileUploadService;
+	
+	public String convert(MultipartFile file) throws IOException {
+		if (file == null || file.isEmpty()) return null;
+  
+		return fileUploadService.uploadImage(file);
+	}
 }

@@ -11,21 +11,21 @@ import lombok.*;
 @Builder
 @Table(name = "categories")
 public class CategoryEntity {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(name = "name", nullable = false, unique = true)
-    private String name;
-
-    @Column(name = "description")
-    private String description;
-
-    @Column(name = "icon_url")
-    private String iconUrl;
-
-    @ManyToOne
-    @JoinColumn(name = "parent_id")
-    private CategoryEntity parentCategory;
+	
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+	
+	@Column(name = "name", nullable = false, unique = true)
+	private String name;
+	
+	@Column(name = "description")
+	private String description;
+	
+	@Column(name = "icon_url")
+	private String iconUrl;
+	
+	@ManyToOne
+	@JoinColumn(name = "parent_id")
+	private CategoryEntity parentCategory;
 }
