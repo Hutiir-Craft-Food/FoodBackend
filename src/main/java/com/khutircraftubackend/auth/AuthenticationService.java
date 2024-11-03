@@ -156,7 +156,7 @@ public class AuthenticationService {
         userRepository.save(user);
     }
 
-    private String getRandomNumber(){
+    public String getRandomNumber(){
         int randomNumber = 100000 + random.nextInt(900000);
         return String.valueOf(randomNumber);
     }
