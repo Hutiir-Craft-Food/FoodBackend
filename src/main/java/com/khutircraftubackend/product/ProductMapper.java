@@ -7,15 +7,11 @@ import com.khutircraftubackend.seller.SellerMapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
-import org.mapstruct.factory.Mappers;
 
 import java.util.Collection;
-import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring", uses = {SellerMapper.class, CategoryMapper.class})
 public interface ProductMapper {
-	
-	ProductMapper INSTANCE = Mappers.getMapper(ProductMapper.class);
 	
 	ProductEntity toProductEntity(ProductRequest request);
 	
@@ -28,12 +24,6 @@ public interface ProductMapper {
 	@Mapping(target = "category", source = "productEntity.category")
 	ProductResponse toProductResponse(ProductEntity productEntity);
 	
-	default Collection<ProductResponse> toProductResponse(Collection<ProductEntity> productEntities) {
-		
-		return productEntities.stream()
-				.map(this::toProductResponse)
-				.collect(Collectors.toList());
-	}
-	
+	Collection<ProductResponse> toProductResponse(Collection<ProductEntity> productEntities);
 	
 }

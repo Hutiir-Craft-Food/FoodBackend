@@ -62,7 +62,7 @@ public class ProductService {
 		
 		SellerEntity currentSeller = sellerService.getCurrentSeller();
 		
-		ProductEntity productEntity = ProductMapper.INSTANCE.toProductEntity(request);
+		ProductEntity productEntity = productMapper.toProductEntity(request);
 		
 		CategoryEntity category = categoryService.findCategoryById(request.categoryId());
 		

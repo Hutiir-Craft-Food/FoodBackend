@@ -58,7 +58,7 @@ public class CategoryController {
 	@ResponseStatus(HttpStatus.OK)
 	public CategoryResponse updateCategory(
 			@PathVariable Long id,
-			@ModelAttribute CategoryRequest request,
+			@Valid @ModelAttribute CategoryRequest request,
 			@RequestPart(value = "iconFile", required = false) MultipartFile iconFile) throws IOException {
 		
 		CategoryEntity updateCategory = categoryService.updateCategory(id, request, iconFile);

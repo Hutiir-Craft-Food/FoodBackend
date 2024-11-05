@@ -7,7 +7,7 @@ public record CategoryResponse(
 		Long id,
 		String name,
 		String description,
-		Long parentId,
+		Long parentCategoryId,
 		String iconUrl
 ) {
 }
