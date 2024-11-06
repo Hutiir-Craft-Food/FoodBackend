@@ -1,7 +1,7 @@
 package com.khutircraftubackend.product.response;
 
 import com.khutircraftubackend.category.response.CategoryResponse;
-import com.khutircraftubackend.seller.SellerResponse;
+import com.khutircraftubackend.seller.response.SellerResponse;
 import lombok.Builder;
 
 @Builder

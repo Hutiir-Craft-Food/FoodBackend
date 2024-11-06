@@ -1,28 +1,27 @@
 package com.khutircraftubackend.seller;
 
+import com.khutircraftubackend.seller.request.SellerRequest;
+import com.khutircraftubackend.seller.response.SellerResponse;
 import org.mapstruct.Mapper;
-import org.mapstruct.factory.Mappers;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 
 import java.util.Collection;
-import java.util.stream.Collectors;
 
 /**
- * Інтерфейс SellerMapper мапить дані між моделлю SellerEntity та DTO SellerDTO.
+ * Інтерфейс SellerMapper мапить дані між моделлю SellerEntity та DTO SellerRequest.
  */
 
 @Mapper(componentModel = "spring")
 public interface SellerMapper {
-    SellerMapper INSTANCE = Mappers.getMapper(SellerMapper.class);
+    SellerEntity toSellerEntity(SellerRequest sellerRequest);
 
-    SellerEntity SellerDTOToSeller(SellerDTO sellerDTO);
 
-    SellerDTO SellerToSellerDTO(SellerEntity seller);
+    void updateSellerFromRequest(@MappingTarget SellerEntity seller, SellerRequest request);
     
+    @Mapping(target = "phoneNumber", ignore = true)
     SellerResponse toSellerResponse(SellerEntity sellerEntity);
     
-    default Collection<SellerResponse> toSellerResponse(Collection<SellerEntity> sellerEntities) {
-        return sellerEntities.stream()
-                .map(this::toSellerResponse)
-                .collect(Collectors.toList());
-    }
+    Collection<SellerResponse> toSellerResponse(Collection<SellerEntity> sellerEntities);
+    
 }

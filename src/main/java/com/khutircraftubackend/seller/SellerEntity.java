@@ -29,14 +29,35 @@ public class SellerEntity {
 
     @Column(name = "company_name")
     private String companyName;
-
+    
+//    @Column(name = "description")
+//    private String description;
+    
+//    @Column(name = "logo")
+//    private String logoUrl;
+    
     @Column(name = "phone_number", nullable = false, unique = true)
     private String phoneNumber;
+    
+//    @Column(name = "customer_phone_number", nullable = false, unique = true)
+//    private String customerPhoneNumber;
 
     @OneToOne
     @JoinColumn(name = "user_id")
     private UserEntity user;
-
+    
+    //TODO реалізація окремих сутностей?
+//    @OneToOne
+//    @JoinColumn(name = "address_id")
+//    private AddressEntity address;
+//
+//    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+//    @JoinColumn(name = "seller_id")
+//    private Collection<DeliveryMethod> deliveryMethods;
+//
+//    @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private Collection<QualityCertificate> qualityCertificates;
+    
     @Column (name = "creation_date")
     private LocalDateTime creationDate;
 
