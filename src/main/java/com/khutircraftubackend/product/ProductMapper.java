@@ -13,7 +13,7 @@ import java.util.Collection;
 import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
 import static org.mapstruct.ReportingPolicy.IGNORE;
 
-@Mapper(componentModel = SPRING, unmappedTargetPolicy = IGNORE ,
+@Mapper(componentModel = SPRING, unmappedTargetPolicy = IGNORE,
 		uses = {SellerMapper.class, CategoryMapper.class})
 public interface ProductMapper {
 	

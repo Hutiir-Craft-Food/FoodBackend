@@ -1,27 +1,17 @@
 spring:
   config:
-    import: optional:file:.env.local[.properties]
+    import: optional:file:.env.local
 
-  datasource:
-    driver-class-name: org.postgresql.Driver
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/khutir_craft}
-    username: ${SPRING_DATASOURCE_USERNAME:postgres}
-    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+  flyway:
+    enabled: false
 
   jpa:
-    generate-ddl: true
     hibernate:
-      # ACHTUNG!!! keep `ddl-auto: update` for local profile.
-      # we don't want spring to re-create tables from scratch
-      # every time we start it: https://stackoverflow.com/a/75228882
-      ddl-auto: update
+      ddl-auto: none
     properties:
       hibernate:
         show-sql: true
         format_sql: true
-
-  flyway:
-    enabled: false
 
   mail:
     host: localhost
@@ -32,10 +22,18 @@ spring:
           auth: false
           starttls:
             enable: false
-
-jwt:
-  secret: ${JWT_SECRET:dummy-secret-phrase}
-  expiration: ${JWT_EXPIRATION:600000}
+  sql:
+    init:
+      schema-locations:
+        - classpath:db/migration/V1__Create_users_table.sql
+        - classpath:db/migration/V2__Create_addresses_table.sql
+        - classpath:db/migration/V3__Create_sellers_table.sql
+        - classpath:db/migration/V4__Create_categories_table.sql
+        - classpath:db/migration/V5__Create_products_table.sql
+        - classpath:db/migration/V7__Create_marketing_campaign_table.sql
+        - classpath:db/migration/V8__Create_delivery_methods_table.sql
+        - classpath:db/migration/V10__Create_quality_certificates_table.sql
+      mode: always
 
 logging:
   level:
@@ -44,7 +42,3 @@ logging:
       khutircraftubackend: DEBUG
   file:
     name: logs/latest.log
-
-storage:
-  local:
-    base-path: ${LOCAL_STORAGE_BASEPATH:'./uploads'}

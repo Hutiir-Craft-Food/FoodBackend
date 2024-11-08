@@ -1,10 +1,15 @@
 package com.khutircraftubackend.seller;
 
 import com.khutircraftubackend.user.UserEntity;
+import com.khutircraftubackend.address.AddressEntity;
+import com.khutircraftubackend.delivery.DeliveryMethodEntity;
+import com.khutircraftubackend.seller.qualityCertificates.QualityCertificateEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Objects;
 
 /**
@@ -30,37 +35,46 @@ public class SellerEntity {
     @Column(name = "company_name")
     private String companyName;
     
-//    @Column(name = "description")
-//    private String description;
+    @Column(name = "description")
+    private String description;
     
-//    @Column(name = "logo")
-//    private String logoUrl;
+    @Column(name = "logo")
+    private String logoUrl;
     
     @Column(name = "phone_number", nullable = false, unique = true)
     private String phoneNumber;
     
-//    @Column(name = "customer_phone_number", nullable = false, unique = true)
-//    private String customerPhoneNumber;
+    @Column(name = "customer_phone_number", nullable = false, unique = true)
+    private String customerPhoneNumber;
 
-    @OneToOne
-    @JoinColumn(name = "user_id")
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
     
-    //TODO реалізація окремих сутностей?
-//    @OneToOne
-//    @JoinColumn(name = "address_id")
-//    private AddressEntity address;
-//
-//    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-//    @JoinColumn(name = "seller_id")
-//    private Collection<DeliveryMethod> deliveryMethods;
-//
-//    @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private Collection<QualityCertificate> qualityCertificates;
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "address_id")
+    private AddressEntity address;
+    
+    @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private Collection<DeliveryMethodEntity> deliveryMethods;
+
+    @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Collection<QualityCertificateEntity> qualityCertificatesUrl = new ArrayList<>();
     
     @Column (name = "creation_date")
     private LocalDateTime creationDate;
-
+    
+    
+    public void addCertificate(QualityCertificateEntity certificate) {
+        qualityCertificatesUrl.add(certificate);
+        certificate.setSeller(this);
+    }
+    
+    public void removeCertificate(QualityCertificateEntity certificate) {
+        qualityCertificatesUrl.remove(certificate);
+        certificate.setSeller(null);
+    }
+    
     @PrePersist
     protected void onCreate(){
         creationDate = LocalDateTime.now();
