@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -41,6 +42,7 @@ public class CategoryController {
 	}
 	
 	@PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+	@PreAuthorize("hasRole('ADMIN')")
 	@ResponseStatus(HttpStatus.OK)
 	public CategoryResponse createCategory(
 			@Valid @ModelAttribute CategoryRequest request,
@@ -52,6 +54,7 @@ public class CategoryController {
 	}
 	
 	@PutMapping(value = "/{id}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+	@PreAuthorize("hasRole('ADMIN')")
 	@ResponseStatus(HttpStatus.OK)
 	public CategoryResponse updateCategory(
 			@PathVariable Long id,
@@ -64,6 +67,7 @@ public class CategoryController {
 	}
 	
 	@DeleteMapping("/{id}")
+	@PreAuthorize("hasRole('ADMIN')")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void deleteCategory(
 			@PathVariable Long id,
