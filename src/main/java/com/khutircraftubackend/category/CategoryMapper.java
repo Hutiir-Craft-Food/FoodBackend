@@ -8,7 +8,10 @@ import org.mapstruct.MappingTarget;
 
 import java.util.Collection;
 
-@Mapper(componentModel = "spring")
+import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
+import static org.mapstruct.ReportingPolicy.IGNORE;
+
+@Mapper(componentModel = SPRING, unmappedTargetPolicy = IGNORE)
 public interface CategoryMapper {
 	
 	@Mapping(target = "parentCategory.id", source = "request.parentCategoryId")

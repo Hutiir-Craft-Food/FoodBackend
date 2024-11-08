@@ -1,5 +1,6 @@
 package com.khutircraftubackend.product;
 
+import com.khutircraftubackend.category.CategoryEntity;
 import com.khutircraftubackend.seller.SellerEntity;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,4 +19,5 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
 	void deleteBySeller(SellerEntity seller);
 	
 	List<ProductEntity> findAllBySeller(SellerEntity currentSeller);
+	List<ProductEntity> findAllByCategory(CategoryEntity category);
 }

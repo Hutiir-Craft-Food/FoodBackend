@@ -10,7 +10,11 @@ import org.mapstruct.MappingTarget;
 
 import java.util.Collection;
 
-@Mapper(componentModel = "spring", uses = {SellerMapper.class, CategoryMapper.class})
+import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
+import static org.mapstruct.ReportingPolicy.IGNORE;
+
+@Mapper(componentModel = SPRING, unmappedTargetPolicy = IGNORE ,
+		uses = {SellerMapper.class, CategoryMapper.class})
 public interface ProductMapper {
 	
 	ProductEntity toProductEntity(ProductRequest request);

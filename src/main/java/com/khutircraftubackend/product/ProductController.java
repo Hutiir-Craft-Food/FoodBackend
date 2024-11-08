@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.util.Collection;
 
 @RestController
-@RequestMapping("/products")
+@RequestMapping("/v1/products")
 @Slf4j
 @RequiredArgsConstructor
 public class ProductController {
@@ -36,7 +36,7 @@ public class ProductController {
 	}
 	
 	@PutMapping(value = "/{productId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-	@PreAuthorize("hasRole('SELLER') and @productService.canModifyProduct(#productId)")
+	@PreAuthorize("hasRole('ADMIN') or (hasRole('SELLER') and @productService.canModifyProduct(#productId))")
 	@ResponseStatus(HttpStatus.OK)
 	public ProductResponse updateProduct(
 			@PathVariable Long productId,
@@ -50,7 +50,7 @@ public class ProductController {
 	}
 	
 	@DeleteMapping("/{productId}")
-	@PreAuthorize("hasRole('SELLER') and hasRole('ADMIN') and @productService.canModifyProduct(#productId)")
+	@PreAuthorize("hasRole('ADMIN') or (hasRole('SELLER') and @productService.canModifyProduct(#productId))")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void deleteProduct(@PathVariable Long productId) throws IOException {
 		
@@ -58,7 +58,7 @@ public class ProductController {
 	}
 	
 	@DeleteMapping("/delete-all")
-	@PreAuthorize("hasRole('SELLER')")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SELLER')")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void deleteAllProductsForCurrentSeller() throws IOException {
 		
