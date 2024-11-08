@@ -3,5 +3,6 @@ CREATE TABLE IF NOT EXISTS categories (
     name VARCHAR(255) NOT NULL UNIQUE,
     description TEXT,
     icon_url VARCHAR(255),
-    parent_id BIGINT REFERENCES categories(id)
+    parent_id BIGINT REFERENCES categories(id),
+    creation_date TIMESTAMP NOT NULL DEFAULT now()
 );

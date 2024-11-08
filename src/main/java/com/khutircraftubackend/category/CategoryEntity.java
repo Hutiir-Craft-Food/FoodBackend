@@ -3,6 +3,8 @@ package com.khutircraftubackend.category;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @Setter
@@ -24,6 +26,14 @@ public class CategoryEntity {
 	
 	@Column(name = "icon_url")
 	private String iconUrl;
+	
+	@Column (name = "creation_date")
+	private LocalDateTime creationDate;
+	
+	@PrePersist
+	protected void onCreate() {
+		creationDate = LocalDateTime.now();
+	}
 	
 	@ManyToOne
 	@JoinColumn(name = "parent_id")

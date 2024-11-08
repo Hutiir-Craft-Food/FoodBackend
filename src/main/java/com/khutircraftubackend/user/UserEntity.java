@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Entity
 @Table(name = "users")
@@ -37,9 +38,22 @@ public class UserEntity {
 
     @Column (name = "creation_date")
     private LocalDateTime creationDate;
-
+    
     @PrePersist
     protected void onCreate(){
         creationDate = LocalDateTime.now();
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        UserEntity user = (UserEntity) o;
+        return id.equals(user.id) && email.equals(user.email) && role == user.role;
+    }
+    
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, email, role);
     }
 }

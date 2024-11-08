@@ -1,7 +1,8 @@
 package com.khutircraftubackend.auth.request;
 
-import com.khutircraftubackend.auth.Role;
 import com.khutircraftubackend.seller.request.SellerRequest;
+import com.khutircraftubackend.user.Role;
+import com.khutircraftubackend.user.UserEntity;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -22,6 +23,7 @@ public record RegisterRequest(
 
         Boolean isReceiveAdvertising,
 
-        SellerRequest details
+        SellerRequest details,
+        UserEntity user
 ) {
 }
