@@ -70,7 +70,7 @@ public class ProductController {
 		productService.deleteAllProductsForSeller(currentSeller);
 	}
 	
-	@DeleteMapping("delete-all/{sellerId}")
+	@DeleteMapping("delete-all/seller-id/{sellerId}")
 	@PreAuthorize("hasRole('ADMIN')")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void deleteAllProductsForSeller(@PathVariable Long sellerId) throws IOException {
