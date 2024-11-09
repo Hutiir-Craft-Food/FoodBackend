@@ -11,13 +11,13 @@ import java.util.Optional;
 
 @Repository
 public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
-
-    List<ProductEntity> findAllBy(Pageable pageable);
-
-    Optional<ProductEntity> findProductById(Long id);
-
-    void deleteBySeller(SellerEntity seller);
-
-    List<ProductEntity> findAllBySeller(SellerEntity currentSeller);
-    List<ProductEntity> findAllByCategory(CategoryEntity category);
+	
+	List<ProductEntity> findAllBy(Pageable pageable);
+	
+	Optional<ProductEntity> findProductById(Long id);
+	
+	void deleteBySeller(SellerEntity seller);
+	
+	List<ProductEntity> findAllBySeller(SellerEntity currentSeller);
+	List<ProductEntity> findAllByCategory(CategoryEntity category);
 }

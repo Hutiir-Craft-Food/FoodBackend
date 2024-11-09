@@ -1,31 +1,31 @@
 package com.khutircraftubackend.category;
 
-import com.khutircraftubackend.category.request.CategoryCreateRequest;
-import com.khutircraftubackend.category.request.CategoryUpdateRequest;
+import com.khutircraftubackend.category.request.CategoryRequest;
 import com.khutircraftubackend.category.response.CategoryResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
-import org.mapstruct.NullValuePropertyMappingStrategy;
 
-@Mapper(componentModel = "spring")
+import java.util.Collection;
+
+import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
+import static org.mapstruct.ReportingPolicy.IGNORE;
+
+@Mapper(componentModel = SPRING, unmappedTargetPolicy = IGNORE)
 public interface CategoryMapper {
-
-    @Mapping(target = "name", source = "name")
-    @Mapping(target = "description", source = "description")
-    @Mapping(target = "parentCategory.id", source = "request.parentCategoryId")
-    CategoryEntity toCategoryEntity(CategoryCreateRequest request);
-
-    @Mapping(target = "name", source = "name")
-    @Mapping(target = "description", source = "description")
-    @Mapping(target = "parentId", source = "parentCategory.id")
-    @Mapping(target = "iconUrl", source = "iconUrl")
-    CategoryResponse toCategoryResponse(CategoryEntity categoryEntity);
-
-    @Mapping(target = "name", source = "request.name", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    @Mapping(target = "description", source = "request.description", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    @Mapping(target = "parentCategory.id", source = "request.parentCategoryId", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    void updateCategoryEntity(@MappingTarget CategoryEntity category, CategoryUpdateRequest request);
-
-
+	
+	@Mapping(target = "parentCategory.id", source = "request.parentCategoryId")
+	CategoryEntity toCategoryEntity(CategoryRequest request);
+	
+	@Mapping(target = "parentCategoryId", source = "parentCategory.id")
+	@Mapping(target = "iconUrl", source = "iconUrl")
+	CategoryResponse toCategoryResponse(CategoryEntity categoryEntity);
+	
+	@Mapping(target = "name", source = "request.name")
+	@Mapping(target = "description", source = "request.description")
+	@Mapping(target = "parentCategory.id", source = "request.parentCategoryId")
+	void updateCategoryEntity(@MappingTarget CategoryEntity category, CategoryRequest request);
+	
+	Collection<CategoryResponse> toCategoryResponse(Collection<CategoryEntity> categoryEntities);
+	
 }

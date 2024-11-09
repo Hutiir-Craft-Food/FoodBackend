@@ -8,12 +8,6 @@ spring:
   profiles:
     default: local
 
-  datasource:
-    driver-class-name: org.postgresql.Driver
-    url: ${SPRING_DATASOURCE_URL}
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
-
   output:
     ansi:
       enabled: ALWAYS
@@ -27,6 +21,14 @@ spring:
       password: ${FLYWAY_PASSWORD}
       role: ${FLYWAY_ROLE}
       enabled: ${FLYWAY_ENABLED}
+
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+
 
   jpa:
     hibernate:
@@ -74,6 +76,7 @@ management:
     metrics:
       export:
         enabled: true
+
 
 server:
   port: 8080
