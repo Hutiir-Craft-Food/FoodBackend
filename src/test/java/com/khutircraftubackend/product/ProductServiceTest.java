@@ -321,15 +321,33 @@ public class ProductServiceTest {
 		}
 		
 		@Test
-		void deleteAllProductsForCurrentSeller() throws IOException {
+		void deleteAllProductsForSeller_ShouldDeleteAllProductsAndImagesForSeller() throws IOException {
 			
-			when(sellerService.getCurrentSeller()).thenReturn(seller);
+			SellerEntity seller = new SellerEntity();
+			ProductEntity product1 = new ProductEntity();
+			product1.setThumbnailImageUrl("http://Test thumbnail1");
+			product1.setImageUrl("http://Test image1");
 			
-			productService.deleteAllProductsForCurrentSeller();
+			ProductEntity product2 = new ProductEntity();
+			product2.setThumbnailImageUrl("http://Test thumbnail2");
+			product2.setImageUrl("http://Test image2");
+			
+			List<ProductEntity> products = List.of(product1, product2);
+			
+			when(productRepository.findAllBySeller(seller)).thenReturn(products);
+			when(fileUploadService.extractPublicId("http://Test thumbnail1")).thenReturn("publicId1");
+			when(fileUploadService.extractPublicId("http://Test image1")).thenReturn("publicId2");
+			when(fileUploadService.extractPublicId("http://Test thumbnail2")).thenReturn("publicId3");
+			when(fileUploadService.extractPublicId("http://Test image2")).thenReturn("publicId4");
+			
+			productService.deleteAllProductsForSeller(seller);
+			
+			verify(fileUploadService, times(1)).deleteCloudinaryById("publicId1");
+			verify(fileUploadService, times(1)).deleteCloudinaryById("publicId2");
+			verify(fileUploadService, times(1)).deleteCloudinaryById("publicId3");
+			verify(fileUploadService, times(1)).deleteCloudinaryById("publicId4");
 			
 			verify(productRepository, times(1)).deleteBySeller(seller);
 		}
-		
 	}
-	
 }

@@ -99,41 +99,35 @@ public class ProductService {
 		
 		ProductEntity existingProduct = findProductById(productId);
 		
-		if (existingProduct.getThumbnailImageUrl() != null) {
-			String publicId = fileUploadService.extractPublicId(existingProduct.getThumbnailImageUrl());
-			fileUploadService.deleteCloudinaryById(publicId);
-		}
-		
-		if (existingProduct.getImageUrl() != null) {
-			String publicId = fileUploadService.extractPublicId(existingProduct.getImageUrl());
-			fileUploadService.deleteCloudinaryById(publicId);
-		}
+		deleteProductImages(existingProduct);
 		
 		productRepository.delete(existingProduct);
 	}
 	
 	@Transactional
-	public void deleteAllProductsForCurrentSeller() throws IOException {
+	public void deleteAllProductsForSeller(SellerEntity seller) throws IOException {
 		
-		SellerEntity currentSeller = sellerService.getCurrentSeller();
-		
-		List<ProductEntity> products = productRepository.findAllBySeller(currentSeller);
+		List<ProductEntity> products = productRepository.findAllBySeller(seller);
 		
 		for (ProductEntity product : products) {
-			
-			if (product.getThumbnailImageUrl() != null) {
-				String publicId = fileUploadService.extractPublicId(product.getThumbnailImageUrl());
-				fileUploadService.deleteCloudinaryById(publicId);
-			}
-			
-			if (product.getImageUrl() != null) {
-				String publicId = fileUploadService.extractPublicId(product.getImageUrl());
-				fileUploadService.deleteCloudinaryById(publicId);
-			}
+			deleteProductImages(product);
 		}
-		productRepository.deleteBySeller(currentSeller);
+		
+		productRepository.deleteBySeller(seller);
 	}
 	
+	private void deleteProductImages(ProductEntity product) throws IOException {
+		
+		if (product.getThumbnailImageUrl() != null) {
+			String publicId = fileUploadService.extractPublicId(product.getThumbnailImageUrl());
+			fileUploadService.deleteCloudinaryById(publicId);
+		}
+		
+		if (product.getImageUrl() != null) {
+			String publicId = fileUploadService.extractPublicId(product.getImageUrl());
+			fileUploadService.deleteCloudinaryById(publicId);
+		}
+	}
 	
 	public List<ProductEntity> getProducts(int offset, int limit) {
 		

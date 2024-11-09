@@ -2,6 +2,8 @@ package com.khutircraftubackend.product;
 
 import com.khutircraftubackend.product.request.ProductRequest;
 import com.khutircraftubackend.product.response.ProductResponse;
+import com.khutircraftubackend.seller.SellerEntity;
+import com.khutircraftubackend.seller.SellerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +23,7 @@ import java.util.Collection;
 public class ProductController {
 	private final ProductService productService;
 	private final ProductMapper productMapper;
+	private final SellerService sellerService;
 	
 	@PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
 	@PreAuthorize("hasRole('SELLER')")
@@ -62,7 +65,19 @@ public class ProductController {
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void deleteAllProductsForCurrentSeller() throws IOException {
 		
-		productService.deleteAllProductsForCurrentSeller();
+		SellerEntity currentSeller = sellerService.getCurrentSeller();
+		
+		productService.deleteAllProductsForSeller(currentSeller);
+	}
+	
+	@DeleteMapping("delete-all/{sellerId}")
+	@PreAuthorize("hasRole('ADMIN')")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void deleteAllProductsForSeller(@PathVariable Long sellerId) throws IOException {
+		
+		SellerEntity seller = sellerService.getSellerId(sellerId);
+		
+		productService.deleteAllProductsForSeller(seller);
 	}
 	
 	@GetMapping
