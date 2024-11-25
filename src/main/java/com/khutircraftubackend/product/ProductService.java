@@ -3,8 +3,7 @@ package com.khutircraftubackend.product;
 import com.khutircraftubackend.category.CategoryEntity;
 import com.khutircraftubackend.category.CategoryService;
 import com.khutircraftubackend.product.exception.product.ProductNotFoundException;
-import com.khutircraftubackend.product.image.FileConverterService;
-import com.khutircraftubackend.product.image.FileUploadService;
+import com.khutircraftubackend.product.image.CloudinaryServiceImpl;
 import com.khutircraftubackend.product.request.ProductRequest;
 import com.khutircraftubackend.seller.SellerEntity;
 import com.khutircraftubackend.seller.SellerService;
@@ -25,8 +24,7 @@ public class ProductService {
 	
 	private final ProductRepository productRepository;
 	private final SellerService sellerService;
-	private final FileUploadService fileUploadService;
-	private final FileConverterService fileConverterService;
+	private final CloudinaryServiceImpl cloudinaryService;
 	private final CategoryService categoryService;
 	private final ProductMapper productMapper;
 	
@@ -38,11 +36,10 @@ public class ProductService {
 	
 	private String handleIcon(MultipartFile iconFile) throws IOException {
 		
-		if (iconFile != null && !iconFile.isEmpty()) {
-			return fileConverterService.convert(iconFile);
+		if (iconFile == null) {
+			return "";
 		}
-		
-		return null;
+		return cloudinaryService.uploadResource(iconFile);
 	}
 	
 	public boolean canModifyProduct(Long productId) throws AccessDeniedException {
@@ -119,13 +116,11 @@ public class ProductService {
 	private void deleteProductImages(ProductEntity product) throws IOException {
 		
 		if (product.getThumbnailImageUrl() != null) {
-			String publicId = fileUploadService.extractPublicId(product.getThumbnailImageUrl());
-			fileUploadService.deleteCloudinaryById(publicId);
+			cloudinaryService.deleteResourceById(product.getThumbnailImageUrl());
 		}
 		
 		if (product.getImageUrl() != null) {
-			String publicId = fileUploadService.extractPublicId(product.getImageUrl());
-			fileUploadService.deleteCloudinaryById(publicId);
+			cloudinaryService.deleteResourceById(product.getImageUrl());
 		}
 	}
 	

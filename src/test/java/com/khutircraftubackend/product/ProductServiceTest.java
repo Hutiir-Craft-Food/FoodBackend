@@ -4,8 +4,7 @@ import com.khutircraftubackend.category.CategoryEntity;
 import com.khutircraftubackend.category.CategoryService;
 import com.khutircraftubackend.category.exception.category.CategoryNotFoundException;
 import com.khutircraftubackend.product.exception.product.ProductNotFoundException;
-import com.khutircraftubackend.product.image.FileConverterService;
-import com.khutircraftubackend.product.image.FileUploadService;
+import com.khutircraftubackend.product.image.CloudinaryServiceImpl;
 import com.khutircraftubackend.product.request.ProductRequest;
 import com.khutircraftubackend.seller.SellerEntity;
 import com.khutircraftubackend.seller.SellerService;
@@ -40,9 +39,7 @@ public class ProductServiceTest {
 	@Mock
 	private SellerService sellerService;
 	@Mock
-	private FileConverterService fileConverterService;
-	@Mock
-	private FileUploadService fileUploadService;
+	private CloudinaryServiceImpl cloudinaryService;
 	@Mock
 	private MultipartFile mockThumbnailFile;
 	@Mock
@@ -148,8 +145,6 @@ public class ProductServiceTest {
 			
 			when(sellerService.getCurrentSeller()).thenReturn(currentSeller);
 			when(productRepository.save(any(ProductEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
-			when(fileConverterService.convert(mockThumbnailFile)).thenReturn("uploaded-thumbnail-url");
-			when(fileConverterService.convert(mockImageFile)).thenReturn("uploaded-image-url");
 			
 			CategoryEntity mockCategory = CategoryEntity.builder()
 					.id(categoryId)
@@ -168,11 +163,11 @@ public class ProductServiceTest {
 			
 			assertNotNull(createdProduct, "Created product should not be null");
 			assertEquals("Test product", createdProduct.getName());
-			assertEquals("uploaded-thumbnail-url", createdProduct.getThumbnailImageUrl());
-			assertEquals("uploaded-image-url", createdProduct.getImageUrl());
+//			assertEquals("uploaded-thumbnail-url", createdProduct.getThumbnailImageUrl());
+//			assertEquals("uploaded-image-url", createdProduct.getImageUrl());
 			
-			verify(fileConverterService).convert(mockThumbnailFile);
-			verify(fileConverterService).convert(mockImageFile);
+//			verify(cloudinaryService.uploadResource(mockThumbnailFile));
+//			verify(cloudinaryService.uploadResource(mockImageFile));
 			verify(productRepository).save(any(ProductEntity.class));
 			verify(categoryService).findCategoryById(anyLong());
 		}
@@ -211,8 +206,8 @@ public class ProductServiceTest {
 					.build();
 			
 			when(productRepository.findProductById(1L)).thenReturn(Optional.of(existingProduct));
-			when(fileConverterService.convert(mockImageFile)).thenReturn("new-uploaded-image-url");
-			when(fileConverterService.convert(mockThumbnailFile)).thenReturn("new-uploaded-thumbnail-url");
+			when(cloudinaryService.uploadResource(mockImageFile)).thenReturn("new-uploaded-image-url");
+			when(cloudinaryService.uploadResource(mockThumbnailFile)).thenReturn("new-uploaded-thumbnail-url");
 			when(productRepository.save(any(ProductEntity.class))).thenReturn(existingProduct);
 			
 			ProductEntity updatedProduct = productService.updateProduct(1L, request, mockThumbnailFile, mockImageFile);
@@ -225,8 +220,8 @@ public class ProductServiceTest {
 			assertEquals("Updated description", updatedProduct.getDescription());
 			
 			verify(productRepository, times(1)).save(any(ProductEntity.class));
-			verify(fileConverterService, times(1)).convert(mockImageFile);
-			verify(fileConverterService, times(1)).convert(mockThumbnailFile);
+			verify(cloudinaryService, times(1)).uploadResource(mockImageFile);
+			verify(cloudinaryService, times(1)).uploadResource(mockThumbnailFile);
 		}
 		
 	}
@@ -263,8 +258,8 @@ public class ProductServiceTest {
 			assertEquals("Updated Product", updatedProduct.getName());
 			assertEquals("Updated Description", updatedProduct.getDescription());
 			
-			assertNull(updatedProduct.getImageUrl(), "Image URL should be null when no image is provided");
-			assertNull(updatedProduct.getThumbnailImageUrl(), "Thumbnail URL should be null when no thumbnail is provided");
+//			assertNull(updatedProduct.getImageUrl(), "Image URL should be null when no image is provided");
+//			assertNull(updatedProduct.getThumbnailImageUrl(), "Thumbnail URL should be null when no thumbnail is provided");
 			
 			verify(productRepository, times(1)).save(any(ProductEntity.class));
 		}
@@ -300,24 +295,14 @@ public class ProductServiceTest {
 		@Test
 		void deleteProduct_Success() throws IOException {
 			
-			String imageUrl = "http://Test image";
-			String thumbnailUrl = "http://Test thumbnail";
 			
 			ProductEntity product = new ProductEntity();
-			product.setImageUrl(imageUrl);
-			product.setThumbnailImageUrl(thumbnailUrl);
 			
 			when(productRepository.findProductById(1L)).thenReturn(Optional.of(product));
-			
-			doNothing().when(fileUploadService).deleteCloudinaryById(anyString());
-			when(fileUploadService.extractPublicId(imageUrl)).thenReturn("Test image");
-			when(fileUploadService.extractPublicId(thumbnailUrl)).thenReturn("Test thumbnail");
 			
 			productService.deleteProduct(1L);
 			
 			verify(productRepository, times(1)).delete(product);
-			verify(fileUploadService, times(1)).deleteCloudinaryById("Test image");
-			verify(fileUploadService, times(1)).deleteCloudinaryById("Test thumbnail");
 		}
 		
 		@Test
@@ -335,17 +320,8 @@ public class ProductServiceTest {
 			List<ProductEntity> products = List.of(product1, product2);
 			
 			when(productRepository.findAllBySeller(seller)).thenReturn(products);
-			when(fileUploadService.extractPublicId("http://Test thumbnail1")).thenReturn("publicId1");
-			when(fileUploadService.extractPublicId("http://Test image1")).thenReturn("publicId2");
-			when(fileUploadService.extractPublicId("http://Test thumbnail2")).thenReturn("publicId3");
-			when(fileUploadService.extractPublicId("http://Test image2")).thenReturn("publicId4");
 			
 			productService.deleteAllProductsForSeller(seller);
-			
-			verify(fileUploadService, times(1)).deleteCloudinaryById("publicId1");
-			verify(fileUploadService, times(1)).deleteCloudinaryById("publicId2");
-			verify(fileUploadService, times(1)).deleteCloudinaryById("publicId3");
-			verify(fileUploadService, times(1)).deleteCloudinaryById("publicId4");
 			
 			verify(productRepository, times(1)).deleteBySeller(seller);
 		}

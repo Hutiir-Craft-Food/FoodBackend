@@ -3,8 +3,7 @@ package com.khutircraftubackend.category;
 import com.khutircraftubackend.category.exception.category.CategoryDeletionException;
 import com.khutircraftubackend.category.exception.category.CategoryNotFoundException;
 import com.khutircraftubackend.category.request.CategoryRequest;
-import com.khutircraftubackend.product.image.FileConverterService;
-import com.khutircraftubackend.product.image.FileUploadService;
+import com.khutircraftubackend.product.image.CloudinaryServiceImpl;
 import com.khutircraftubackend.product.image.exception.file.InvalidFileFormatException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -32,9 +31,7 @@ class CategoryServiceTest {
 	@Mock
 	private MultipartFile multipartFile;
 	@Mock
-	private FileConverterService fileConverterService;
-	@Mock
-	private FileUploadService fileUploadService;
+	private CloudinaryServiceImpl cloudinaryService;
 	@Spy
 	private CategoryMapper categoryMapper = Mappers.getMapper(CategoryMapper.class);
 	@InjectMocks
@@ -134,7 +131,7 @@ class CategoryServiceTest {
 			categoryEntity.setIconUrl("convertedFileUrl");
             
 			when(categoryRepository.save(any(CategoryEntity.class))).thenReturn(categoryEntity);
-			when(fileConverterService.convert(multipartFile)).thenReturn("convertedFileUrl");
+			when(cloudinaryService.uploadResource(multipartFile)).thenReturn("convertedFileUrl");
 			when(categoryRepository.findById(parentCategoryId)).thenReturn(Optional.of(parentCategory));
 			
 			CategoryEntity result = categoryService.createCategory(request, multipartFile);
@@ -143,7 +140,7 @@ class CategoryServiceTest {
 			assertEquals(parentCategory, result.getParentCategory());
 			assertEquals("convertedFileUrl", result.getIconUrl());
 			
-			verify(fileConverterService).convert(multipartFile);
+			verify(cloudinaryService).uploadResource(multipartFile);
 			verify(categoryRepository, times(1)).save(any(CategoryEntity.class));
 		}
 		
@@ -223,7 +220,7 @@ class CategoryServiceTest {
 			parentCategory.setId(parentCategoryId);
 			
 			when(multipartFile.isEmpty()).thenReturn(false);
-			when(fileConverterService.convert(multipartFile)).thenReturn("newIconUrl");
+			when(cloudinaryService.uploadResource(multipartFile)).thenReturn("newIconUrl");
 			when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(existingCategory));
 			when(categoryRepository.findById(parentCategoryId)).thenReturn(Optional.of(parentCategory));
 			when(categoryRepository.save(existingCategory)).thenReturn(existingCategory);
@@ -236,8 +233,6 @@ class CategoryServiceTest {
 			assertEquals(request.parentCategoryId(), updatedCategory.getParentCategory().getId());
 			assertEquals("newIconUrl", updatedCategory.getIconUrl());
 			
-			verify(fileUploadService).deleteCloudinaryById(fileUploadService.extractPublicId("http://example.com/icon.png"));
-			verify(fileConverterService).convert(multipartFile);
 			verify(categoryRepository).findById(categoryId);
 			verify(categoryRepository).findById(parentCategoryId);
 			verify(categoryRepository).save(existingCategory);
@@ -260,7 +255,7 @@ class CategoryServiceTest {
 			existingCategory.setDescription("OldDescription");
 			
 			when(multipartFile.isEmpty()).thenReturn(false);
-			when(fileConverterService.convert(multipartFile)).thenThrow(new InvalidFileFormatException("File is not a valid image"));
+			when(cloudinaryService.uploadResource(multipartFile)).thenThrow(new InvalidFileFormatException("File is not a valid image"));
 			when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(existingCategory));
 			
 			assertThrows(InvalidFileFormatException.class, () ->
@@ -283,7 +278,7 @@ class CategoryServiceTest {
 			existingCategory.setDescription("OldDescription");
 			
 			when(multipartFile.isEmpty()).thenReturn(false);
-			when(fileConverterService.convert(multipartFile)).thenThrow(new IOException("File is corrupted"));
+			when(cloudinaryService.uploadResource(multipartFile)).thenThrow(new IOException("File is corrupted"));
 			
 			when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(existingCategory));
 			
@@ -384,6 +379,5 @@ class CategoryServiceTest {
 		}
 		
 	}
-	
 	
 }
