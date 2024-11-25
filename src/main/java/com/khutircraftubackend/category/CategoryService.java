@@ -4,7 +4,7 @@ import com.khutircraftubackend.category.exception.category.CategoryDeletionExcep
 import com.khutircraftubackend.category.exception.category.CategoryExceptionMessages;
 import com.khutircraftubackend.category.exception.category.CategoryNotFoundException;
 import com.khutircraftubackend.category.request.CategoryRequest;
-import com.khutircraftubackend.product.image.CloudinaryServiceImpl;
+import com.khutircraftubackend.product.image.ResourceService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,32 +19,37 @@ public class CategoryService {
 	
 	private final CategoryRepository categoryRepository;
 	private final CategoryMapper categoryMapper;
-
-	private final CloudinaryServiceImpl cloudinaryService;
+	
+	private final ResourceService resourceService;
+	
 	public CategoryEntity findCategoryById(Long id) {
 		
 		return categoryRepository.findById(id).orElseThrow(() ->
 				new CategoryNotFoundException(CategoryExceptionMessages.CATEGORY_NOT_FOUND));
 	}
 	
+	
 	private String handleIcon(MultipartFile iconFile) throws IOException {
 		
-		if (iconFile == null) {
+		if (iconFile == null || iconFile.isEmpty()) {
 			return "";
 		}
-		return cloudinaryService.uploadResource(iconFile);
 		
+		return resourceService.uploadResource(iconFile);
 	}
+	
 	
 	public List<CategoryEntity> getAllRootCategories() {
 		
 		return categoryRepository.findAllByParentCategoryIsNull();
 	}
 	
+	
 	public List<CategoryEntity> getAllByParentCategoryId(Long id) {
 		
 		return categoryRepository.findAllByParentCategory_Id(id);
 	}
+	
 	
 	private void setParentCategory(CategoryEntity category, Long parentCategoryId) {
 		
@@ -76,11 +81,8 @@ public class CategoryService {
 		
 		CategoryEntity existingCategory = findCategoryById(id);
 		
-		if (iconFile != null && !iconFile.isEmpty()) {
-			existingCategory.setIconUrl(handleIcon(iconFile));
-		} else if (iconFile != null) {
-			existingCategory.setIconUrl(handleIcon(iconFile));
-		}
+		existingCategory.setIconUrl(handleIcon(iconFile));
+		
 		categoryMapper.updateCategoryEntity(existingCategory, request);
 		
 		if (request.parentCategoryId() != null) {

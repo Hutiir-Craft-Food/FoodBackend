@@ -4,6 +4,7 @@ import com.khutircraftubackend.category.CategoryEntity;
 import com.khutircraftubackend.category.CategoryService;
 import com.khutircraftubackend.product.exception.product.ProductNotFoundException;
 import com.khutircraftubackend.product.image.CloudinaryServiceImpl;
+import com.khutircraftubackend.product.image.ResourceService;
 import com.khutircraftubackend.product.request.ProductRequest;
 import com.khutircraftubackend.seller.SellerEntity;
 import com.khutircraftubackend.seller.SellerService;
@@ -25,6 +26,7 @@ public class ProductService {
 	private final ProductRepository productRepository;
 	private final SellerService sellerService;
 	private final CloudinaryServiceImpl cloudinaryService;
+	private final ResourceService resourceService;
 	private final CategoryService categoryService;
 	private final ProductMapper productMapper;
 	
@@ -39,7 +41,7 @@ public class ProductService {
 		if (iconFile == null) {
 			return "";
 		}
-		return cloudinaryService.uploadResource(iconFile);
+		return resourceService.uploadResource(iconFile);
 	}
 	
 	public boolean canModifyProduct(Long productId) throws AccessDeniedException {
@@ -106,8 +108,10 @@ public class ProductService {
 		
 		List<ProductEntity> products = productRepository.findAllBySeller(seller);
 		
-		for (ProductEntity product : products) {
-			deleteProductImages(product);
+		if(products != null) {
+			for (ProductEntity product : products) {
+				deleteProductImages(product);
+			}
 		}
 		
 		productRepository.deleteBySeller(seller);
@@ -116,11 +120,11 @@ public class ProductService {
 	private void deleteProductImages(ProductEntity product) throws IOException {
 		
 		if (product.getThumbnailImageUrl() != null) {
-			cloudinaryService.deleteResourceById(product.getThumbnailImageUrl());
+			resourceService.deleteResourceById(product.getThumbnailImageUrl());
 		}
 		
 		if (product.getImageUrl() != null) {
-			cloudinaryService.deleteResourceById(product.getImageUrl());
+			resourceService.deleteResourceById(product.getImageUrl());
 		}
 	}
 	

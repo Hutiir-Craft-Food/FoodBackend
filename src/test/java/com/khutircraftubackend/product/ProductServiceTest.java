@@ -4,7 +4,7 @@ import com.khutircraftubackend.category.CategoryEntity;
 import com.khutircraftubackend.category.CategoryService;
 import com.khutircraftubackend.category.exception.category.CategoryNotFoundException;
 import com.khutircraftubackend.product.exception.product.ProductNotFoundException;
-import com.khutircraftubackend.product.image.CloudinaryServiceImpl;
+import com.khutircraftubackend.product.image.ResourceService;
 import com.khutircraftubackend.product.request.ProductRequest;
 import com.khutircraftubackend.seller.SellerEntity;
 import com.khutircraftubackend.seller.SellerService;
@@ -39,7 +39,7 @@ public class ProductServiceTest {
 	@Mock
 	private SellerService sellerService;
 	@Mock
-	private CloudinaryServiceImpl cloudinaryService;
+	private ResourceService resourceService;
 	@Mock
 	private MultipartFile mockThumbnailFile;
 	@Mock
@@ -144,6 +144,8 @@ public class ProductServiceTest {
 			Long categoryId = 2L;
 			
 			when(sellerService.getCurrentSeller()).thenReturn(currentSeller);
+			when(resourceService.uploadResource(mockThumbnailFile)).thenReturn("ThumbnailFile");
+			when(resourceService.uploadResource(mockImageFile)).thenReturn("ImageFile");
 			when(productRepository.save(any(ProductEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
 			
 			CategoryEntity mockCategory = CategoryEntity.builder()
@@ -161,13 +163,13 @@ public class ProductServiceTest {
 			
 			ProductEntity createdProduct = productService.createProduct(request, mockThumbnailFile, mockImageFile);
 			
-			assertNotNull(createdProduct, "Created product should not be null");
+			assertNotNull(createdProduct);
 			assertEquals("Test product", createdProduct.getName());
-//			assertEquals("uploaded-thumbnail-url", createdProduct.getThumbnailImageUrl());
-//			assertEquals("uploaded-image-url", createdProduct.getImageUrl());
+			assertEquals("ThumbnailFile", createdProduct.getThumbnailImageUrl());
+			assertEquals("ImageFile", createdProduct.getImageUrl());
 			
-//			verify(cloudinaryService.uploadResource(mockThumbnailFile));
-//			verify(cloudinaryService.uploadResource(mockImageFile));
+			verify(resourceService).uploadResource(mockThumbnailFile);
+			verify(resourceService).uploadResource(mockImageFile);
 			verify(productRepository).save(any(ProductEntity.class));
 			verify(categoryService).findCategoryById(anyLong());
 		}
@@ -206,8 +208,8 @@ public class ProductServiceTest {
 					.build();
 			
 			when(productRepository.findProductById(1L)).thenReturn(Optional.of(existingProduct));
-			when(cloudinaryService.uploadResource(mockImageFile)).thenReturn("new-uploaded-image-url");
-			when(cloudinaryService.uploadResource(mockThumbnailFile)).thenReturn("new-uploaded-thumbnail-url");
+			when(resourceService.uploadResource(mockImageFile)).thenReturn("new-uploaded-image-url");
+			when(resourceService.uploadResource(mockThumbnailFile)).thenReturn("new-uploaded-thumbnail-url");
 			when(productRepository.save(any(ProductEntity.class))).thenReturn(existingProduct);
 			
 			ProductEntity updatedProduct = productService.updateProduct(1L, request, mockThumbnailFile, mockImageFile);
@@ -220,8 +222,8 @@ public class ProductServiceTest {
 			assertEquals("Updated description", updatedProduct.getDescription());
 			
 			verify(productRepository, times(1)).save(any(ProductEntity.class));
-			verify(cloudinaryService, times(1)).uploadResource(mockImageFile);
-			verify(cloudinaryService, times(1)).uploadResource(mockThumbnailFile);
+			verify(resourceService, times(1)).uploadResource(mockImageFile);
+			verify(resourceService, times(1)).uploadResource(mockThumbnailFile);
 		}
 		
 	}
@@ -258,8 +260,8 @@ public class ProductServiceTest {
 			assertEquals("Updated Product", updatedProduct.getName());
 			assertEquals("Updated Description", updatedProduct.getDescription());
 			
-//			assertNull(updatedProduct.getImageUrl(), "Image URL should be null when no image is provided");
-//			assertNull(updatedProduct.getThumbnailImageUrl(), "Thumbnail URL should be null when no thumbnail is provided");
+			assertEquals("", updatedProduct.getImageUrl());
+			assertEquals("", updatedProduct.getThumbnailImageUrl());
 			
 			verify(productRepository, times(1)).save(any(ProductEntity.class));
 		}
@@ -309,11 +311,14 @@ public class ProductServiceTest {
 		void deleteAllProductsForSeller_ShouldDeleteAllProductsAndImagesForSeller() throws IOException {
 			
 			SellerEntity seller = new SellerEntity();
+			
 			ProductEntity product1 = new ProductEntity();
+			product1.setSeller(seller);
 			product1.setThumbnailImageUrl("http://Test thumbnail1");
 			product1.setImageUrl("http://Test image1");
 			
 			ProductEntity product2 = new ProductEntity();
+			product2.setSeller(seller);
 			product2.setThumbnailImageUrl("http://Test thumbnail2");
 			product2.setImageUrl("http://Test image2");
 			
@@ -321,7 +326,14 @@ public class ProductServiceTest {
 			
 			when(productRepository.findAllBySeller(seller)).thenReturn(products);
 			
+			doNothing().when(resourceService).deleteResourceById(anyString());
+			
 			productService.deleteAllProductsForSeller(seller);
+			
+			verify(resourceService, times(1)).deleteResourceById("http://Test thumbnail1");
+			verify(resourceService, times(1)).deleteResourceById("http://Test image1");
+			verify(resourceService, times(1)).deleteResourceById("http://Test thumbnail2");
+			verify(resourceService, times(1)).deleteResourceById("http://Test image2");
 			
 			verify(productRepository, times(1)).deleteBySeller(seller);
 		}
