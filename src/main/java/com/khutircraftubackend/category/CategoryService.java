@@ -4,8 +4,7 @@ import com.khutircraftubackend.category.exception.category.CategoryDeletionExcep
 import com.khutircraftubackend.category.exception.category.CategoryExceptionMessages;
 import com.khutircraftubackend.category.exception.category.CategoryNotFoundException;
 import com.khutircraftubackend.category.request.CategoryRequest;
-import com.khutircraftubackend.product.image.FileConverterService;
-import com.khutircraftubackend.product.image.FileUploadService;
+import com.khutircraftubackend.storage.StorageService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,8 +19,8 @@ public class CategoryService {
 	
 	private final CategoryRepository categoryRepository;
 	private final CategoryMapper categoryMapper;
-	private final FileConverterService fileConverterService;
-	private final FileUploadService fileUploadService;
+	
+	private final StorageService storageService;
 	
 	public CategoryEntity findCategoryById(Long id) {
 		
@@ -29,24 +28,28 @@ public class CategoryService {
 				new CategoryNotFoundException(CategoryExceptionMessages.CATEGORY_NOT_FOUND));
 	}
 	
+	
 	private String handleIcon(MultipartFile iconFile) throws IOException {
 		
-		if (iconFile != null && !iconFile.isEmpty()) {
-			return fileConverterService.convert(iconFile);
+		if (iconFile == null || iconFile.isEmpty()) {
+			return "";
 		}
 		
-		return null;
+		return storageService.upload(iconFile);
 	}
+	
 	
 	public List<CategoryEntity> getAllRootCategories() {
 		
 		return categoryRepository.findAllByParentCategoryIsNull();
 	}
 	
+	
 	public List<CategoryEntity> getAllByParentCategoryId(Long id) {
 		
 		return categoryRepository.findAllByParentCategory_Id(id);
 	}
+	
 	
 	private void setParentCategory(CategoryEntity category, Long parentCategoryId) {
 		
@@ -78,18 +81,16 @@ public class CategoryService {
 		
 		CategoryEntity existingCategory = findCategoryById(id);
 		
-		String existingIconUrl = existingCategory.getIconUrl();
-		
-		if (existingIconUrl != null) {
-			String existingPublicId = fileUploadService.extractPublicId(existingIconUrl);
-			fileUploadService.deleteCloudinaryById(existingPublicId);
-		}
-		
 		existingCategory.setIconUrl(handleIcon(iconFile));
 		
 		categoryMapper.updateCategoryEntity(existingCategory, request);
 		
-		setParentCategory(existingCategory, request.parentCategoryId());
+		if (request.parentCategoryId() != null) {
+			CategoryEntity parentCategory = findCategoryById(request.parentCategoryId());
+			existingCategory.setParentCategory(parentCategory);
+		} else {
+			existingCategory.setParentCategory(null);
+		}
 		
 		return categoryRepository.save(existingCategory);
 	}

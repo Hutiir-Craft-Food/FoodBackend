@@ -3,9 +3,8 @@ package com.khutircraftubackend.category;
 import com.khutircraftubackend.category.exception.category.CategoryDeletionException;
 import com.khutircraftubackend.category.exception.category.CategoryNotFoundException;
 import com.khutircraftubackend.category.request.CategoryRequest;
-import com.khutircraftubackend.product.image.FileConverterService;
-import com.khutircraftubackend.product.image.FileUploadService;
-import com.khutircraftubackend.product.image.exception.file.InvalidFileFormatException;
+import com.khutircraftubackend.storage.StorageService;
+import com.khutircraftubackend.storage.exception.storage.InvalidFileFormatException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -15,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -26,15 +26,14 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@ActiveProfiles("local")
 class CategoryServiceTest {
 	@Mock
 	private CategoryRepository categoryRepository;
 	@Mock
 	private MultipartFile multipartFile;
 	@Mock
-	private FileConverterService fileConverterService;
-	@Mock
-	private FileUploadService fileUploadService;
+	private StorageService storageService;
 	@Spy
 	private CategoryMapper categoryMapper = Mappers.getMapper(CategoryMapper.class);
 	@InjectMocks
@@ -93,7 +92,8 @@ class CategoryServiceTest {
 	@DisplayName("Tests for Category creation")
 	class CreateCategory {
 		@Test
-		void createCategory_ShouldCreateCategoryWithoutParent() throws IOException {
+		void createCategory_ShouldUploadFile() throws IOException {
+			
 			CategoryRequest request = CategoryRequest.builder()
 					.name("TestName")
 					.description("TestDescription")
@@ -103,18 +103,17 @@ class CategoryServiceTest {
 			CategoryEntity categoryEntity = new CategoryEntity();
 			categoryEntity.setName(request.name());
 			categoryEntity.setDescription(request.description());
+			categoryEntity.setIconUrl("cloudinaryUrl");
 			
+			when(storageService.upload(multipartFile)).thenReturn("cloudinaryUrl");
 			when(categoryRepository.save(any(CategoryEntity.class))).thenReturn(categoryEntity);
 			
 			CategoryEntity result = categoryService.createCategory(request, multipartFile);
 			
 			assertNotNull(result);
-			assertEquals("TestName", result.getName());
-			assertEquals("TestDescription", result.getDescription());
-			assertNull(result.getParentCategory());
-			assertNull(result.getIconUrl());
-			
-			verify(categoryRepository, times(1)).save(any(CategoryEntity.class));
+			assertEquals("cloudinaryUrl", result.getIconUrl());
+			verify(storageService).upload(multipartFile);
+			verify(categoryRepository).save(any(CategoryEntity.class));
 		}
 		
 		@Test
@@ -134,7 +133,7 @@ class CategoryServiceTest {
 			categoryEntity.setIconUrl("convertedFileUrl");
             
 			when(categoryRepository.save(any(CategoryEntity.class))).thenReturn(categoryEntity);
-			when(fileConverterService.convert(multipartFile)).thenReturn("convertedFileUrl");
+			when(storageService.upload(multipartFile)).thenReturn("convertedFileUrl");
 			when(categoryRepository.findById(parentCategoryId)).thenReturn(Optional.of(parentCategory));
 			
 			CategoryEntity result = categoryService.createCategory(request, multipartFile);
@@ -143,7 +142,7 @@ class CategoryServiceTest {
 			assertEquals(parentCategory, result.getParentCategory());
 			assertEquals("convertedFileUrl", result.getIconUrl());
 			
-			verify(fileConverterService).convert(multipartFile);
+			verify(storageService).upload(multipartFile);
 			verify(categoryRepository, times(1)).save(any(CategoryEntity.class));
 		}
 		
@@ -170,80 +169,52 @@ class CategoryServiceTest {
 	@DisplayName("Tests for Category update")
 	class UpdateCategory {
 		@Test
-		void updateCategoryWithoutIcon() throws IOException {
-			
+		void updateCategory_ShouldUpdateIconWithCloudinary() throws IOException {
 			Long categoryId = 1L;
-			
 			CategoryRequest request = CategoryRequest.builder()
-					.name("New category")
-					.description("Updated description")
-					.parentCategoryId(null)
+					.name("UpdatedName")
+					.description("UpdatedDescription")
 					.build();
 			
 			CategoryEntity existingCategory = new CategoryEntity();
 			existingCategory.setId(categoryId);
-			existingCategory.setName("Old name");
-			existingCategory.setDescription("Old description");
-			
-			when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(existingCategory));
-			when(multipartFile.isEmpty()).thenReturn(true);
-            when(categoryRepository.save(existingCategory)).thenReturn(existingCategory);
-			
-			CategoryEntity updateCategory = categoryService.updateCategory(categoryId, request, multipartFile);
-			
-			assertEquals(request.name(), updateCategory.getName());
-			assertEquals(request.description(), updateCategory.getDescription());
-			assertNull(updateCategory.getIconUrl());
-			assertNull(updateCategory.getParentCategory());
-			
-			verify(categoryRepository).findById(categoryId);
-			verify(categoryRepository).save(updateCategory);
-			verify(categoryMapper).updateCategoryEntity(existingCategory, request);
-		}
-		
-		@Test
-		void updateCategoryWithIcon() throws IOException {
-			
-			Long categoryId = 1L;
-			Long parentCategoryId = 2L;
-			
-			CategoryRequest request = CategoryRequest.builder()
-					.name("New Category")
-					.description("Updated Description")
-					.parentCategoryId(parentCategoryId)
-					.build();
-			
-			CategoryEntity existingCategory = new CategoryEntity();
-			existingCategory.setId(categoryId);
-			existingCategory.setName("Old Name");
-			existingCategory.setDescription("Old Description");
-			existingCategory.setIconUrl("http://example.com/icon.png");
-			
-			CategoryEntity parentCategory = new CategoryEntity();
-			parentCategory.setId(parentCategoryId);
+			existingCategory.setIconUrl("oldCloudinaryUrl");
 			
 			when(multipartFile.isEmpty()).thenReturn(false);
-			when(fileConverterService.convert(multipartFile)).thenReturn("newIconUrl");
+			when(storageService.upload(multipartFile)).thenReturn("newCloudinaryUrl");
 			when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(existingCategory));
-			when(categoryRepository.findById(parentCategoryId)).thenReturn(Optional.of(parentCategory));
 			when(categoryRepository.save(existingCategory)).thenReturn(existingCategory);
 			
 			CategoryEntity updatedCategory = categoryService.updateCategory(categoryId, request, multipartFile);
 			
-			assertEquals(request.name(), updatedCategory.getName());
-			assertEquals(request.description(), updatedCategory.getDescription());
-			assertNotNull(updatedCategory.getParentCategory());
-			assertEquals(request.parentCategoryId(), updatedCategory.getParentCategory().getId());
-			assertEquals("newIconUrl", updatedCategory.getIconUrl());
-			
-			verify(fileUploadService).deleteCloudinaryById(fileUploadService.extractPublicId("http://example.com/icon.png"));
-			verify(fileConverterService).convert(multipartFile);
-			verify(categoryRepository).findById(categoryId);
-			verify(categoryRepository).findById(parentCategoryId);
+			assertEquals("newCloudinaryUrl", updatedCategory.getIconUrl());
+			verify(storageService).upload(multipartFile);
 			verify(categoryRepository).save(existingCategory);
-			verify(categoryMapper).updateCategoryEntity(existingCategory, request);
 		}
 		
+		
+		@Test
+		void updateCategory_ShouldUpdateIconWithLocalStorage() throws IOException {
+			Long categoryId = 1L;
+			CategoryRequest request = CategoryRequest.builder()
+					.name("UpdatedName")
+					.description("UpdatedDescription")
+					.build();
+			
+			CategoryEntity existingCategory = new CategoryEntity();
+			existingCategory.setId(categoryId);
+			existingCategory.setIconUrl("oldLocalPath");
+			
+			when(storageService.upload(any())).thenReturn("newLocalPath");
+			when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(existingCategory));
+			when(categoryRepository.save(any(CategoryEntity.class))).thenReturn(existingCategory);
+			
+			CategoryEntity updatedCategory = categoryService.updateCategory(categoryId, request, multipartFile);
+			
+			assertEquals("newLocalPath", updatedCategory.getIconUrl());
+			verify(storageService).upload(any());
+			verify(categoryRepository).save(any(CategoryEntity.class));
+		}
 		
 		@Test
 		void updateCategory_WithInvalidFileFormat_ShouldThrowException() throws IOException {
@@ -260,7 +231,7 @@ class CategoryServiceTest {
 			existingCategory.setDescription("OldDescription");
 			
 			when(multipartFile.isEmpty()).thenReturn(false);
-			when(fileConverterService.convert(multipartFile)).thenThrow(new InvalidFileFormatException("File is not a valid image"));
+			when(storageService.upload(multipartFile)).thenThrow(new InvalidFileFormatException("File is not a valid image"));
 			when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(existingCategory));
 			
 			assertThrows(InvalidFileFormatException.class, () ->
@@ -283,7 +254,7 @@ class CategoryServiceTest {
 			existingCategory.setDescription("OldDescription");
 			
 			when(multipartFile.isEmpty()).thenReturn(false);
-			when(fileConverterService.convert(multipartFile)).thenThrow(new IOException("File is corrupted"));
+			when(storageService.upload(multipartFile)).thenThrow(new IOException("File is corrupted"));
 			
 			when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(existingCategory));
 			
@@ -384,6 +355,5 @@ class CategoryServiceTest {
 		}
 		
 	}
-	
 	
 }
