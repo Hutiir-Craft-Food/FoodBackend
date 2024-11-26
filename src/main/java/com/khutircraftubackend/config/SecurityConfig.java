@@ -1,7 +1,6 @@
 package com.khutircraftubackend.config;
 
 import com.khutircraftubackend.jwt.JwtAuthenticationFilter;
-import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,7 +8,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -24,7 +22,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 /**
  * Клас SecurityConfig відповідає за налаштування безпеки додатку за допомогою Spring Security.
  */
-@EnableMethodSecurity
+
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -49,12 +47,17 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(c -> corsConfigurationSource())
                 .authorizeHttpRequests(auth -> auth
-                        .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
-                        .requestMatchers( "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        .requestMatchers("/actuator/**").permitAll()
-                        .requestMatchers("/v1/user/login", "/v1/user/register", "/v1/user/confirm").permitAll()
+                        .requestMatchers("/swagger-ui/index.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers("/v1/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET,"/products/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/v1/categories/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/products/**").hasRole("SELLER")
+                        .requestMatchers(HttpMethod.DELETE, "/products/**").hasRole("SELLER")
+                        .requestMatchers(HttpMethod.PATCH, "/products/**").hasRole("SELLER")
+                        .requestMatchers(HttpMethod.PUT, "/products/**").hasRole("SELLER")
+                        .requestMatchers("/seller/**").hasRole("SELLER")
+                        .requestMatchers("/buyer/**").hasRole("BUYER")
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/actuator/**").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

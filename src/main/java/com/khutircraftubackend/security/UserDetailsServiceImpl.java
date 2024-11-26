@@ -1,7 +1,7 @@
 package com.khutircraftubackend.security;
 
-import com.khutircraftubackend.auth.UserEntity;
-import com.khutircraftubackend.auth.UserRepository;
+import com.khutircraftubackend.user.UserEntity;
+import com.khutircraftubackend.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
