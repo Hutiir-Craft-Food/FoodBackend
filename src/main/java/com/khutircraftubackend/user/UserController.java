@@ -1,11 +1,15 @@
 package com.khutircraftubackend.user;
 
+import com.khutircraftubackend.confirm.ConfirmRequest;
+import com.khutircraftubackend.confirm.ConfirmResponse;
+import com.khutircraftubackend.confirm.ConfirmService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 
@@ -13,6 +17,19 @@ import java.security.Principal;
 @RequestMapping ("/v1/user")
 @RequiredArgsConstructor
 public class UserController {
+
+    private final ConfirmService confirmService;
+
+    @Operation(summary = "Confirm user registration", description = "Confirm user registration with email and confirmation token.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User confirmed successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid confirmation details")
+    })
+    @PostMapping("/confirm")
+    @ResponseStatus(HttpStatus.OK)
+    public ConfirmResponse confirmUser(@Valid @RequestBody ConfirmRequest request, Principal principal) {
+        return confirmService.confirmToken(principal, request);
+    }
 
     //TODO Need update after design
     @PostMapping("/password")
