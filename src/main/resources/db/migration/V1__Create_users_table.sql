@@ -4,8 +4,7 @@ CREATE TABLE users (
     password VARCHAR(255) NOT NULL,
     role VARCHAR(50) NOT NULL,
     enabled BOOLEAN DEFAULT FALSE,
-    confirmation_token VARCHAR(6),
-    life_confirmation_token TIMESTAMP,
+    confirmed BOOLEAN,
     creation_date TIMESTAMP NOT NULL DEFAULT now()
 );
 
