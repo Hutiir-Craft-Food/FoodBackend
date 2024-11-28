@@ -21,6 +21,7 @@ spring:
       password: ${FLYWAY_PASSWORD}
       role: ${FLYWAY_ROLE}
       enabled: ${FLYWAY_ENABLED}
+      confirmed: ${FLYWAY_CONFIRMED}
 
 
   datasource:
