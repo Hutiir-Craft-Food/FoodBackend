@@ -11,7 +11,6 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -31,7 +30,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final UserDetailsService userDetailsService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -50,7 +48,7 @@ public class SecurityConfig {
                 .cors(c -> corsConfigurationSource())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/swagger-ui/index.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        .requestMatchers("/v1/user/login", "/v1/user/register", "/v1/user/confirm", "/error").permitAll()
+                        .requestMatchers("/v1/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET,"/products/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/products/**").hasRole("SELLER")
                         .requestMatchers(HttpMethod.DELETE, "/products/**").hasRole("SELLER")
@@ -59,6 +57,7 @@ public class SecurityConfig {
                         .requestMatchers("/seller/**").hasRole("SELLER")
                         .requestMatchers("/buyer/**").hasRole("BUYER")
                         .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/actuator/**").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

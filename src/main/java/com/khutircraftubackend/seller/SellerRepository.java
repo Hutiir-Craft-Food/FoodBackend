@@ -1,6 +1,6 @@
 package com.khutircraftubackend.seller;
 
-import com.khutircraftubackend.auth.UserEntity;
+import com.khutircraftubackend.user.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

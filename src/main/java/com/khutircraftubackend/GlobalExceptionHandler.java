@@ -5,13 +5,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 /**
  * Global exception handler.
  */
 @RestControllerAdvice
 @Slf4j
-public class GlobalExceptionHandler {
+public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     /**
      * Handle illegal argument exception response entity.
      *
@@ -21,18 +22,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Глобальне повідомлення: " + ex.getMessage());
-    }
-
-    /**
-     * Handle generic exception response entity.
-     *
-     * @param ex the ex
-     * @return the response entity
-     */
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleGenericException(Exception ex) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Глобальне повідомлення: Внутрішня помилка сервера. Будь ласка, спробуйте пізніше.");
     }
 
     @ExceptionHandler(IllegalStateException.class)

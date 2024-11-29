@@ -2,22 +2,32 @@ spring:
   config:
     import: optional:file:.env.local[.properties]
 
+  flyway:
+    enabled: false
+
   jpa:
-    generate-ddl: false
+    generate-ddl: true
+    hibernate:
+      ddl-auto: update
     properties:
       hibernate:
         show-sql: true
         format_sql: true
 
-  datasource:
-    driver-class-name: org.postgresql.Driver
-    url: ${SPRING_DATASOURCE_URL}
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
-
+  mail:
+    host: localhost
+    port: 1025
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
 
 logging:
   level:
     root: INFO
     com:
       khutircraftubackend: DEBUG
+  file:
+    name: logs/latest.log

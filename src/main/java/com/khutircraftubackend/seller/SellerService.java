@@ -1,8 +1,9 @@
 package com.khutircraftubackend.seller;
 
-import com.khutircraftubackend.auth.UserEntity;
-import com.khutircraftubackend.auth.UserRepository;
-import com.khutircraftubackend.auth.UserService;
+import com.khutircraftubackend.auth.request.RegisterRequest;
+import com.khutircraftubackend.user.UserEntity;
+import com.khutircraftubackend.user.UserRepository;
+import com.khutircraftubackend.user.UserService;
 import com.khutircraftubackend.seller.exception.seller.SellerNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,8 +39,18 @@ public class SellerService {
                 .companyName(seller.getCompanyName())
                 .phoneNumber(seller.getPhoneNumber())
                 .creationDate(seller.getCreationDate())
-                .email(user.getEmail())
                 .build();
+    }
+
+    public void createSeller(RegisterRequest request, UserEntity user) {
+        SellerEntity seller = SellerEntity
+                .builder()
+                .sellerName(request.details().sellerName())
+                .companyName(request.details().companyName())
+                .phoneNumber(request.details().phoneNumber())
+                .user(user)
+                .build();
+        sellerRepository.save(seller);
     }
 
     public SellerEntity getCurrentSeller() {
