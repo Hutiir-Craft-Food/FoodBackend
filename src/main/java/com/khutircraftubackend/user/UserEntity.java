@@ -1,10 +1,9 @@
-package com.khutircraftubackend.auth;
+package com.khutircraftubackend.user;
 
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-
 
 @Entity
 @Table(name = "users")
@@ -33,23 +32,14 @@ public class UserEntity {
     @Column (name = "enabled")
     private boolean enabled;
 
+    @Column( name = "confirmed")
+    private boolean confirmed;
+
     @Column (name = "creation_date")
     private LocalDateTime creationDate;
-
-    @Column( name = "confirmation_token")
-    private String confirmationToken;
-
-    @Column ( name = "life_confirmation_token")
-    private LocalDateTime lifeConfirmationToken;
-
-  // TODO: remove it from here.
-  //  maybe should be moved into another repository with its own Entity
-  //  consider using "Cron Scheduler" for removing expired expiration codes.
 
     @PrePersist
     protected void onCreate(){
         creationDate = LocalDateTime.now();
     }
-
-
 }
