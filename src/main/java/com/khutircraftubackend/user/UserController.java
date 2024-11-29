@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 
 @RestController
-@RequestMapping ("/v1/user")
+@RequestMapping ("/v1/users")
 @RequiredArgsConstructor
 public class UserController {
 
