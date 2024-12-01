@@ -1,6 +1,5 @@
-package com.khutircraftubackend.product.image.exception;
+package com.khutircraftubackend.storage.exception;
 
-import com.khutircraftubackend.product.image.exception.file.InvalidFileFormatException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

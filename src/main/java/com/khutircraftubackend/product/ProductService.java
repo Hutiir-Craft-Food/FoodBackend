@@ -3,11 +3,10 @@ package com.khutircraftubackend.product;
 import com.khutircraftubackend.category.CategoryEntity;
 import com.khutircraftubackend.category.CategoryService;
 import com.khutircraftubackend.product.exception.product.ProductNotFoundException;
-import com.khutircraftubackend.product.image.CloudinaryServiceImpl;
-import com.khutircraftubackend.product.image.ResourceService;
 import com.khutircraftubackend.product.request.ProductRequest;
 import com.khutircraftubackend.seller.SellerEntity;
 import com.khutircraftubackend.seller.SellerService;
+import com.khutircraftubackend.storage.StorageService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -25,8 +24,7 @@ public class ProductService {
 	
 	private final ProductRepository productRepository;
 	private final SellerService sellerService;
-	private final CloudinaryServiceImpl cloudinaryService;
-	private final ResourceService resourceService;
+	private final StorageService storageService;
 	private final CategoryService categoryService;
 	private final ProductMapper productMapper;
 	
@@ -35,15 +33,7 @@ public class ProductService {
 		return productRepository.findProductById(productId)
 				.orElseThrow(() -> new ProductNotFoundException("Product with id " + productId + " not found"));
 	}
-	
-	private String handleIcon(MultipartFile iconFile) throws IOException {
-		
-		if (iconFile == null) {
-			return "";
-		}
-		return resourceService.uploadResource(iconFile);
-	}
-	
+
 	public boolean canModifyProduct(Long productId) throws AccessDeniedException {
 		
 		ProductEntity existingProduct = findProductById(productId);
@@ -65,8 +55,11 @@ public class ProductService {
 		
 		CategoryEntity category = categoryService.findCategoryById(request.categoryId());
 		
-		productEntity.setImageUrl(handleIcon(image));
-		productEntity.setThumbnailImageUrl(handleIcon(thumbnailImage));
+		String imageUrl = storageService.upload(image);
+		productEntity.setImageUrl(imageUrl);
+
+		String thumbnailImageUrl = storageService.upload(thumbnailImage);
+		productEntity.setThumbnailImageUrl(thumbnailImageUrl);
 		
 		productEntity.setCategory(category);
 		productEntity.setSeller(currentSeller);
@@ -76,7 +69,7 @@ public class ProductService {
 	
 	@Transactional
 	public ProductEntity updateProduct(Long productId, ProductRequest request,
-									   MultipartFile thumbnailImageFile, MultipartFile imageFile) throws IOException {
+									   MultipartFile thumbnailImage, MultipartFile image) throws IOException {
 		
 		ProductEntity existingProduct = findProductById(productId);
 		
@@ -86,9 +79,12 @@ public class ProductService {
 			CategoryEntity newCategory = categoryService.findCategoryById(request.categoryId());
 			existingProduct.setCategory(newCategory);
 		}
-		
-		existingProduct.setThumbnailImageUrl(handleIcon(thumbnailImageFile));
-		existingProduct.setImageUrl(handleIcon(imageFile));
+
+		String thumbnailImageUrl = storageService.upload(thumbnailImage);
+		existingProduct.setThumbnailImageUrl(thumbnailImageUrl);
+
+		String imageUrl = storageService.upload(image);
+		existingProduct.setImageUrl(imageUrl);
 		
 		return productRepository.save(existingProduct);
 	}
@@ -120,11 +116,11 @@ public class ProductService {
 	private void deleteProductImages(ProductEntity product) throws IOException {
 		
 		if (product.getThumbnailImageUrl() != null) {
-			resourceService.deleteResourceById(product.getThumbnailImageUrl());
+			storageService.deleteById(product.getThumbnailImageUrl());
 		}
 		
 		if (product.getImageUrl() != null) {
-			resourceService.deleteResourceById(product.getImageUrl());
+			storageService.deleteById(product.getImageUrl());
 		}
 	}
 	

@@ -4,7 +4,7 @@ import com.khutircraftubackend.category.exception.category.CategoryDeletionExcep
 import com.khutircraftubackend.category.exception.category.CategoryExceptionMessages;
 import com.khutircraftubackend.category.exception.category.CategoryNotFoundException;
 import com.khutircraftubackend.category.request.CategoryRequest;
-import com.khutircraftubackend.product.image.ResourceService;
+import com.khutircraftubackend.storage.StorageService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,25 +19,13 @@ public class CategoryService {
 	
 	private final CategoryRepository categoryRepository;
 	private final CategoryMapper categoryMapper;
-	
-	private final ResourceService resourceService;
+	private final StorageService storageService;
 	
 	public CategoryEntity findCategoryById(Long id) {
 		
 		return categoryRepository.findById(id).orElseThrow(() ->
 				new CategoryNotFoundException(CategoryExceptionMessages.CATEGORY_NOT_FOUND));
 	}
-	
-	
-	private String handleIcon(MultipartFile iconFile) throws IOException {
-		
-		if (iconFile == null || iconFile.isEmpty()) {
-			return "";
-		}
-		
-		return resourceService.uploadResource(iconFile);
-	}
-	
 	
 	public List<CategoryEntity> getAllRootCategories() {
 		
@@ -67,7 +55,8 @@ public class CategoryService {
 		
 		CategoryEntity category = categoryMapper.toCategoryEntity(request);
 		
-		category.setIconUrl(handleIcon(iconFile));
+		String iconFileUrl = storageService.upload(iconFile);
+		category.setIconUrl(iconFileUrl);
 		
 		setParentCategory(category, request.parentCategoryId());
 		
@@ -81,7 +70,8 @@ public class CategoryService {
 		
 		CategoryEntity existingCategory = findCategoryById(id);
 		
-		existingCategory.setIconUrl(handleIcon(iconFile));
+		String iconFileUrl = storageService.upload(iconFile);
+		existingCategory.setIconUrl(iconFileUrl);
 		
 		categoryMapper.updateCategoryEntity(existingCategory, request);
 		

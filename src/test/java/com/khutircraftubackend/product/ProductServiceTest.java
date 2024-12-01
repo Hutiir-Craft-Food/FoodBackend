@@ -4,7 +4,7 @@ import com.khutircraftubackend.category.CategoryEntity;
 import com.khutircraftubackend.category.CategoryService;
 import com.khutircraftubackend.category.exception.category.CategoryNotFoundException;
 import com.khutircraftubackend.product.exception.product.ProductNotFoundException;
-import com.khutircraftubackend.product.image.ResourceService;
+import com.khutircraftubackend.storage.StorageService;
 import com.khutircraftubackend.product.request.ProductRequest;
 import com.khutircraftubackend.seller.SellerEntity;
 import com.khutircraftubackend.seller.SellerService;
@@ -39,7 +39,7 @@ public class ProductServiceTest {
 	@Mock
 	private SellerService sellerService;
 	@Mock
-	private ResourceService resourceService;
+	private StorageService storageService;
 	@Mock
 	private MultipartFile mockThumbnailFile;
 	@Mock
@@ -144,8 +144,8 @@ public class ProductServiceTest {
 			Long categoryId = 2L;
 			
 			when(sellerService.getCurrentSeller()).thenReturn(currentSeller);
-			when(resourceService.uploadResource(mockThumbnailFile)).thenReturn("ThumbnailFile");
-			when(resourceService.uploadResource(mockImageFile)).thenReturn("ImageFile");
+			when(storageService.upload(mockThumbnailFile)).thenReturn("ThumbnailFile");
+			when(storageService.upload(mockImageFile)).thenReturn("ImageFile");
 			when(productRepository.save(any(ProductEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
 			
 			CategoryEntity mockCategory = CategoryEntity.builder()
@@ -168,8 +168,8 @@ public class ProductServiceTest {
 			assertEquals("ThumbnailFile", createdProduct.getThumbnailImageUrl());
 			assertEquals("ImageFile", createdProduct.getImageUrl());
 			
-			verify(resourceService).uploadResource(mockThumbnailFile);
-			verify(resourceService).uploadResource(mockImageFile);
+			verify(storageService).upload(mockThumbnailFile);
+			verify(storageService).upload(mockImageFile);
 			verify(productRepository).save(any(ProductEntity.class));
 			verify(categoryService).findCategoryById(anyLong());
 		}
@@ -208,8 +208,8 @@ public class ProductServiceTest {
 					.build();
 			
 			when(productRepository.findProductById(1L)).thenReturn(Optional.of(existingProduct));
-			when(resourceService.uploadResource(mockImageFile)).thenReturn("new-uploaded-image-url");
-			when(resourceService.uploadResource(mockThumbnailFile)).thenReturn("new-uploaded-thumbnail-url");
+			when(storageService.upload(mockImageFile)).thenReturn("new-uploaded-image-url");
+			when(storageService.upload(mockThumbnailFile)).thenReturn("new-uploaded-thumbnail-url");
 			when(productRepository.save(any(ProductEntity.class))).thenReturn(existingProduct);
 			
 			ProductEntity updatedProduct = productService.updateProduct(1L, request, mockThumbnailFile, mockImageFile);
@@ -222,8 +222,8 @@ public class ProductServiceTest {
 			assertEquals("Updated description", updatedProduct.getDescription());
 			
 			verify(productRepository, times(1)).save(any(ProductEntity.class));
-			verify(resourceService, times(1)).uploadResource(mockImageFile);
-			verify(resourceService, times(1)).uploadResource(mockThumbnailFile);
+			verify(storageService, times(1)).upload(mockImageFile);
+			verify(storageService, times(1)).upload(mockThumbnailFile);
 		}
 		
 	}
@@ -326,14 +326,14 @@ public class ProductServiceTest {
 			
 			when(productRepository.findAllBySeller(seller)).thenReturn(products);
 			
-			doNothing().when(resourceService).deleteResourceById(anyString());
+			doNothing().when(storageService).deleteById(anyString());
 			
 			productService.deleteAllProductsForSeller(seller);
 			
-			verify(resourceService, times(1)).deleteResourceById("http://Test thumbnail1");
-			verify(resourceService, times(1)).deleteResourceById("http://Test image1");
-			verify(resourceService, times(1)).deleteResourceById("http://Test thumbnail2");
-			verify(resourceService, times(1)).deleteResourceById("http://Test image2");
+			verify(storageService, times(1)).deleteById("http://Test thumbnail1");
+			verify(storageService, times(1)).deleteById("http://Test image1");
+			verify(storageService, times(1)).deleteById("http://Test thumbnail2");
+			verify(storageService, times(1)).deleteById("http://Test image2");
 			
 			verify(productRepository, times(1)).deleteBySeller(seller);
 		}

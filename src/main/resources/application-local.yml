@@ -31,3 +31,11 @@ logging:
       khutircraftubackend: DEBUG
   file:
     name: logs/latest.log
+
+storage:
+  local:
+    base-path: 'uploads'
+
+
+jwt:
+  expiration: 600000
