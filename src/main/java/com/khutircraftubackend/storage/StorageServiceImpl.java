@@ -11,9 +11,10 @@ import org.springframework.core.io.Resource;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
-import java.net.URL;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -24,37 +25,44 @@ import java.util.UUID;
 @Slf4j
 public class StorageServiceImpl implements StorageService {
 	private final String basePath;
+	
 	@Override
-	public String upload(MultipartFile multipartFile) throws IOException {
+	public String upload(MultipartFile multipartFile) throws IOException, URISyntaxException {
 		
 		if (multipartFile == null || multipartFile.isEmpty()) {
 			throw new InvalidFileFormatException("Файл не надано або він порожній");
 		}
-			String fileName = UUID.randomUUID().toString();
-			
-			Path uploadPath = Paths.get(basePath);
-			Files.createDirectories(uploadPath);
-			
-			String originalFileName = multipartFile.getOriginalFilename();
-			String extension = "";
-			
-			if (originalFileName != null && originalFileName.contains(".")) {
-				extension = originalFileName.substring(originalFileName.lastIndexOf("."));
-			}
-			
-			String newFileName = fileName + extension;
-			
-			Path filePath = uploadPath.resolve(newFileName);
-			Files.copy(multipartFile.getInputStream(), filePath);
-			
-			HttpServletRequest request = ((ServletRequestAttributes)
-					Objects.requireNonNull(RequestContextHolder.getRequestAttributes()))
-					.getRequest();
-			String relativeUriStr = LocalStorageController.API_PATH + uploadPath
-					.relativize(filePath).normalize();
-			
-			return new URL(request.getScheme(), request.getServerName(), request.getServerPort(), relativeUriStr).toString();
-	
+		String fileName = UUID.randomUUID().toString();
+		
+		Path uploadPath = Paths.get(basePath);
+		Files.createDirectories(uploadPath);
+		
+		String originalFileName = multipartFile.getOriginalFilename();
+		String extension = "";
+		
+		if (originalFileName != null && originalFileName.contains(".")) {
+			extension = originalFileName.substring(originalFileName.lastIndexOf("."));
+		}
+		
+		String newFileName = fileName + extension;
+		
+		Path filePath = uploadPath.resolve(newFileName);
+		Files.copy(multipartFile.getInputStream(), filePath);
+		
+		HttpServletRequest request = ((ServletRequestAttributes)
+				Objects.requireNonNull(RequestContextHolder.getRequestAttributes()))
+				.getRequest();
+		String relativeUriStr = LocalStorageController.API_PATH + uploadPath
+				.relativize(filePath).normalize();
+		
+		return UriComponentsBuilder.newInstance()
+				.scheme(request.getScheme())
+				.host(request.getServerName())
+				.port(request.getServerPort())
+				.path(relativeUriStr)
+				.build()
+				.toUriString();
+		
 	}
 	
 	public Resource getResource(String fileName) throws IOException {
@@ -76,7 +84,7 @@ public class StorageServiceImpl implements StorageService {
 		}
 		
 		String filePathStr = fileUrl.split(LocalStorageController.API_PATH + "/")[1];
-
+		
 		Path filePath = Paths.get(basePath).resolve(filePathStr);
 		
 		if (Files.notExists(filePath)) {

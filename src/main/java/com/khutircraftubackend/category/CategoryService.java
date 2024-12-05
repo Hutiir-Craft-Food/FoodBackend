@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.List;
 
 @Service
@@ -29,7 +30,7 @@ public class CategoryService {
 	}
 	
 	
-	private String handleIcon(MultipartFile iconFile) throws IOException {
+	private String handleIcon(MultipartFile iconFile) throws IOException, URISyntaxException {
 		
 		if (iconFile == null || iconFile.isEmpty()) {
 			return "";
@@ -63,7 +64,7 @@ public class CategoryService {
 	}
 	
 	@Transactional
-	public CategoryEntity createCategory(CategoryRequest request, MultipartFile iconFile) throws IOException {
+	public CategoryEntity createCategory(CategoryRequest request, MultipartFile iconFile) throws IOException, URISyntaxException {
 		
 		CategoryEntity category = categoryMapper.toCategoryEntity(request);
 		
@@ -77,7 +78,7 @@ public class CategoryService {
 	
 	@Transactional
 	public CategoryEntity updateCategory(Long id, CategoryRequest request,
-										 MultipartFile iconFile) throws IOException {
+										 MultipartFile iconFile) throws IOException, URISyntaxException {
 		
 		CategoryEntity existingCategory = findCategoryById(id);
 		

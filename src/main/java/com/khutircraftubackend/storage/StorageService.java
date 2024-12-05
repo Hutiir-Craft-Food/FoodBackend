@@ -7,7 +7,7 @@ import java.net.URISyntaxException;
 
 public interface StorageService {
 	
-	String upload(MultipartFile multipartFile) throws IOException;
+	String upload(MultipartFile multipartFile) throws IOException, URISyntaxException;
 	
 	void deleteByUrl(String fileUrl) throws IOException, URISyntaxException;
 }

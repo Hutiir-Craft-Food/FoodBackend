@@ -136,7 +136,7 @@ public class ProductServiceTest {
 	@DisplayName("Tests for creation Product")
 	class CreateProduct {
 		@Test
-		void createProduct_Success() throws IOException {
+		void createProduct_Success() throws IOException, URISyntaxException {
 			
 			SellerEntity currentSeller = SellerEntity.builder()
 					.companyName("CompanyA")
@@ -192,7 +192,7 @@ public class ProductServiceTest {
 		}
 		
 		@Test
-		void testUpdateProduct_Success() throws IOException {
+		void testUpdateProduct_Success() throws IOException, URISyntaxException {
 			
 			ProductEntity existingProduct = ProductEntity.builder()
 					.id(1L)
@@ -233,7 +233,7 @@ public class ProductServiceTest {
 	@DisplayName("Tests for update Product")
 	class UpdateProduct {
 		@Test
-		void updateProduct_WithNullImages() throws IOException {
+		void updateProduct_WithNullImages() throws IOException, URISyntaxException {
 			
 			ProductEntity existingProduct = ProductEntity.builder()
 					.id(1L)

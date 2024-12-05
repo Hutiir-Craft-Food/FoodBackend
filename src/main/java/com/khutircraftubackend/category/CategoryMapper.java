@@ -2,6 +2,7 @@ package com.khutircraftubackend.category;
 
 import com.khutircraftubackend.category.request.CategoryRequest;
 import com.khutircraftubackend.category.response.CategoryResponse;
+import com.khutircraftubackend.product.ProductMapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -11,7 +12,8 @@ import java.util.Collection;
 import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
 import static org.mapstruct.ReportingPolicy.IGNORE;
 
-@Mapper(componentModel = SPRING, unmappedTargetPolicy = IGNORE)
+@Mapper(componentModel = SPRING, unmappedTargetPolicy = IGNORE,
+		uses = {ProductMapper.class})
 public interface CategoryMapper {
 	
 	@Mapping(target = "parentCategory.id", source = "request.parentCategoryId")

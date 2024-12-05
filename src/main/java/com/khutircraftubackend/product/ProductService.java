@@ -35,7 +35,7 @@ public class ProductService {
 				.orElseThrow(() -> new ProductNotFoundException("Product with id " + productId + " not found"));
 	}
 	
-	private String handleIcon(MultipartFile iconFile) throws IOException {
+	private String handleIcon(MultipartFile iconFile) throws IOException, URISyntaxException {
 		
 		if (iconFile == null) {
 			return "";
@@ -56,7 +56,7 @@ public class ProductService {
 	}
 	
 	@Transactional
-	public ProductEntity createProduct(ProductRequest request, MultipartFile thumbnailImage, MultipartFile image) throws IOException {
+	public ProductEntity createProduct(ProductRequest request, MultipartFile thumbnailImage, MultipartFile image) throws IOException, URISyntaxException {
 		
 		SellerEntity currentSeller = sellerService.getCurrentSeller();
 		
@@ -75,7 +75,7 @@ public class ProductService {
 	
 	@Transactional
 	public ProductEntity updateProduct(Long productId, ProductRequest request,
-									   MultipartFile thumbnailImageFile, MultipartFile imageFile) throws IOException {
+									   MultipartFile thumbnailImageFile, MultipartFile imageFile) throws IOException, URISyntaxException {
 		
 		ProductEntity existingProduct = findProductById(productId);
 		

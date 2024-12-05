@@ -47,17 +47,15 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(c -> corsConfigurationSource())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/swagger-ui/index.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers("/swagger-ui/index.html", "/swagger-ui/**", "/v3/api-docs/**", "/actuator/**").permitAll()
                         .requestMatchers("/v1/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.GET,"/products/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/products/**").hasRole("SELLER")
-                        .requestMatchers(HttpMethod.DELETE, "/products/**").hasRole("SELLER")
-                        .requestMatchers(HttpMethod.PATCH, "/products/**").hasRole("SELLER")
-                        .requestMatchers(HttpMethod.PUT, "/products/**").hasRole("SELLER")
+                        .requestMatchers(HttpMethod.GET,"/v1/products/**", "/v1/resources/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v1/products/**").hasRole("SELLER")
+                        .requestMatchers(HttpMethod.PUT, "/v1/products/**").hasRole("SELLER")
+                        .requestMatchers(HttpMethod.DELETE, "/v1/products/**").hasRole("SELLER")                        .requestMatchers("/seller/**").hasRole("SELLER")
                         .requestMatchers("/seller/**").hasRole("SELLER")
                         .requestMatchers("/buyer/**").hasRole("BUYER")
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/actuator/**").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

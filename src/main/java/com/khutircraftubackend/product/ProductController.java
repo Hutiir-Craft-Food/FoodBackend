@@ -32,7 +32,7 @@ public class ProductController {
 	public ProductResponse createProduct(
 			@Valid @ModelAttribute ProductRequest request,
 			@RequestPart(value = "thumbnailImage", required = false) MultipartFile thumbnailImage,
-			@RequestPart(value = "image", required = false) MultipartFile image) throws IOException {
+			@RequestPart(value = "image", required = false) MultipartFile image) throws IOException, URISyntaxException {
 		
 		ProductEntity newProduct = productService.createProduct(request, thumbnailImage, image);
 		
@@ -46,7 +46,7 @@ public class ProductController {
 			@PathVariable Long productId,
 			@Valid @ModelAttribute ProductRequest request,
 			@RequestPart(value = "thumbnailImage", required = false) MultipartFile thumbnailImage,
-			@RequestPart(value = "image", required = false) MultipartFile image) throws IOException {
+			@RequestPart(value = "image", required = false) MultipartFile image) throws IOException, URISyntaxException {
 		
 		ProductEntity updatedProduct = productService.updateProduct(productId, request, thumbnailImage, image);
 		

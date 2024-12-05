@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.List;
 
@@ -46,7 +47,7 @@ public class CategoryController {
 	@ResponseStatus(HttpStatus.OK)
 	public CategoryResponse createCategory(
 			@Valid @ModelAttribute CategoryRequest request,
-			@RequestPart(value = "iconFile", required = false) MultipartFile iconFile) throws IOException {
+			@RequestPart(value = "iconFile", required = false) MultipartFile iconFile) throws IOException, URISyntaxException {
 		
 		CategoryEntity category = categoryService.createCategory(request, iconFile);
 		
@@ -59,7 +60,7 @@ public class CategoryController {
 	public CategoryResponse updateCategory(
 			@PathVariable Long id,
 			@Valid @ModelAttribute CategoryRequest request,
-			@RequestPart(value = "iconFile", required = false) MultipartFile iconFile) throws IOException {
+			@RequestPart(value = "iconFile", required = false) MultipartFile iconFile) throws IOException, URISyntaxException {
 		
 		CategoryEntity updateCategory = categoryService.updateCategory(id, request, iconFile);
 		
