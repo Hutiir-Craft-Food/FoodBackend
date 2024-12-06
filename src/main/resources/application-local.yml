@@ -8,7 +8,7 @@ spring:
   jpa:
     generate-ddl: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     properties:
       hibernate:
         show-sql: true
@@ -31,3 +31,7 @@ logging:
       khutircraftubackend: DEBUG
   file:
     name: logs/latest.log
+
+storage:
+  local:
+    base-path: ./uploads

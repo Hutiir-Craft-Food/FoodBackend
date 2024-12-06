@@ -3,11 +3,10 @@ package com.khutircraftubackend.product;
 import com.khutircraftubackend.category.CategoryEntity;
 import com.khutircraftubackend.category.CategoryService;
 import com.khutircraftubackend.product.exception.product.ProductNotFoundException;
-import com.khutircraftubackend.product.image.FileConverterService;
-import com.khutircraftubackend.product.image.FileUploadService;
 import com.khutircraftubackend.product.request.ProductRequest;
 import com.khutircraftubackend.seller.SellerEntity;
 import com.khutircraftubackend.seller.SellerService;
+import com.khutircraftubackend.storage.StorageService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -16,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.AccessDeniedException;
 import java.util.List;
 
@@ -25,8 +25,7 @@ public class ProductService {
 	
 	private final ProductRepository productRepository;
 	private final SellerService sellerService;
-	private final FileUploadService fileUploadService;
-	private final FileConverterService fileConverterService;
+	private final StorageService storageService;
 	private final CategoryService categoryService;
 	private final ProductMapper productMapper;
 	
@@ -36,13 +35,12 @@ public class ProductService {
 				.orElseThrow(() -> new ProductNotFoundException("Product with id " + productId + " not found"));
 	}
 	
-	private String handleIcon(MultipartFile iconFile) throws IOException {
+	private String handleIcon(MultipartFile iconFile) throws IOException, URISyntaxException {
 		
-		if (iconFile != null && !iconFile.isEmpty()) {
-			return fileConverterService.convert(iconFile);
+		if (iconFile == null) {
+			return "";
 		}
-		
-		return null;
+		return storageService.upload(iconFile);
 	}
 	
 	public boolean canModifyProduct(Long productId) throws AccessDeniedException {
@@ -58,7 +56,7 @@ public class ProductService {
 	}
 	
 	@Transactional
-	public ProductEntity createProduct(ProductRequest request, MultipartFile thumbnailImage, MultipartFile image) throws IOException {
+	public ProductEntity createProduct(ProductRequest request, MultipartFile thumbnailImage, MultipartFile image) throws IOException, URISyntaxException {
 		
 		SellerEntity currentSeller = sellerService.getCurrentSeller();
 		
@@ -77,7 +75,7 @@ public class ProductService {
 	
 	@Transactional
 	public ProductEntity updateProduct(Long productId, ProductRequest request,
-									   MultipartFile thumbnailImageFile, MultipartFile imageFile) throws IOException {
+									   MultipartFile thumbnailImageFile, MultipartFile imageFile) throws IOException, URISyntaxException {
 		
 		ProductEntity existingProduct = findProductById(productId);
 		
@@ -95,7 +93,7 @@ public class ProductService {
 	}
 	
 	@Transactional
-	public void deleteProduct(Long productId) throws IOException {
+	public void deleteProduct(Long productId) throws IOException, URISyntaxException {
 		
 		ProductEntity existingProduct = findProductById(productId);
 		
@@ -105,27 +103,27 @@ public class ProductService {
 	}
 	
 	@Transactional
-	public void deleteAllProductsForSeller(SellerEntity seller) throws IOException {
+	public void deleteAllProductsForSeller(SellerEntity seller) throws IOException, URISyntaxException {
 		
 		List<ProductEntity> products = productRepository.findAllBySeller(seller);
 		
-		for (ProductEntity product : products) {
-			deleteProductImages(product);
+		if(products != null) {
+			for (ProductEntity product : products) {
+				deleteProductImages(product);
+			}
 		}
 		
 		productRepository.deleteBySeller(seller);
 	}
 	
-	private void deleteProductImages(ProductEntity product) throws IOException {
+	private void deleteProductImages(ProductEntity product) throws IOException, URISyntaxException {
 		
 		if (product.getThumbnailImageUrl() != null) {
-			String publicId = fileUploadService.extractPublicId(product.getThumbnailImageUrl());
-			fileUploadService.deleteCloudinaryById(publicId);
+			storageService.deleteByUrl(product.getThumbnailImageUrl());
 		}
 		
 		if (product.getImageUrl() != null) {
-			String publicId = fileUploadService.extractPublicId(product.getImageUrl());
-			fileUploadService.deleteCloudinaryById(publicId);
+			storageService.deleteByUrl(product.getImageUrl());
 		}
 	}
 	

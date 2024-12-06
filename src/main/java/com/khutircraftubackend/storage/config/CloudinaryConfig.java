@@ -1,4 +1,4 @@
-package com.khutircraftubackend.config;
+package com.khutircraftubackend.storage.config;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
