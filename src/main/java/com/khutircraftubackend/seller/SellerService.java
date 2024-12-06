@@ -5,11 +5,11 @@ import com.khutircraftubackend.address.AddressRequest;
 import com.khutircraftubackend.address.AddressService;
 import com.khutircraftubackend.address.exception.address.AccessDeniedException;
 import com.khutircraftubackend.auth.request.RegisterRequest;
-import com.khutircraftubackend.product.image.FileConverterService;
 import com.khutircraftubackend.seller.exception.seller.SellerNotFoundException;
 import com.khutircraftubackend.seller.qualityCertificates.*;
 import com.khutircraftubackend.seller.request.SellerRequest;
 import com.khutircraftubackend.seller.response.SellerResponse;
+import com.khutircraftubackend.storage.StorageService;
 import com.khutircraftubackend.user.UserEntity;
 import com.khutircraftubackend.user.UserRepository;
 import com.khutircraftubackend.user.UserService;
@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.security.Principal;
 import java.util.List;
 import java.util.Objects;
@@ -43,8 +44,8 @@ public class SellerService {
 	private final UserService userService;
 	private final QualityCertificateService qualityCertificateService;
 	private final AddressService addressService;
-	private final FileConverterService fileConverterService;
 	private final SellerMapper sellerMapper;
+	private final StorageService storageService;
 	private final QualityCertificateMapper qualityCertificateMapper;
 	
 	public SellerEntity getByUser(UserEntity user) {
@@ -59,11 +60,11 @@ public class SellerService {
 				.orElseThrow(() -> new SellerNotFoundException("Seller not found"));
 	}
 	
-	private String handleImage(MultipartFile iconFile) throws IOException {
+	private String handleImage(MultipartFile iconFile) throws IOException, URISyntaxException {
 		
 		if (iconFile != null && !iconFile.isEmpty()) {
 			
-			return fileConverterService.convert(iconFile);
+			return storageService.upload(iconFile);
 		}
 		
 		return null;
@@ -115,7 +116,7 @@ public class SellerService {
 	}
 	
 	@Transactional
-	public QualityCertificateResponse createSellerCertificates(QualityCertificateRequest request, MultipartFile certificateFile) throws IOException {
+	public QualityCertificateResponse createSellerCertificates(QualityCertificateRequest request, MultipartFile certificateFile) throws IOException, URISyntaxException {
 		
 		SellerEntity seller = getCurrentSeller();
 		
@@ -129,7 +130,7 @@ public class SellerService {
 	}
 	
 	@Transactional
-	public QualityCertificateResponse updateSellerCertificate(Long id, QualityCertificateRequest request, MultipartFile certificateFile) throws IOException {
+	public QualityCertificateResponse updateSellerCertificate(Long id, QualityCertificateRequest request, MultipartFile certificateFile) throws IOException, URISyntaxException {
 		
 		SellerEntity seller = getCurrentSeller();
 		
@@ -151,7 +152,7 @@ public class SellerService {
 													  Long addressId,
 													  AddressRequest addressRequest,
 													  MultipartFile logoFile
-	) throws IOException {
+	) throws IOException, URISyntaxException {
 		
 		SellerEntity seller = getSellerId(sellerId);
 		

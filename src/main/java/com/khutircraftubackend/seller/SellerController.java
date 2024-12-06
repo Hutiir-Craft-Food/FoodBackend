@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.security.Principal;
 import java.util.Collection;
 
@@ -43,7 +44,7 @@ public class SellerController {
 			@PathVariable Long sellerId,
 			@PathVariable Long addressId,
 			@RequestPart(value = "logo", required = false) MultipartFile logo
-	) throws IOException {
+	) throws IOException, URISyntaxException {
 		
 		return sellerService.updateSellerInfoWithAddress(
 				sellerRequest, sellerId, addressId, addressRequest, logo);
@@ -64,7 +65,7 @@ public class SellerController {
 	public QualityCertificateResponse createCertificate(
 			@Valid @ModelAttribute QualityCertificateRequest request,
 			@RequestPart(value = "certificateFile", required = false) MultipartFile certificateFile
-	) throws IOException {
+	) throws IOException, URISyntaxException {
 		return sellerService.createSellerCertificates(request, certificateFile);
 	}
 	
@@ -75,7 +76,7 @@ public class SellerController {
 	public QualityCertificateResponse updateCertificate(
 			@PathVariable Long id,
 			@Valid @ModelAttribute QualityCertificateRequest certificateRequest,
-			@RequestPart(required = false) MultipartFile certificateFile) throws IOException {
+			@RequestPart(required = false) MultipartFile certificateFile) throws IOException, URISyntaxException {
 		
 		return sellerService.updateSellerCertificate(id, certificateRequest, certificateFile);
 	}

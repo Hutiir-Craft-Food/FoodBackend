@@ -1,15 +1,16 @@
 package com.khutircraftubackend.seller.qualityCertificates;
 
-import com.khutircraftubackend.product.image.FileConverterService;
 import com.khutircraftubackend.seller.SellerEntity;
 import com.khutircraftubackend.seller.qualityCertificates.exception.qualityException.InvalidQualityCertificateArgumentException;
 import com.khutircraftubackend.seller.qualityCertificates.exception.qualityException.QualityCertificateNotFoundException;
+import com.khutircraftubackend.storage.StorageService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 
 @Service
@@ -18,7 +19,7 @@ public class QualityCertificateService {
 	
 	private final QualityCertificateRepository qualityCertificateRepository;
 	private final QualityCertificateMapper qualityCertificateMapper;
-	private final FileConverterService fileConverterService;
+	private final StorageService storageService;
 	
 	public QualityCertificateEntity findQualityCertificateBiId(Long id, SellerEntity seller) {
 		
@@ -26,10 +27,10 @@ public class QualityCertificateService {
 				.orElseThrow(() -> new QualityCertificateNotFoundException("Quality Certificate not found or does not belong to the seller"));
 	}
 	
-	private String handleImage(MultipartFile certificateFile) throws IOException {
+	private String handleImage(MultipartFile certificateFile) throws IOException, URISyntaxException {
 		
 		if (certificateFile != null && !certificateFile.isEmpty()) {
-			return fileConverterService.convert(certificateFile);
+			return storageService.upload(certificateFile);
 		}
 		
 		return null;
@@ -43,7 +44,7 @@ public class QualityCertificateService {
 	}
 	
 	@Transactional
-	public QualityCertificateEntity createQualityCertificate(QualityCertificateRequest request, MultipartFile certificateFile) throws IOException {
+	public QualityCertificateEntity createQualityCertificate(QualityCertificateRequest request, MultipartFile certificateFile) throws IOException, URISyntaxException {
 	
 		QualityCertificateEntity certificate = qualityCertificateMapper.toCertificateEntity(request);
 		
@@ -57,7 +58,7 @@ public class QualityCertificateService {
 	@Transactional
 	public void updateQualityCertificate(Long id,
 										 QualityCertificateRequest request,
-										 MultipartFile certificateFile) throws IOException {
+										 MultipartFile certificateFile) throws IOException, URISyntaxException {
 		
 		SellerEntity seller = request.seller();
 		
