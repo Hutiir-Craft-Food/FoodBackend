@@ -1,5 +1,6 @@
 package com.khutircraftubackend.address;
 
+import com.khutircraftubackend.Auditable;
 import com.khutircraftubackend.seller.SellerEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -7,7 +8,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
@@ -16,7 +16,7 @@ import java.util.Objects;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "addresses")
-public class AddressEntity {
+public class AddressEntity extends Auditable {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,17 +40,8 @@ public class AddressEntity {
 	@Column(name = "postal_code", nullable = false)
 	private String postalCode;
 	
-	@Column (name = "creation_date")
-	private LocalDateTime creationDate;
-	
 	@OneToOne(mappedBy = "address", cascade = {CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval = true)
 	private SellerEntity seller;
-	
-	@PrePersist
-	protected void onCreate() {
-		creationDate = LocalDateTime.now();
-	}
-	
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
@@ -59,14 +50,11 @@ public class AddressEntity {
 		return Objects.equals(id, that.id) &&
 				Objects.equals(country, that.country) &&
 				Objects.equals(city, that.city) &&
-				Objects.equals(street, that.street) &&
-				Objects.equals(houseNumber, that.houseNumber) &&
-				Objects.equals(apartmentNumber, that.apartmentNumber) &&
 				Objects.equals(postalCode, that.postalCode);
 	}
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(id, country, city, street, houseNumber, apartmentNumber, postalCode);
+		return Objects.hash(id, country, city, postalCode);
 	}
 }

@@ -1,13 +1,13 @@
 package com.khutircraftubackend.seller;
 
-import com.khutircraftubackend.user.UserEntity;
+import com.khutircraftubackend.Auditable;
 import com.khutircraftubackend.address.AddressEntity;
 import com.khutircraftubackend.delivery.DeliveryMethodEntity;
 import com.khutircraftubackend.seller.qualityCertificates.QualityCertificateEntity;
+import com.khutircraftubackend.user.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
@@ -23,7 +23,7 @@ import java.util.Objects;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class SellerEntity {
+public class SellerEntity extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -61,10 +61,6 @@ public class SellerEntity {
     @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL, orphanRemoval = true)
     private Collection<QualityCertificateEntity> qualityCertificatesUrl = new ArrayList<>();
     
-    @Column (name = "creation_date")
-    private LocalDateTime creationDate;
-    
-    
     public void addCertificate(QualityCertificateEntity certificate) {
         qualityCertificatesUrl.add(certificate);
         certificate.setSeller(this);
@@ -73,11 +69,6 @@ public class SellerEntity {
     public void removeCertificate(QualityCertificateEntity certificate) {
         qualityCertificatesUrl.remove(certificate);
         certificate.setSeller(null);
-    }
-    
-    @PrePersist
-    protected void onCreate(){
-        creationDate = LocalDateTime.now();
     }
     
     @Override

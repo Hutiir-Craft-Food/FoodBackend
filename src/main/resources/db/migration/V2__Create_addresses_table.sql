@@ -6,5 +6,6 @@ CREATE TABLE addresses (
     house_number VARCHAR(100),
     apartment_number VARCHAR(100),
     postal_code VARCHAR(20) NOT NULL,
-    creation_date TIMESTAMP NOT NULL DEFAULT now()
+    create_date TIMESTAMP NOT NULL DEFAULT now(),
+    update_date TIMESTAMP
 );

@@ -1,5 +1,6 @@
 package com.khutircraftubackend.delivery;
 
+import com.khutircraftubackend.Auditable;
 import com.khutircraftubackend.seller.SellerEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -15,7 +16,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "delivery_methods")
-public class DeliveryMethodEntity {
+public class DeliveryMethodEntity extends Auditable {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -1,9 +1,8 @@
 package com.khutircraftubackend.category;
 
+import com.khutircraftubackend.Auditable;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -12,7 +11,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 @Table(name = "categories")
-public class CategoryEntity {
+public class CategoryEntity extends Auditable {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,14 +25,6 @@ public class CategoryEntity {
 	
 	@Column(name = "icon_url")
 	private String iconUrl;
-	
-	@Column (name = "creation_date")
-	private LocalDateTime creationDate;
-	
-	@PrePersist
-	protected void onCreate() {
-		creationDate = LocalDateTime.now();
-	}
 	
 	@ManyToOne
 	@JoinColumn(name = "parent_id")

@@ -1,6 +1,7 @@
 package com.khutircraftubackend.seller;
 
 import com.khutircraftubackend.address.AddressEntity;
+import com.khutircraftubackend.address.AddressMapper;
 import com.khutircraftubackend.address.AddressRequest;
 import com.khutircraftubackend.address.AddressService;
 import com.khutircraftubackend.address.exception.address.AccessDeniedException;
@@ -47,6 +48,7 @@ public class SellerService {
 	private final SellerMapper sellerMapper;
 	private final StorageService storageService;
 	private final QualityCertificateMapper qualityCertificateMapper;
+	private final AddressMapper addressMapper;
 	
 	public SellerEntity getByUser(UserEntity user) {
 		
@@ -77,6 +79,8 @@ public class SellerService {
 				.companyName(request.details().companyName())
 				.phoneNumber(request.details().phoneNumber())
 				.customerPhoneNumber(request.details().customerPhoneNumber())
+				.description(request.details().description())
+				.address(addressMapper.toAddressEntity(request.details().addressRequest()))
 				.user(user)
 				.build();
 		sellerRepository.save(seller);
