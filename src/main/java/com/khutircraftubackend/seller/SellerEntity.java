@@ -1,10 +1,15 @@
 package com.khutircraftubackend.seller;
 
+import com.khutircraftubackend.Auditable;
+import com.khutircraftubackend.address.AddressEntity;
+import com.khutircraftubackend.delivery.DeliveryMethodEntity;
+import com.khutircraftubackend.seller.qualityCertificates.QualityCertificateEntity;
 import com.khutircraftubackend.user.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Objects;
 
 /**
@@ -18,7 +23,7 @@ import java.util.Objects;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class SellerEntity {
+public class SellerEntity extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,20 +34,41 @@ public class SellerEntity {
 
     @Column(name = "company_name")
     private String companyName;
-
+    
+    @Column(name = "description")
+    private String description;
+    
+    @Column(name = "logo")
+    private String logoUrl;
+    
     @Column(name = "phone_number", nullable = false, unique = true)
     private String phoneNumber;
+    
+    @Column(name = "customer_phone_number", nullable = false, unique = true)
+    private String customerPhoneNumber;
 
-    @OneToOne
-    @JoinColumn(name = "user_id")
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
+    
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "address_id")
+    private AddressEntity address;
+    
+    @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private Collection<DeliveryMethodEntity> deliveryMethods;
 
-    @Column (name = "creation_date")
-    private LocalDateTime creationDate;
-
-    @PrePersist
-    protected void onCreate(){
-        creationDate = LocalDateTime.now();
+    @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Collection<QualityCertificateEntity> qualityCertificatesUrl = new ArrayList<>();
+    
+    public void addCertificate(QualityCertificateEntity certificate) {
+        qualityCertificatesUrl.add(certificate);
+        certificate.setSeller(this);
+    }
+    
+    public void removeCertificate(QualityCertificateEntity certificate) {
+        qualityCertificatesUrl.remove(certificate);
+        certificate.setSeller(null);
     }
     
     @Override

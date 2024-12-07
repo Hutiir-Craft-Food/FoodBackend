@@ -1,5 +1,6 @@
 package com.khutircraftubackend.category;
 
+import com.khutircraftubackend.Auditable;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -10,7 +11,7 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 @Table(name = "categories")
-public class CategoryEntity {
+public class CategoryEntity extends Auditable {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

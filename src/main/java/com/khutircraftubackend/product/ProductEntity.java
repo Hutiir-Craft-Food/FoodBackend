@@ -1,13 +1,10 @@
 package com.khutircraftubackend.product;
 
+import com.khutircraftubackend.Auditable;
 import com.khutircraftubackend.category.CategoryEntity;
 import com.khutircraftubackend.seller.SellerEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -16,7 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 @Table(name = "products")
-public class ProductEntity {
+public class ProductEntity extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,13 +41,5 @@ public class ProductEntity {
     @ManyToOne
     @JoinColumn(name = "category_id")
     CategoryEntity category;
-
-    @Column(name = "created_at")
-    @CreationTimestamp
-    LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    @UpdateTimestamp
-    LocalDateTime updatedAt;
     
 }
