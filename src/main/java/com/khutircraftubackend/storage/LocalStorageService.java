@@ -23,7 +23,7 @@ import java.util.UUID;
 
 @RequiredArgsConstructor
 @Slf4j
-public class StorageServiceImpl implements StorageService {
+public class LocalStorageService implements StorageService {
 	private final String basePath;
 	
 	@Override

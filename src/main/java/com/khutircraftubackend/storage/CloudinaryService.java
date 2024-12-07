@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.Map;
 
 @RequiredArgsConstructor
-public class CloudinaryServiceImpl implements StorageService {
+public class CloudinaryService implements StorageService {
 	private final Cloudinary cloudinary;
 	
 	@Override

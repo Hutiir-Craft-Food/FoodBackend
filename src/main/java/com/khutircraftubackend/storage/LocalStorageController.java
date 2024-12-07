@@ -16,7 +16,7 @@ import java.nio.file.Files;
 @RequiredArgsConstructor
 public class LocalStorageController {
 	public static final String API_PATH = "/v1/resources";
-	public final StorageServiceImpl storageService;
+	public final LocalStorageService storageService;
 	
 	@GetMapping("/{fileName:.+}")
 	@ResponseStatus(HttpStatus.OK)
