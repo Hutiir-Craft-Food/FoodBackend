@@ -6,5 +6,6 @@ CREATE TABLE delivery_methods (
     is_active BOOLEAN,
     delivery_provider VARCHAR(50) NOT NULL,
     seller_id BIGINT REFERENCES sellers(id) ON DELETE CASCADE,
-    creation_date TIMESTAMP NOT NULL DEFAULT now()
+    create_date TIMESTAMP NOT NULL DEFAULT now(),
+    updated_date TIMESTAMP
 );

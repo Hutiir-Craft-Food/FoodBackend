@@ -1,5 +1,6 @@
 package com.khutircraftubackend.seller.qualityCertificates;
 
+import com.khutircraftubackend.Auditable;
 import com.khutircraftubackend.seller.SellerEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -15,7 +16,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "quality_certificates")
-public class QualityCertificateEntity {
+public class QualityCertificateEntity extends Auditable {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,14 +36,6 @@ public class QualityCertificateEntity {
 	
 	@Column(name = "expiration_date", nullable = false)
 	private LocalDateTime expiration_date;
-	
-	@Column (name = "creation_date")
-	private LocalDateTime creationDate;
-	
-	@PrePersist
-	protected void onCreate() {
-		creationDate = LocalDateTime.now();
-	}
 	
 	@ManyToOne
 	@JoinColumn(name = "seller_id")

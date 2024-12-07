@@ -1,9 +1,9 @@
 package com.khutircraftubackend.user;
 
+import com.khutircraftubackend.Auditable;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
@@ -13,7 +13,7 @@ import java.util.Objects;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserEntity {
+public class UserEntity extends Auditable {
 
     @Id
     @Column (name = "id")
@@ -35,15 +35,6 @@ public class UserEntity {
 
     @Column( name = "confirmed")
     private boolean confirmed;
-
-    @Column (name = "creation_date")
-    private LocalDateTime creationDate;
-    
-    @PrePersist
-    protected void onCreate(){
-        creationDate = LocalDateTime.now();
-    }
-    
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

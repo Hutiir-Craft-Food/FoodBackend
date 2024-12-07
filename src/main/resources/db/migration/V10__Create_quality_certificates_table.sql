@@ -6,6 +6,7 @@ CREATE TABLE quality_certificates (
     issue_date TIMESTAMP NOT NULL,
     expiration_date TIMESTAMP NOT NULL,
     creation_date TIMESTAMP NOT NULL DEFAULT now(),
+    updated_date TIMESTAMP,
 
     seller_id BIGINT REFERENCES sellers(id) ON DELETE CASCADE
 );

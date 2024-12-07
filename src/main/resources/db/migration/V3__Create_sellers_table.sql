@@ -6,7 +6,8 @@ CREATE TABLE sellers (
     customer_phone_number VARCHAR(13) NOT NULL UNIQUE,
     logo VARCHAR,
     description VARCHAR,
-    creation_date TIMESTAMP NOT NULL DEFAULT now(),
+    create_date TIMESTAMP NOT NULL DEFAULT now(),
+    update_date TIMESTAMP,
 
     user_id BIGINT REFERENCES users(id),
     address_id BIGINT REFERENCES addresses(id) ON DELETE SET NULL

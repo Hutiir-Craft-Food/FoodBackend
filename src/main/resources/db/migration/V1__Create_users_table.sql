@@ -5,7 +5,8 @@ CREATE TABLE users (
     role VARCHAR(50) NOT NULL,
     enabled BOOLEAN DEFAULT FALSE,
     confirmed BOOLEAN,
-    creation_date TIMESTAMP NOT NULL DEFAULT now()
-);
+    create_date TIMESTAMP NOT NULL DEFAULT now(),
+    update_date TIMESTAMP
+                   );
 
 CREATE INDEX idx_email ON users (email);
