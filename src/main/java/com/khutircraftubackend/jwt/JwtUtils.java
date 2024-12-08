@@ -18,6 +18,7 @@ import java.util.Date;
 public class JwtUtils {
 	
 	private final Algorithm algorithm;
+
 	@Value("${jwt.expiration}")
 	private long jwtExpirationMillis;
 	
