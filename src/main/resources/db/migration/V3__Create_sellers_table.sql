@@ -6,4 +6,4 @@ CREATE TABLE sellers (
     user_id BIGINT,
     FOREIGN KEY (user_id) REFERENCES users(id),
     creation_date TIMESTAMP NOT NULL DEFAULT now()
-    );
+);

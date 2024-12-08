@@ -1,5 +1,6 @@
 package com.khutircraftubackend.auth;
 
+import com.khutircraftubackend.confirm.ConfirmService;
 import com.khutircraftubackend.auth.request.LoginRequest;
 import com.khutircraftubackend.auth.request.RegisterRequest;
 import com.khutircraftubackend.auth.response.AuthResponse;
@@ -40,6 +41,7 @@ public class AuthenticationService {
     private final UserService userService;
     private final JwtUtils jwtUtils;
     private final AuthenticationManager authenticationManager;
+    private final ConfirmService confirmService;
     private final SellerService sellerService;
 
     /**
@@ -83,6 +85,7 @@ public class AuthenticationService {
         }
 
         UserEntity user = userService.createdUser(request);
+        confirmService.sendVerificationEmail(user, false);
         createReceiveAdvertising(request, user);
 
         if (isSeller(request.role())) {

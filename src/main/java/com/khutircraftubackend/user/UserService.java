@@ -32,6 +32,12 @@ public class UserService {
         userRepository.save(user);
     }
 
+    /**
+     * The method returns the user identity by Principal.
+     * Метод возврашает сушность юзера по Principal.
+     * @param principal the security context's authenticated user
+     * @return UserEntity user
+     */
     public UserEntity findByPrincipal(Principal principal) {
         String email = principal.getName();
         return findByEmail(email);
@@ -41,5 +47,16 @@ public class UserService {
         return userRepository.findByEmail(email)
                .orElseThrow(() ->
                        new ResponseStatusException(HttpStatus.FORBIDDEN, UserResponseMessages.USER_NOT_FOUND));
+    }
+
+    /**
+     * Method for checking whether the user's email is confirmed.
+     * Метод для проверки подтверждена почта у юзера.
+     * @param principal the security context's authenticated user
+     * @return true or false
+     */
+    public boolean isUserMailConfirmed(Principal principal){
+        UserEntity user = findByPrincipal(principal);
+        return user.isConfirmed();
     }
 }
