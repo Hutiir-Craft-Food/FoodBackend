@@ -20,8 +20,10 @@ public record RegisterRequest(
         @NotNull(message = "Роль не може бути порожньою")
         Role role,
 
+        @NotNull(message = "Рассилка новин не может бути порожнію.")
         Boolean isReceiveAdvertising,
 
+        @NotNull(message = "Все поля в деталях должны быть заполнены.")
         SellerDTO details
 ) {
 }
