@@ -107,6 +107,7 @@ public class AuthenticationService {
                 .user(user)
                 .isSubscribed(request.isReceiveAdvertising())
                 .build();
+
         marketingCampaignRepository.save(advertising);
     }
 }

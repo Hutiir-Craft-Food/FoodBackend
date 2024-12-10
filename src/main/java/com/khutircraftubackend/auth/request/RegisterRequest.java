@@ -2,6 +2,7 @@ package com.khutircraftubackend.auth.request;
 
 import com.khutircraftubackend.user.Role;
 import com.khutircraftubackend.seller.SellerDTO;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -17,11 +18,13 @@ public record RegisterRequest(
         @Pattern(regexp = "^[^!@#$%^&*()_+=]*$", message = "Пароль не може містити спеціальні символи !@#$%^&*()_+=")
         String password,
 
-        @NotNull(message = "Роль не може бути порожньою")
+        @NotNull(message = "Роль не може бути порожньою.")
         Role role,
 
+        @NotNull (message = "Розсилка не може бути порожньою.")
         Boolean isReceiveAdvertising,
 
+        @Valid ()
         SellerDTO details
 ) {
 }
