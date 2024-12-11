@@ -81,3 +81,6 @@ server:
   error:
     include-message: ALWAYS
     include-stacktrace: NEVER
+    include-binding-errors: ON_PARAM
+    whitelabel:
+      enabled: true
