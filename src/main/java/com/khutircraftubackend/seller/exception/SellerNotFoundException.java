@@ -1,4 +1,4 @@
-package com.khutircraftubackend.seller.exception.seller;
+package com.khutircraftubackend.seller.exception;
 
 public class SellerNotFoundException extends RuntimeException{
     public SellerNotFoundException(String message) {
