@@ -1,5 +1,6 @@
 package com.khutircraftubackend.auth;
 
+import com.khutircraftubackend.user.exception.UserBlockedException;
 import com.khutircraftubackend.confirm.ConfirmService;
 import com.khutircraftubackend.auth.request.LoginRequest;
 import com.khutircraftubackend.auth.request.RegisterRequest;
@@ -11,18 +12,16 @@ import com.khutircraftubackend.user.Role;
 import com.khutircraftubackend.user.UserEntity;
 import com.khutircraftubackend.user.UserRepository;
 import com.khutircraftubackend.user.UserService;
+import com.khutircraftubackend.user.exception.UserEmailException;
 import jakarta.persistence.PostUpdate;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-
 
 /**
  * Клас AuthenticationService реалізує бізнес-логіку для роботи з користувачами.
@@ -57,8 +56,7 @@ public class AuthenticationService {
 
         UserEntity user = userService.findByEmail(request.email());
         if (Boolean.FALSE.equals(user.isEnabled())) {
-            throw new ResponseStatusException(
-                    HttpStatus.LOCKED, String.format(AuthResponseMessages.USER_BLOCKED, user.getEmail()));
+            throw new UserBlockedException(String.format(AuthResponseMessages.USER_BLOCKED, user.getEmail()));
         }
 
         authenticateUser(request.email(), request.password());
@@ -80,7 +78,7 @@ public class AuthenticationService {
     public AuthResponse registerNewUser(RegisterRequest request) {
 
         if (userRepository.existsByEmail(request.email())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, AuthResponseMessages.EMAIL_IS_ALREADY_IN_USE);
+            throw new UserEmailException(AuthResponseMessages.EMAIL_IS_ALREADY_IN_USE);
         }
 
         UserEntity user = userService.createdUser(request);

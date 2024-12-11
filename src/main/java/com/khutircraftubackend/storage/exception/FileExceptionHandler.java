@@ -1,8 +1,7 @@
 package com.khutircraftubackend.storage.exception;
 
-import com.khutircraftubackend.storage.exception.storage.FileNotFoundException;
-import com.khutircraftubackend.storage.exception.storage.InvalidArgumentException;
-import com.khutircraftubackend.storage.exception.storage.InvalidFileFormatException;
+import com.khutircraftubackend.exception.GlobalErrorResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -17,38 +16,49 @@ public class FileExceptionHandler {
 
     @ExceptionHandler(IOException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public String handleIOException(IOException e) {
-        
-        log.error("Failed to upload file: ", e);
-        
-        return e.getMessage();
+    public Object handleIOException(IOException ex, HttpServletRequest request) {
+        log.error("Failed to upload file: ", ex);
+        return GlobalErrorResponse.builder()
+                .status(HttpStatus.LOCKED.value())
+                .error(HttpStatus.LOCKED.getReasonPhrase())
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
     }
     
     @ExceptionHandler(FileNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public String handleFileNotFoundException(FileNotFoundException e) {
-        
-        log.error("File not found: ", e);
-        
-        return e.getMessage();
+    public Object handleFileNotFoundException(FileNotFoundException ex, HttpServletRequest request) {
+        log.error("File not found: ", ex);
+        return GlobalErrorResponse.builder()
+                .status(HttpStatus.LOCKED.value())
+                .error(HttpStatus.LOCKED.getReasonPhrase())
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
     }
 
     @ExceptionHandler(InvalidFileFormatException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public String handleInvalidFileFormatException(InvalidFileFormatException e) {
-        
-        log.error("Invalid file format: ", e);
-        
-        return e.getMessage();
+    public Object handleInvalidFileFormatException(InvalidFileFormatException ex, HttpServletRequest request) {
+        log.error("Invalid file format: ", ex);
+        return GlobalErrorResponse.builder()
+                .status(HttpStatus.LOCKED.value())
+                .error(HttpStatus.LOCKED.getReasonPhrase())
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
     }
     
     @ExceptionHandler(InvalidArgumentException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public String handleURISyntaxException(InvalidArgumentException e) {
-        
-        log.error("Invalid URL syntax: ", e);
-        
-        return e.getMessage();
+    public Object handleURISyntaxException(InvalidArgumentException ex, HttpServletRequest request) {
+        log.error("Invalid URL syntax: ", ex);
+        return GlobalErrorResponse.builder()
+                .status(HttpStatus.LOCKED.value())
+                .error(HttpStatus.LOCKED.getReasonPhrase())
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
     }
-    
 }

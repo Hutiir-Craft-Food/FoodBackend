@@ -1,5 +1,6 @@
 package com.khutircraftubackend.confirm;
 
+import com.khutircraftubackend.confirm.exception.ConfirmNotFoundException;
 import com.khutircraftubackend.mail.EmailSender;
 import com.khutircraftubackend.user.UserEntity;
 import com.khutircraftubackend.user.UserService;
@@ -22,7 +23,7 @@ public class ConfirmService {
     private final ConfirmRepository confirmRepository;
     private final UserService userService;
     private static final byte LIFE_TOKEN = 5;
-    private static final byte RE_UPDATE_TOKEN = 2;
+    private static final Long RE_UPDATE_TOKEN = 2L;
 
     public void sendVerificationEmail(UserEntity user, boolean isUpdateOrCreateToken) {
         String verificationCode = genetateCode();
@@ -62,6 +63,7 @@ public class ConfirmService {
 
     private ConfirmEntity setTokenProperties(ConfirmEntity confirmEntity, String token) {
         confirmEntity.setConfirmationToken(token);
+        confirmEntity.setCreatedAt(LocalDateTime.now());
         confirmEntity.setExpiresAt(LocalDateTime.now().plusMinutes(LIFE_TOKEN));
         return confirmEntity;
     }
@@ -69,7 +71,7 @@ public class ConfirmService {
     private ConfirmEntity findConfirmByUser(UserEntity user) {
         return confirmRepository.findByUser(user)
                 .orElseThrow(() ->
-                        new ResponseStatusException(HttpStatus.BAD_REQUEST, ConfirmResponseMessages.CONFIRM_NOT_FOUND));
+                        new ConfirmNotFoundException(ConfirmResponseMessages.CONFIRM_NOT_FOUND));
     }
 
     private String genetateCode() {
@@ -97,7 +99,7 @@ public class ConfirmService {
     private void validateConfirmationToken(String requestConfirmedToken, ConfirmEntity existingToken) {
         if (Boolean.FALSE.equals(
                 requestConfirmedToken.equals(existingToken.getConfirmationToken()))) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ConfirmResponseMessages.CONFIRM_NOT_FOUND);
+            throw new ConfirmNotFoundException(ConfirmResponseMessages.CONFIRM_NOT_FOUND);
         }
 
         if (existingToken.getExpiresAt().isBefore(LocalDateTime.now())) {
@@ -111,7 +113,7 @@ public class ConfirmService {
         ConfirmEntity confirmedByUser = findConfirmByUser(user);
 
         if (LocalDateTime.now().isBefore(confirmedByUser.getCreatedAt().plusMinutes(RE_UPDATE_TOKEN))) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Время для повторного получения еще не настало" +
+            throw new ConfirmNotFoundException( "Время для повторного получения еще не настало" +
                     " - Временная ошибка, до рефактора ошибок!");
         }
 

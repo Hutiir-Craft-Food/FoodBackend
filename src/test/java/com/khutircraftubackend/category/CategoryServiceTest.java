@@ -4,7 +4,7 @@ import com.khutircraftubackend.category.exception.category.CategoryDeletionExcep
 import com.khutircraftubackend.category.exception.category.CategoryNotFoundException;
 import com.khutircraftubackend.category.request.CategoryRequest;
 import com.khutircraftubackend.storage.StorageService;
-import com.khutircraftubackend.storage.exception.storage.InvalidFileFormatException;
+import com.khutircraftubackend.storage.exception.InvalidFileFormatException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
