@@ -1,4 +1,4 @@
-package com.khutircraftubackend.storage.exception.storage;
+package com.khutircraftubackend.storage.exception;
 
 import java.io.IOException;
 

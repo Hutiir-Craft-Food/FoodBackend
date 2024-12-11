@@ -3,7 +3,7 @@ package com.khutircraftubackend.product;
 import com.khutircraftubackend.category.CategoryEntity;
 import com.khutircraftubackend.category.CategoryService;
 import com.khutircraftubackend.category.exception.category.CategoryNotFoundException;
-import com.khutircraftubackend.product.exception.product.ProductNotFoundException;
+import com.khutircraftubackend.product.exception.ProductNotFoundException;
 import com.khutircraftubackend.storage.StorageService;
 import com.khutircraftubackend.product.request.ProductRequest;
 import com.khutircraftubackend.seller.SellerEntity;
