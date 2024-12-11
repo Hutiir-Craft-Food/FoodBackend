@@ -53,7 +53,7 @@ cloudinary:
 
 jwt:
   secret: ${JWT_SECRET}
-  expiration: ${JWT_EXPIRATION}
+  expiration: ${JWT_SESSION_TIMEOUT}
 
 logging:
   level:
@@ -81,3 +81,6 @@ server:
   error:
     include-message: ALWAYS
     include-stacktrace: NEVER
+    include-binding-errors: ON_PARAM
+    whitelabel:
+      enabled: true
