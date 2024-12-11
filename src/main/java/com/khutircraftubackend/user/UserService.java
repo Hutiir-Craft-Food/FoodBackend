@@ -1,6 +1,7 @@
 package com.khutircraftubackend.user;
 
 import com.khutircraftubackend.auth.request.RegisterRequest;
+import com.khutircraftubackend.user.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -46,7 +47,7 @@ public class UserService {
     public UserEntity findByEmail(String email) {
         return userRepository.findByEmail(email)
                .orElseThrow(() ->
-                       new ResponseStatusException(HttpStatus.FORBIDDEN, UserResponseMessages.USER_NOT_FOUND));
+                       new UserNotFoundException(UserResponseMessages.USER_NOT_FOUND));
     }
 
     /**
