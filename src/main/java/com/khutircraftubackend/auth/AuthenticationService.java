@@ -4,8 +4,7 @@ import com.khutircraftubackend.auth.request.LoginRequest;
 import com.khutircraftubackend.auth.request.RegisterRequest;
 import com.khutircraftubackend.auth.response.AuthResponse;
 import com.khutircraftubackend.jwt.JwtUtils;
-import com.khutircraftubackend.marketing.MarketingCampaignEntity;
-import com.khutircraftubackend.marketing.MarketingCampaignRepository;
+import com.khutircraftubackend.marketing.MarketingCampaignService;
 import com.khutircraftubackend.seller.SellerService;
 import com.khutircraftubackend.user.Role;
 import com.khutircraftubackend.user.UserEntity;
@@ -36,7 +35,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class AuthenticationService {
 
     private final UserRepository userRepository;
-    private final MarketingCampaignRepository marketingCampaignRepository;
+    private final MarketingCampaignService marketingCampaignService;
     private final UserService userService;
     private final JwtUtils jwtUtils;
     private final AuthenticationManager authenticationManager;
@@ -83,7 +82,7 @@ public class AuthenticationService {
         }
 
         UserEntity user = userService.createdUser(request);
-        createReceiveAdvertising(request, user);
+        marketingCampaignService.createReceiveAdvertising(request, user);
 
         if (isSeller(request.role())) {
             sellerService.createSeller(request, user);
@@ -100,14 +99,5 @@ public class AuthenticationService {
         return role.equals(Role.SELLER);
     }
 
-    //TODO Вінести в отдельный пакет???
-    private void createReceiveAdvertising(RegisterRequest request, UserEntity user) {
-        MarketingCampaignEntity advertising = MarketingCampaignEntity
-                .builder()
-                .user(user)
-                .isSubscribed(request.isReceiveAdvertising())
-                .build();
 
-        marketingCampaignRepository.save(advertising);
-    }
 }
