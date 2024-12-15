@@ -15,17 +15,18 @@ import lombok.Builder;
 @Builder
 public record SellerDTO(
 
-        @NotBlank(message = "Назва компанії не може бути порожнім")
-        @Size(max = 100, message = "Назва компанії не може перевищувати 100 символів")
-        @Pattern(regexp = "^[a-zA-Zа-яА-ЯіїєґІЇЄҐ\\s]*$", message = "Назва компанії має містити лише українські або англійські літери")
+        @NotBlank (message = "Назва компанії не може бути порожнім")
+        @Size (max = 100, message = "Назва компанії не може перевищувати 100 символів")
+        @Pattern(regexp = "^[a-zA-Zа-яА-ЯІіЇїЄєҐґ\\d&,`'\\-\\s]*$", message = "Назва компанії має містити лише " +
+                "українські або англійські літери, цифри і знаки \"&-,'`\"")
         String companyName,
 
-        @NotBlank(message = "Ім'я не може бути порожнім")
-        @Size ( max = 100, message = "Ім'я не може перевищувати 100 символів")
+        @NotBlank (message = "Ім'я не може бути порожнім")
+        @Size (max = 100, message = "Ім'я не може перевищувати 100 символів")
         String sellerName,
 
         @Size (min = 12, max = 13)
-        @Pattern(regexp = "^\\+380\\d{9}$", message = "Номер телефону має бути у форматі +380__________")
+        @Pattern (regexp = "^\\+380\\d{9}$", message = "Номер телефону має бути у форматі +380__________")
         String phoneNumber
 ) {
 }

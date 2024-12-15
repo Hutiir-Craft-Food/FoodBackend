@@ -27,6 +27,7 @@ public class SellerService {
     private final UserRepository userRepository;
     private final SellerRepository sellerRepository;
     private final UserService userService;
+    private final SellerMapper sellerMapper;
 
     public SellerResponse getSellerInfo(Principal principal) {
         UserEntity user =userService.findByPrincipal(principal);
@@ -34,22 +35,12 @@ public class SellerService {
         SellerEntity seller = sellerRepository.findByUser(user)
                 .orElseThrow(() -> new SellerNotFoundException("User is not a valid Seller"));
 
-        return SellerResponse.builder()
-                .sellerName(seller.getSellerName())
-                .companyName(seller.getCompanyName())
-                .phoneNumber(seller.getPhoneNumber())
-                .creationDate(seller.getCreationDate())
-                .build();
+        return sellerMapper.toSellerResponse(seller);
     }
 
     public void createSeller(RegisterRequest request, UserEntity user) {
-        SellerEntity seller = SellerEntity
-                .builder()
-                .sellerName(request.details().sellerName())
-                .companyName(request.details().companyName())
-                .phoneNumber(request.details().phoneNumber())
-                .user(user)
-                .build();
+        SellerEntity seller = sellerMapper.SellerDTOToSeller(request.details());
+        seller.setUser(user);
         sellerRepository.save(seller);
     }
 
@@ -66,5 +57,4 @@ public class SellerService {
         return sellerRepository.findById(id)
                 .orElseThrow(() -> new SellerNotFoundException("Seller not found"));
     }
-
 }
