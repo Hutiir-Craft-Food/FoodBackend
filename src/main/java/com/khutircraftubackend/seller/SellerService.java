@@ -138,7 +138,7 @@ public class SellerService {
 		
 		SellerEntity seller = getCurrentSeller();
 		
-		QualityCertificateEntity certificate = qualityCertificateService.findQualityCertificateBiId(id, seller);
+		QualityCertificateEntity certificate = qualityCertificateService.findQualityCertificateById(id, seller);
 		
 		validateCertificateOwnership(certificate, seller);
 		
@@ -187,7 +187,7 @@ public class SellerService {
 		
 		SellerEntity seller = getCurrentSeller();
 		
-		QualityCertificateEntity certificate = qualityCertificateService.findQualityCertificateBiId(certificateId, seller);
+		QualityCertificateEntity certificate = qualityCertificateService.findQualityCertificateById(certificateId, seller);
 		
 		validateCertificateOwnership(certificate, seller);
 		
