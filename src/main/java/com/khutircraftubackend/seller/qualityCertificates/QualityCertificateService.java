@@ -21,7 +21,7 @@ public class QualityCertificateService {
 	private final QualityCertificateMapper qualityCertificateMapper;
 	private final StorageService storageService;
 	
-	public QualityCertificateEntity findQualityCertificateBiId(Long id, SellerEntity seller) {
+	public QualityCertificateEntity findQualityCertificateById(Long id, SellerEntity seller) {
 		
 		return qualityCertificateRepository.findByIdAndSeller(id, seller)
 				.orElseThrow(() -> new QualityCertificateNotFoundException("Quality Certificate not found or does not belong to the seller"));
@@ -62,7 +62,7 @@ public class QualityCertificateService {
 		
 		SellerEntity seller = request.seller();
 		
-		QualityCertificateEntity existingEntity = findQualityCertificateBiId(id, seller);
+		QualityCertificateEntity existingEntity = findQualityCertificateById(id, seller);
 		
 		validateDates(request.issue_date(), request.expiration_date());
 		
