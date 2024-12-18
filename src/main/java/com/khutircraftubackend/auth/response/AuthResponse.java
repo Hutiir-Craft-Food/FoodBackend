@@ -7,6 +7,6 @@ import lombok.Builder;
 public record AuthResponse(
         String jwt,
         Role role,
-        Boolean confirmed
+        boolean confirmed
 ) {
 }
