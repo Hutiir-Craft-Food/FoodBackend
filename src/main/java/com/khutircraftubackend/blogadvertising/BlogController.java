@@ -3,6 +3,7 @@ package com.khutircraftubackend.blogadvertising;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -24,7 +25,8 @@ public class BlogController {
         return blogService.sendRequest();
     }
 
-    @PostMapping(value = "/addposts")
+    @PostMapping(value = "/add_posts")
+    @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
     public void addBlog(@Valid @RequestBody BlogRequest request) {
         blogService.createBlog(request);

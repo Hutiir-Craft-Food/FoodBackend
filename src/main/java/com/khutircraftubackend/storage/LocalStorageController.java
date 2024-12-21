@@ -1,6 +1,7 @@
 package com.khutircraftubackend.storage;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -12,6 +13,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 
 @RestController
+@Profile("local")
 @RequestMapping(LocalStorageController.API_PATH)
 @RequiredArgsConstructor
 public class LocalStorageController {
