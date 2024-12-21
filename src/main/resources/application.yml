@@ -5,6 +5,9 @@ spring:
   config:
     import: optional:file:.env[.properties]
 
+  profiles:
+    default: dev
+
   output:
     ansi:
       enabled: ALWAYS

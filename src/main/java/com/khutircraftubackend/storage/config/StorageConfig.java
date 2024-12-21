@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 
 @Slf4j
@@ -25,7 +24,6 @@ public class StorageConfig {
 	}
 	
 	@Bean
-	@Primary
 	@Profile("local")
 	public StorageService localStorageService(@Value("${storage.local.base-path}") String basePath) {
 		log.info("Local Storage base-path: {}", basePath);
