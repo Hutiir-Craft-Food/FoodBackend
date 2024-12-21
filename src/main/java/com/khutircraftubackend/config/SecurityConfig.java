@@ -48,7 +48,7 @@ public class SecurityConfig {
                 .cors(c -> corsConfigurationSource())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/swagger-ui/index.html", "/swagger-ui/**", "/v3/api-docs/**", "/actuator/**").permitAll()
-                        .requestMatchers("/v1/auth/**").permitAll()
+                        .requestMatchers("/v1/auth/**", "/v1/advPosts/**", "/v1/blogPosts/**").permitAll()
                         .requestMatchers(HttpMethod.GET,"/v1/products/**", "/v1/resources/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/products/**").hasRole("SELLER")
                         .requestMatchers(HttpMethod.PUT, "/v1/products/**").hasRole("SELLER")
