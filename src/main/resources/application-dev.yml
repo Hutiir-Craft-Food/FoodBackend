@@ -6,7 +6,7 @@ spring:
     import: optional:file:.env[.properties]
 
   profiles:
-    default: dev
+    activ: dev
 
   output:
     ansi:
