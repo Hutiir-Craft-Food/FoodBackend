@@ -64,6 +64,9 @@ management:
       exposure:
         include: "info, loggers, health, auditevents, logfile, metrics, sessions"
   endpoint:
+    logfile:
+      enabled: true
+      external-file: ${ACTUATOR_LOGFILE}
     health:
       show-details: always
   prometheus:
