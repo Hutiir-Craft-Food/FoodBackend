@@ -25,11 +25,11 @@ public class BlogEntity {
     @Column (name = "name", nullable = false)
     private String name;
 
-    @Column (name = "creation_date")
-    private LocalDateTime creationDate;
+    @Column (name = "created_at")
+    private LocalDateTime createdAt;
 
     @PrePersist
     protected void onCreate(){
-        creationDate = LocalDateTime.now();
+        createdAt = LocalDateTime.now();
     }
 }
