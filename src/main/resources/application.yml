@@ -4,9 +4,9 @@ spring:
 
   config:
     import: optional:file:.env[.properties]
-
-  profiles:
-    default: dev
+#
+#  profiles:
+#    default: dev
 
   output:
     ansi:
@@ -57,9 +57,11 @@ jwt:
 
 logging:
   level:
-    root: WARN
+    root: INFO
     com:
-      khutircraftubackend: INFO
+      khutircraftubackend: DEBUG
+  file:
+    name: logs/latest.log
 
 management:
   endpoints:
