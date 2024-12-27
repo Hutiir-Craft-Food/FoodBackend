@@ -4,7 +4,7 @@ spring:
 
   config:
     import: optional:file:.env[.properties]
-#
+
 #  profiles:
 #    default: dev
 
@@ -55,13 +55,12 @@ jwt:
   secret: ${JWT_SECRET}
   expiration: ${JWT_EXPIRATION}
 
+
 logging:
   level:
-    root: INFO
+    root: WARN
     com:
-      khutircraftubackend: DEBUG
-  file:
-    name: logs/latest.log
+      khutircraftubackend: INFO
 
 management:
   endpoints:
@@ -71,6 +70,9 @@ management:
   endpoint:
     health:
       show-details: always
+    logfile:
+      enabled: true
+      external-file: ${ACTUATOR_LOGFILE}
   prometheus:
     metrics:
       export:
