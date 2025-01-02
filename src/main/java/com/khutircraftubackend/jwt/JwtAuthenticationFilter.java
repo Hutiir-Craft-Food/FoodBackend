@@ -3,7 +3,6 @@ package com.khutircraftubackend.jwt;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.khutircraftubackend.auth.exception.UserExceptionHandler;
 import com.khutircraftubackend.config.UserDetailsConfig;
 import com.khutircraftubackend.security.UserDetailsImpl;
 import jakarta.servlet.FilterChain;
@@ -12,8 +11,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -24,10 +23,10 @@ import java.io.IOException;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	private final JWTVerifier jwtVerifier;
 	private final UserDetailsConfig userDetailsConfig;
-	private final UserExceptionHandler userExceptionHandler;
 
 	@Override
 	protected void doFilterInternal(@NonNull HttpServletRequest request,
@@ -44,9 +43,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 				DecodedJWT jwt = jwtVerifier.verify(token);
 				email = jwt.getSubject();
 			} catch (JWTVerificationException e) {
-				response.setStatus(HttpStatus.I_AM_A_TEAPOT.value());
-				response.getWriter().write("\"Error\" : \"JWT token has expired\"");
-				response.setContentType("application/json");
+				log.error("JWT Verification failed: {}", e.getMessage());
+				response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+				response.getWriter().
+					write("{\"error\": \"Unauthorized. Invalid token.\", \"message\": \"JWT verification failed\"}");
 				return;
 			}
 			UserDetailsImpl userDetails = (UserDetailsImpl) userDetailsConfig.userDetailsService().loadUserByUsername(email);
