@@ -8,6 +8,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -52,5 +54,11 @@ public class ProductEntity {
     @Column(name = "updated_at")
     @UpdateTimestamp
     LocalDateTime updatedAt;
+    
+    @ElementCollection
+    @CollectionTable(name = "product_keywords",
+    joinColumns = @JoinColumn(name = "product_id"))
+    @Column(name = "keyword")
+    private Set<String> keywords = new HashSet<>();
     
 }
