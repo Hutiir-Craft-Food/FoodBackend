@@ -10,8 +10,10 @@ services:
     ports:
       - "8080:8080"
     env_file:
-      - ../.env
-      - ../.env.local
+      - path: ../.env
+        required: false
+      - path: ../.env.local
+        required: false
     build:
       context: ../
       dockerfile: docker/Dockerfile
