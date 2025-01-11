@@ -1,8 +1,8 @@
 package com.khutircraftubackend.category;
 
-import com.khutircraftubackend.category.exception.category.CategoryDeletionException;
-import com.khutircraftubackend.category.exception.category.CategoryExceptionMessages;
-import com.khutircraftubackend.category.exception.category.CategoryNotFoundException;
+import com.khutircraftubackend.category.exception.CategoryDeletionException;
+import com.khutircraftubackend.category.exception.CategoryExceptionMessages;
+import com.khutircraftubackend.category.exception.CategoryNotFoundException;
 import com.khutircraftubackend.category.request.CategoryRequest;
 import com.khutircraftubackend.storage.StorageService;
 import jakarta.transaction.Transactional;
@@ -10,8 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.List;
 
 @Service
@@ -30,7 +28,7 @@ public class CategoryService {
 	}
 	
 	
-	private String handleIcon(MultipartFile iconFile) throws IOException, URISyntaxException {
+	private String handleIcon(MultipartFile iconFile) throws Exception {
 		
 		if (iconFile == null || iconFile.isEmpty()) {
 			return "";
@@ -64,7 +62,7 @@ public class CategoryService {
 	}
 	
 	@Transactional
-	public CategoryEntity createCategory(CategoryRequest request, MultipartFile iconFile) throws IOException, URISyntaxException {
+	public CategoryEntity createCategory(CategoryRequest request, MultipartFile iconFile) throws Exception {
 		
 		CategoryEntity category = categoryMapper.toCategoryEntity(request);
 		
@@ -78,7 +76,7 @@ public class CategoryService {
 	
 	@Transactional
 	public CategoryEntity updateCategory(Long id, CategoryRequest request,
-										 MultipartFile iconFile) throws IOException, URISyntaxException {
+										 MultipartFile iconFile) throws Exception {
 		
 		CategoryEntity existingCategory = findCategoryById(id);
 		
@@ -104,12 +102,14 @@ public class CategoryService {
 		
 		if (childCategories.isEmpty()) {
 			categoryRepository.deleteById(id);
+			throw new CategoryDeletionException("Blah");
 		} else if (forceDelete) {
 			for (CategoryEntity child : childCategories) {
 				deleteCategory(child.getId(), true);
 			}
 			categoryRepository.deleteById(id);
 		} else {
+			// TODO: consider adding some logging here
 			throw new CategoryDeletionException(CategoryExceptionMessages.CATEGORY_HAS_SUBCATEGORIES_OR_PRODUCTS);
 		}
 	}

@@ -13,19 +13,17 @@ public class BlogController {
 
     private final BlogService blogService;
 
-    @GetMapping(value = "/advPosts")
-    @ResponseStatus(HttpStatus.OK)
+    @GetMapping(value = "/adv-posts")
     public BlogResponse blogPosts() {
         return blogService.sendRequest();
     }
 
-    @GetMapping(value = "/blogPosts")
-    @ResponseStatus(HttpStatus.OK)
+    @GetMapping(value = "/blog-posts")
     public BlogResponse advPosts() {
         return blogService.sendRequest();
     }
 
-    @PostMapping(value = "/add_posts")
+    @PostMapping(value = "/blog-posts")
     @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
     public void addBlog(@Valid @RequestBody BlogRequest request) {

@@ -22,7 +22,7 @@ public class LocalStorageController {
 	
 	@GetMapping("/{fileName:.+}")
 	@ResponseStatus(HttpStatus.OK)
-	public ResponseEntity<Resource> getResource(@PathVariable String fileName) throws IOException {
+	public ResponseEntity<Resource> getResource(@PathVariable String fileName) throws Exception {
 		
 		Resource resource = storageService.getResource(fileName);
 		

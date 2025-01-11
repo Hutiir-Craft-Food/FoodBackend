@@ -12,7 +12,7 @@ import com.khutircraftubackend.user.Role;
 import com.khutircraftubackend.user.UserEntity;
 import com.khutircraftubackend.user.UserRepository;
 import com.khutircraftubackend.user.UserService;
-import com.khutircraftubackend.user.exception.UserEmailException;
+import com.khutircraftubackend.auth.exception.UserExistsException;
 import jakarta.persistence.PostUpdate;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -56,7 +56,9 @@ public class AuthenticationService {
 
         UserEntity user = userService.findByEmail(request.email());
         if (Boolean.FALSE.equals(user.isEnabled())) {
-            throw new UserBlockedException(String.format(AuthResponseMessages.USER_BLOCKED, user.getEmail()));
+            String message = String.format(AuthResponseMessages.USER_BLOCKED, user.getEmail());
+            // TODO: consider adding some logging here
+            throw new UserBlockedException(message);
         }
 
         authenticateUser(request.email(), request.password());
@@ -78,13 +80,22 @@ public class AuthenticationService {
     public AuthResponse registerNewUser(RegisterRequest request) {
 
         if (userRepository.existsByEmail(request.email())) {
-            throw new UserEmailException(AuthResponseMessages.EMAIL_IS_ALREADY_IN_USE);
+            // TODO: consider adding some logging here
+
+            // TODO:
+            //  do we really want to let an attacker know that
+            //  the email they are trying already exists and so it might be a valid email?
+            //  do we really want to expose registered emails?
+            //  some thoughts about it here:
+            //      https://security.stackexchange.com/a/51857
+            throw new UserExistsException(AuthResponseMessages.EMAIL_IS_ALREADY_IN_USE);
         }
 
         UserEntity user = userService.createdUser(request);
         confirmService.sendVerificationEmail(user, false);
         marketingCampaignService.createReceiveAdvertising(request, user);
 
+        // TODO: we should pass User instead of its Role.
         if (isSeller(request.role())) {
             sellerService.createSeller(request, user);
         }
@@ -96,6 +107,8 @@ public class AuthenticationService {
                 .build();
     }
 
+    // TODO: if we really need this method,
+    //  then it should accept User as parameter, instead or Role.
     private boolean isSeller(Role role) {
         return role.equals(Role.SELLER);
     }

@@ -2,12 +2,13 @@ package com.khutircraftubackend.product;
 
 import com.khutircraftubackend.category.CategoryEntity;
 import com.khutircraftubackend.category.CategoryService;
-import com.khutircraftubackend.category.exception.category.CategoryNotFoundException;
+import com.khutircraftubackend.category.exception.CategoryNotFoundException;
 import com.khutircraftubackend.product.exception.ProductNotFoundException;
-import com.khutircraftubackend.storage.StorageService;
 import com.khutircraftubackend.product.request.ProductRequest;
 import com.khutircraftubackend.seller.SellerEntity;
 import com.khutircraftubackend.seller.SellerService;
+import com.khutircraftubackend.storage.StorageService;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -22,15 +23,22 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.AccessDeniedException;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class ProductServiceTest {
@@ -112,7 +120,8 @@ public class ProductServiceTest {
 		}
 		
 		@Test
-		void canModifyProduct_ProductExistsAndBelongsToCurrentSeller() throws AccessDeniedException {
+		@SneakyThrows
+		void canModifyProduct_ProductExistsAndBelongsToCurrentSeller() {
 			
 			when(productRepository.findProductById(1L)).thenReturn(Optional.of(product));
 			when(sellerService.getCurrentSeller()).thenReturn(seller);
@@ -135,8 +144,10 @@ public class ProductServiceTest {
 	@Nested
 	@DisplayName("Tests for creation Product")
 	class CreateProduct {
+
 		@Test
-		void createProduct_Success() throws IOException, URISyntaxException {
+		@SneakyThrows
+		void createProduct_Success() {
 			
 			SellerEntity currentSeller = SellerEntity.builder()
 					.companyName("CompanyA")
@@ -192,7 +203,8 @@ public class ProductServiceTest {
 		}
 		
 		@Test
-		void testUpdateProduct_Success() throws IOException, URISyntaxException {
+		@SneakyThrows
+		void testUpdateProduct_Success() {
 			
 			ProductEntity existingProduct = ProductEntity.builder()
 					.id(1L)
@@ -232,8 +244,10 @@ public class ProductServiceTest {
 	@Nested
 	@DisplayName("Tests for update Product")
 	class UpdateProduct {
+
 		@Test
-		void updateProduct_WithNullImages() throws IOException, URISyntaxException {
+		@SneakyThrows
+		void updateProduct_WithNullImages() {
 			
 			ProductEntity existingProduct = ProductEntity.builder()
 					.id(1L)
@@ -296,7 +310,7 @@ public class ProductServiceTest {
 		}
 		
 		@Test
-		void deleteProduct_Success() throws IOException, URISyntaxException {
+		void deleteProduct_Success() throws Exception {
 			
 			
 			ProductEntity product = new ProductEntity();
@@ -309,7 +323,8 @@ public class ProductServiceTest {
 		}
 		
 		@Test
-		void deleteAllProductsForSeller_ShouldDeleteAllProductsAndImagesForSeller() throws IOException, URISyntaxException {
+		@SneakyThrows
+		void deleteAllProductsForSeller_ShouldDeleteAllProductsAndImagesForSeller() {
 			
 			SellerEntity seller = new SellerEntity();
 			

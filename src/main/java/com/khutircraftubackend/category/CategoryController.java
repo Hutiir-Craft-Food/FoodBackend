@@ -47,7 +47,7 @@ public class CategoryController {
 	@ResponseStatus(HttpStatus.OK)
 	public CategoryResponse createCategory(
 			@Valid @ModelAttribute CategoryRequest request,
-			@RequestPart(value = "iconFile", required = false) MultipartFile iconFile) throws IOException, URISyntaxException {
+			@RequestPart(value = "iconFile", required = false) MultipartFile iconFile) throws Exception {
 		
 		CategoryEntity category = categoryService.createCategory(request, iconFile);
 		
@@ -60,7 +60,7 @@ public class CategoryController {
 	public CategoryResponse updateCategory(
 			@PathVariable Long id,
 			@Valid @ModelAttribute CategoryRequest request,
-			@RequestPart(value = "iconFile", required = false) MultipartFile iconFile) throws IOException, URISyntaxException {
+			@RequestPart(value = "iconFile", required = false) MultipartFile iconFile) throws Exception {
 		
 		CategoryEntity updateCategory = categoryService.updateCategory(id, request, iconFile);
 		

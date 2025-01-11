@@ -14,8 +14,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.AccessDeniedException;
 import java.util.List;
 
@@ -32,10 +30,13 @@ public class ProductService {
     private ProductEntity findProductById(Long productId) {
 
         return productRepository.findProductById(productId)
-           .orElseThrow(() -> new ProductNotFoundException(String.format(ProductResponseMessage.NOT_FOUND, productId)));
+           .orElseThrow(() -> {
+               // TODO: consider adding some logging here
+               return new ProductNotFoundException(String.format(ProductResponseMessage.NOT_FOUND, productId));
+           });
     }
 
-    private String handleIcon(MultipartFile iconFile) throws IOException, URISyntaxException {
+    private String handleIcon(MultipartFile iconFile) throws Exception {
 
         if (iconFile == null) {
             return "";
@@ -49,6 +50,7 @@ public class ProductService {
         SellerEntity currentSeller = sellerService.getCurrentSeller();
 
         if (!currentSeller.equals(existingProduct.getSeller())) {
+            // TODO: consider adding some logging here
             throw new AccessDeniedException(ProductResponseMessage.NOT_CREATED);
         }
 
@@ -57,7 +59,7 @@ public class ProductService {
 
     @Transactional
     public ProductEntity createProduct(ProductRequest request, MultipartFile thumbnailImage, MultipartFile image)
-            throws IOException, URISyntaxException {
+            throws Exception {
 
         SellerEntity currentSeller = sellerService.getCurrentSeller();
 
@@ -76,7 +78,7 @@ public class ProductService {
 
     @Transactional
     public ProductEntity updateProduct(Long productId, ProductRequest request,
-                                       MultipartFile thumbnailImageFile, MultipartFile imageFile) throws IOException, URISyntaxException {
+                                       MultipartFile thumbnailImageFile, MultipartFile imageFile) throws Exception {
 
         ProductEntity existingProduct = findProductById(productId);
 
@@ -94,7 +96,7 @@ public class ProductService {
     }
 
     @Transactional
-    public void deleteProduct(Long productId) throws IOException, URISyntaxException {
+    public void deleteProduct(Long productId) throws Exception {
 
         ProductEntity existingProduct = findProductById(productId);
 
@@ -104,7 +106,7 @@ public class ProductService {
     }
 
     @Transactional
-    public void deleteAllProductsForSeller(SellerEntity seller) throws IOException, URISyntaxException {
+    public void deleteAllProductsForSeller(SellerEntity seller) throws Exception {
 
         List<ProductEntity> products = productRepository.findAllBySeller(seller);
 
@@ -117,7 +119,7 @@ public class ProductService {
         productRepository.deleteBySeller(seller);
     }
 
-    private void deleteProductImages(ProductEntity product) throws IOException, URISyntaxException {
+    private void deleteProductImages(ProductEntity product) throws Exception {
 
         if (product.getThumbnailImageUrl() != null) {
             storageService.deleteByUrl(product.getThumbnailImageUrl());

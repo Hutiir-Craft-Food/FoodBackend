@@ -27,7 +27,7 @@ public class SellerService {
     private final SellerMapper sellerMapper;
 
     public SellerResponse getSellerInfo(Principal principal) {
-        UserEntity user =userService.findByPrincipal(principal);
+        UserEntity user = userService.findByPrincipal(principal);
 
         SellerEntity seller = sellerRepository.findByUser(user)
                 .orElseThrow(() -> new SellerNotFoundException(SellerResponseMessage.NOT_VALID));

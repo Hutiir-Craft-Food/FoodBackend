@@ -2,12 +2,9 @@ package com.khutircraftubackend.storage;
 
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-
 public interface StorageService {
 	
-	String upload(MultipartFile multipartFile) throws IOException, URISyntaxException;
+	String upload(MultipartFile multipartFile) throws Exception;
 	
-	void deleteByUrl(String fileUrl) throws IOException, URISyntaxException;
+	void deleteByUrl(String fileUrl) throws Exception;
 }

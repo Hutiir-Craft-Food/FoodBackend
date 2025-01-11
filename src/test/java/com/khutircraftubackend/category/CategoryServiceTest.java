@@ -1,10 +1,11 @@
 package com.khutircraftubackend.category;
 
-import com.khutircraftubackend.category.exception.category.CategoryDeletionException;
-import com.khutircraftubackend.category.exception.category.CategoryNotFoundException;
+import com.khutircraftubackend.category.exception.CategoryDeletionException;
+import com.khutircraftubackend.category.exception.CategoryNotFoundException;
 import com.khutircraftubackend.category.request.CategoryRequest;
 import com.khutircraftubackend.storage.StorageService;
 import com.khutircraftubackend.storage.exception.InvalidFileFormatException;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -18,7 +19,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -92,8 +92,10 @@ class CategoryServiceTest {
 	@Nested
 	@DisplayName("Tests for Category creation")
 	class CreateCategory {
+
 		@Test
-		void createCategory_ShouldUploadFile() throws IOException, URISyntaxException {
+		@SneakyThrows
+		void createCategory_ShouldUploadFile() {
 			
 			CategoryRequest request = CategoryRequest.builder()
 					.name("TestName")
@@ -118,7 +120,8 @@ class CategoryServiceTest {
 		}
 		
 		@Test
-		void createCategory_ShouldSetParentCategory() throws IOException, URISyntaxException {
+		@SneakyThrows
+		void createCategory_ShouldSetParentCategory() {
 			Long parentCategoryId = 1L;
 			CategoryRequest request = CategoryRequest.builder()
 					.name("TestName")
@@ -169,8 +172,10 @@ class CategoryServiceTest {
 	@Nested
 	@DisplayName("Tests for Category update")
 	class UpdateCategory {
+
 		@Test
-		void updateCategory_ShouldUpdateIconWithCloudinary() throws IOException, URISyntaxException {
+		@SneakyThrows
+		void updateCategory_ShouldUpdateIconWithCloudinary() {
 			Long categoryId = 1L;
 			CategoryRequest request = CategoryRequest.builder()
 					.name("UpdatedName")
@@ -195,7 +200,8 @@ class CategoryServiceTest {
 		
 		
 		@Test
-		void updateCategory_ShouldUpdateIconWithLocalStorage() throws IOException, URISyntaxException {
+		@SneakyThrows
+		void updateCategory_ShouldUpdateIconWithLocalStorage() {
 			Long categoryId = 1L;
 			CategoryRequest request = CategoryRequest.builder()
 					.name("UpdatedName")
@@ -218,7 +224,8 @@ class CategoryServiceTest {
 		}
 		
 		@Test
-		void updateCategory_WithInvalidFileFormat_ShouldThrowException() throws IOException, URISyntaxException {
+		@SneakyThrows
+		void updateCategory_WithInvalidFileFormat_ShouldThrowException() {
 			Long categoryId = 1L;
 			
 			CategoryRequest request = CategoryRequest.builder()
@@ -241,7 +248,8 @@ class CategoryServiceTest {
 		}
 		
 		@Test
-		void updateCategory_WithCorruptedFile_ShouldThrowIOException() throws IOException, URISyntaxException {
+		@SneakyThrows
+		void updateCategory_WithCorruptedFile_ShouldThrowIOException() {
 			Long categoryId = 1L;
 			
 			CategoryRequest categoryRequest = CategoryRequest.builder()

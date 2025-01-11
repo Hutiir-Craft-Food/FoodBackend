@@ -3,9 +3,9 @@ package com.khutircraftubackend.storage.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-@ResponseStatus(HttpStatus.BAD_REQUEST)
-public class InvalidArgumentException extends RuntimeException {
-	public InvalidArgumentException(String message) {
+@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+public class FileDeleteException extends RuntimeException {
+	public FileDeleteException(String message) {
         super(message);
     }
 }

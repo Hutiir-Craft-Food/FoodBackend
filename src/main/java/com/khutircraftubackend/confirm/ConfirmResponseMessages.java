@@ -1,6 +1,9 @@
 package com.khutircraftubackend.confirm;
 
-public class ConfirmResponseMessages {
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
+public final class ConfirmResponseMessages {
 
     public static final String EMAIL_ACCEPTED = "Ваш email вже підтверджено.";
     public static final String CONFIRM_NOT_FOUND = "Неправильний токен підтвердження пошти.";
@@ -10,6 +13,4 @@ public class ConfirmResponseMessages {
     public static final String VERIFICATION_CODE_TEXT =
             "Будь ласка, підтвердіть вашу реєстрацію. Введіть 6-значний код %s.";
 
-    private ConfirmResponseMessages() {
-    }
 }

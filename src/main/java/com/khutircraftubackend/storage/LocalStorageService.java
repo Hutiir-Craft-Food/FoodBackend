@@ -27,9 +27,10 @@ public class LocalStorageService implements StorageService {
 	private final String basePath;
 	
 	@Override
-	public String upload(MultipartFile multipartFile) throws IOException, URISyntaxException {
+	public String upload(MultipartFile multipartFile) throws Exception {
 		
 		if (multipartFile == null || multipartFile.isEmpty()) {
+			// TODO: consider adding some logging here
 			throw new InvalidFileFormatException("Файл не надано або він порожній");
 		}
 		String fileName = UUID.randomUUID().toString();
@@ -65,11 +66,12 @@ public class LocalStorageService implements StorageService {
 		
 	}
 	
-	public Resource getResource(String fileName) throws IOException {
+	public Resource getResource(String fileName) {
 		
 		Path filePath = Paths.get(basePath).resolve(fileName).normalize();
 		
 		if (Files.notExists(filePath)) {
+			// TODO: consider adding some logging here
 			throw new FileNotFoundException("Файл з URL " + fileName + " не знайдено.");
 		}
 		
@@ -77,10 +79,11 @@ public class LocalStorageService implements StorageService {
 	}
 	
 	@Override
-	public void deleteByUrl(String fileUrl) throws IOException {
+	public void deleteByUrl(String fileUrl) throws Exception {
 		
 		if (!fileUrl.contains(LocalStorageController.API_PATH)) {
-			throw new InvalidArgumentException(fileUrl + " -URL не відповідає шаблону для зображення");
+			// TODO: consider adding some logging here
+			throw new InvalidArgumentException(fileUrl + " - URL не відповідає шаблону для зображення");
 		}
 		
 		String filePathStr = fileUrl.split(LocalStorageController.API_PATH + "/")[1];
@@ -88,9 +91,11 @@ public class LocalStorageService implements StorageService {
 		Path filePath = Paths.get(basePath).resolve(filePathStr);
 		
 		if (Files.notExists(filePath)) {
+			// TODO: consider adding some logging here
 			throw new FileNotFoundException("Файл з іменем " + filePath + " не знайдено.");
 		}
-		
+
+		// TODO: consider adding some logging here
 		Files.delete(filePath);
 	}
 	

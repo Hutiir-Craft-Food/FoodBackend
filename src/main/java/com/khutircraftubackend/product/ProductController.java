@@ -32,7 +32,7 @@ public class ProductController {
 	public ProductResponse createProduct(
 			@Valid @ModelAttribute ProductRequest request,
 			@RequestPart(value = "thumbnailImage", required = false) MultipartFile thumbnailImage,
-			@RequestPart(value = "image", required = false) MultipartFile image) throws IOException, URISyntaxException {
+			@RequestPart(value = "image", required = false) MultipartFile image) throws Exception {
 		
 		ProductEntity newProduct = productService.createProduct(request, thumbnailImage, image);
 		
@@ -46,7 +46,7 @@ public class ProductController {
 			@PathVariable Long productId,
 			@Valid @ModelAttribute ProductRequest request,
 			@RequestPart(value = "thumbnailImage", required = false) MultipartFile thumbnailImage,
-			@RequestPart(value = "image", required = false) MultipartFile image) throws IOException, URISyntaxException {
+			@RequestPart(value = "image", required = false) MultipartFile image) throws Exception {
 		
 		ProductEntity updatedProduct = productService.updateProduct(productId, request, thumbnailImage, image);
 		
@@ -56,7 +56,7 @@ public class ProductController {
 	@DeleteMapping("/{productId}")
 	@PreAuthorize("hasRole('ADMIN') or (hasRole('SELLER') and @productService.canModifyProduct(#productId))")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void deleteProduct(@PathVariable Long productId) throws IOException, URISyntaxException {
+	public void deleteProduct(@PathVariable Long productId) throws Exception {
 		
 		productService.deleteProduct(productId);
 	}
@@ -64,7 +64,7 @@ public class ProductController {
 	@DeleteMapping("/delete-all")
 	@PreAuthorize("hasRole('ADMIN') or hasRole('SELLER')")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void deleteAllProductsForCurrentSeller() throws IOException, URISyntaxException {
+	public void deleteAllProductsForCurrentSeller() throws Exception {
 		
 		SellerEntity currentSeller = sellerService.getCurrentSeller();
 		
@@ -74,7 +74,7 @@ public class ProductController {
 	@DeleteMapping("delete-all/seller-id/{sellerId}")
 	@PreAuthorize("hasRole('ADMIN')")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void deleteAllProductsForSeller(@PathVariable Long sellerId) throws IOException, URISyntaxException {
+	public void deleteAllProductsForSeller(@PathVariable Long sellerId) throws Exception {
 		
 		SellerEntity seller = sellerService.getSellerId(sellerId);
 		
