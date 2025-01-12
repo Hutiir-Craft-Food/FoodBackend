@@ -20,13 +20,13 @@ public class JwtUtils {
 	private final Algorithm algorithm;
 
 	@Value("${jwt.expiration}")
-	private long jwtExpirationMillis;
+	private long jwtExpirationSeconds; // TODO: rename to sessionTimeout
 	
 	public String generateJwtToken(String email) {
 		return JWT.create()
 				.withSubject(email)
 				.withIssuedAt(new Date(System.currentTimeMillis()))
-				.withExpiresAt(new Date(System.currentTimeMillis() + jwtExpirationMillis))
+				.withExpiresAt(new Date(System.currentTimeMillis() + jwtExpirationSeconds * 1000))
 				.sign(algorithm);
 	}
 }

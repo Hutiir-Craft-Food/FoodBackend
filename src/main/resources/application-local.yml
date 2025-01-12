@@ -35,7 +35,7 @@ spring:
 
 jwt:
   secret: ${JWT_SECRET:dummy-secret-phrase}
-  expiration: ${JWT_EXPIRATION:600000}
+  expiration: ${JWT_EXPIRATION:600} # TODO: refactor to: `session-timeout: ${JWT_SESSION_TIMEOUT}`
 
 logging:
   level:

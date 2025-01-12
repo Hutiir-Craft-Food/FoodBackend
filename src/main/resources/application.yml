@@ -53,7 +53,7 @@ cloudinary:
 
 jwt:
   secret: ${JWT_SECRET}
-  expiration: ${JWT_EXPIRATION}
+  expiration: ${JWT_EXPIRATION} # TODO: refactor to: `session-timeout: ${JWT_SESSION_TIMEOUT}`
 
 logging:
   level:
