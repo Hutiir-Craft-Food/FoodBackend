@@ -7,12 +7,12 @@ import lombok.Builder;
 @Builder
 public record ProductResponse(
 		Long id,
-        String name,
-        String thumbnailImageUrl,
-        String imageUrl,
-        boolean available,
-        String description,
-        SellerResponse seller,
-        CategoryResponse category
+		String name,
+		String thumbnailImageUrl,
+		String imageUrl,
+		boolean available,
+		String description,
+		SellerResponse seller,
+		CategoryResponse category
 ) {
 }

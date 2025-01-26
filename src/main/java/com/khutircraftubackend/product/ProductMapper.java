@@ -24,8 +24,6 @@ public interface ProductMapper {
 	@Mapping(target = "description", source = "request.description")
 	void updateProductFromRequest(@MappingTarget ProductEntity product, ProductRequest request);
 	
-	@Mapping(target = "seller", source = "productEntity.seller")
-	@Mapping(target = "category", source = "productEntity.category")
 	ProductResponse toProductResponse(ProductEntity productEntity);
 	
 	Collection<ProductResponse> toProductResponse(Collection<ProductEntity> productEntities);

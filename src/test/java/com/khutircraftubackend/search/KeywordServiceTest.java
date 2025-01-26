@@ -1,22 +1,30 @@
 package com.khutircraftubackend.search;
 
+import com.khutircraftubackend.category.CategoryEntity;
+import com.khutircraftubackend.product.ProductEntity;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@ExtendWith(MockitoExtension.class)
 class KeywordServiceTest {
-	
-	private final KeywordService keywordService = new KeywordService();
+	@InjectMocks
+	private KeywordService keywordService;
 	
 	@Test
 	void generateKeywords() {
-
-		String name = "Fanta mandarin";
-		String category = "drinks";
 		
-		Set<String> result = KeywordService.generateKeywords(category, name);
+		ProductEntity productEntity = new ProductEntity();
+		productEntity.setName("Fanta mandarin");
+		CategoryEntity categoryEntity = new CategoryEntity();
+		categoryEntity.setName("drinks");
+		
+		Set<String> result = KeywordService.generateKeywords(productEntity, categoryEntity);
 		
 		assertNotNull(result);
 		assertTrue(result.contains("fanta"));
@@ -37,17 +45,17 @@ class KeywordServiceTest {
 		assertTrue(result.contains("orange"));
 		assertTrue(result.contains("для"));
 		assertTrue(result.contains("drink"));
-		
 		assertEquals("fanta & orange & для & drink:*", result);
 	}
 	
 	@Test
 	void generateKeywordsWithNullValues() {
-
-		String name = null;
-		String category = "Test category";
+		ProductEntity productEntity = new ProductEntity();
+		productEntity.setName(null);
+		CategoryEntity categoryEntity = new CategoryEntity();
+		categoryEntity.setName("Test category");
 		
-		Set<String> result = KeywordService.generateKeywords(name, category);
+		Set<String> result = KeywordService.generateKeywords(productEntity, categoryEntity);
 		
 		assertNotNull(result);
 		assertTrue(result.contains("test"));

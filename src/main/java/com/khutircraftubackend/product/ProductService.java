@@ -4,6 +4,7 @@ import com.khutircraftubackend.category.CategoryEntity;
 import com.khutircraftubackend.category.CategoryService;
 import com.khutircraftubackend.product.exception.product.ProductNotFoundException;
 import com.khutircraftubackend.product.request.ProductRequest;
+import com.khutircraftubackend.product.response.ProductResponse;
 import com.khutircraftubackend.search.KeywordService;
 import com.khutircraftubackend.seller.SellerEntity;
 import com.khutircraftubackend.seller.SellerService;
@@ -18,7 +19,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.AccessDeniedException;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Service
@@ -57,14 +60,6 @@ public class ProductService {
 		return true;
 	}
 	
-	private Set<String> generateKeywordsForProduct(ProductRequest productRequest, CategoryEntity category) {
-		
-		return KeywordService.generateKeywords(
-				productRequest.name(),
-				category != null ? category.getName() : null
-		);
-	}
-	
 	@Transactional
 	public ProductEntity createProduct(ProductRequest request, MultipartFile thumbnailImage, MultipartFile image) throws IOException, URISyntaxException {
 		
@@ -80,7 +75,7 @@ public class ProductService {
 		productEntity.setCategory(category);
 		productEntity.setSeller(currentSeller);
 		
-		Set<String> keywords = generateKeywordsForProduct(request, category);
+		Set<String> keywords = KeywordService.generateKeywords(productEntity, category);
 		productEntity.setKeywords(keywords);
 		
 		return productRepository.save(productEntity);
@@ -95,6 +90,7 @@ public class ProductService {
 		productMapper.updateProductFromRequest(existingProduct, request);
 		
 		CategoryEntity categoryToUse = existingProduct.getCategory();
+		
 		if (request.categoryId() != null) {
 			categoryToUse = categoryService.findCategoryById(request.categoryId());
 			existingProduct.setCategory(categoryToUse);
@@ -103,7 +99,7 @@ public class ProductService {
 		existingProduct.setThumbnailImageUrl(handleIcon(thumbnailImageFile));
 		existingProduct.setImageUrl(handleIcon(imageFile));
 		
-		Set<String> keywords = generateKeywordsForProduct(request, categoryToUse);
+		Set<String> keywords = KeywordService.generateKeywords(existingProduct, categoryToUse);
 		existingProduct.setKeywords(keywords);
 		
 		return productRepository.save(existingProduct);
@@ -144,10 +140,20 @@ public class ProductService {
 		}
 	}
 	
-	public List<ProductEntity> getProducts(int offset, int limit) {
+	public Map<String, Object> getProducts(int offset, int limit) {
 		
 		Pageable pageable = PageRequest.of(offset, limit);
+		Collection<ProductEntity> productEntities = productRepository.findAllBy(pageable);
 		
-		return productRepository.findAllBy(pageable);
+		Collection<ProductResponse> products = productMapper.toProductResponse(productEntities);
+		
+		long total = productRepository.count();
+		
+		return Map.of(
+				"products", products,
+				"total", total,
+				"offset", offset,
+				"limit", limit
+		);
 	}
 }

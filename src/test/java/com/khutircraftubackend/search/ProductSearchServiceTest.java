@@ -11,10 +11,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -25,9 +26,6 @@ class ProductSearchServiceTest {
 	
 	@Mock
 	ProductMapper productMapper;
-	
-	@Mock
-	KeywordService keywordService;
 	
 	@InjectMocks
 	ProductSearchService productSearchService;
@@ -42,8 +40,6 @@ class ProductSearchServiceTest {
                 .name("Product1")
                 .description("Desc1")
                 .available(true)
-				.thumbnailImageUrl(null)
-				.imageUrl(null)
                 .build();
 		
 		ProductEntity productEntity2 = ProductEntity.builder()
@@ -51,8 +47,6 @@ class ProductSearchServiceTest {
                 .name("Product2")
                 .description("Desc2")
                 .available(true)
-                .thumbnailImageUrl(null)
-                .imageUrl(null)
                 .build();
 		
 		List<ProductEntity> productEntities = List.of(productEntity1, productEntity2);
@@ -62,8 +56,6 @@ class ProductSearchServiceTest {
                 .name("Product1")
                 .description("Desc1")
                 .available(true)
-                .thumbnailImageUrl(null)
-                .imageUrl(null)
                 .build();
 		
 		ProductResponse productResponses2 = ProductResponse.builder()
@@ -71,25 +63,22 @@ class ProductSearchServiceTest {
                 .name("Product2")
                 .description("Desc2")
                 .available(true)
-                .thumbnailImageUrl(null)
-                .imageUrl(null)
                 .build();
 		
 		List<ProductResponse> productResponses = List.of(productResponses1, productResponses2);
 		
-		when(keywordService.processQuery(query)).thenReturn("example & query:*");
 		when(productRepository.searchWithPriority("example & query:*")).thenReturn(productEntities);
 		when(productMapper.toProductResponse(productEntities)).thenReturn(productResponses);
 		
-		Collection<ProductResponse> result = productSearchService.searchProducts(query);
+		Map<String, Object> result = productSearchService.searchProducts(query);
 		
 		assertNotNull(result);
 		assertEquals(2, result.size());
-		assertTrue(result.containsAll(productResponses));
+		assertEquals(query, result.get("query"));
+		assertEquals(productResponses, result.get("products"));
 		
-		verify(keywordService).processQuery(query);
 		verify(productRepository).searchWithPriority("example & query:*");
-		verify(productMapper).toProductResponse(anyList());
+		verify(productMapper).toProductResponse(productEntities);
 	}
 	
 	@Test
@@ -97,18 +86,54 @@ class ProductSearchServiceTest {
 
 		String query = "nonexistent query";
 		
-		when(keywordService.processQuery(query)).thenReturn("nonexistent & query:*");
 		when(productRepository.searchWithPriority("nonexistent & query:*")).thenReturn(List.of());
 		when(productMapper.toProductResponse(List.of())).thenReturn(List.of());
 		
-		Collection<ProductResponse> result = productSearchService.searchProducts(query);
+		Map<String, Object> result = productSearchService.searchProducts(query);
 		
 		assertNotNull(result);
-		assertTrue(result.isEmpty());
+		assertEquals(2, result.size());
+		assertEquals(query, result.get("query"));
+		assertTrue(((Collection<?>) result.get("products")).isEmpty());
 		
-		verify(keywordService).processQuery(query);
 		verify(productRepository).searchWithPriority("nonexistent & query:*");
 		verify(productMapper).toProductResponse(List.of());
+	}
+	
+	@Test
+	void searchProductsEmptyQuery() {
+		String query = "";
+		
+		when(productRepository.searchWithPriority(anyString())).thenReturn(Collections.emptyList());
+		when(productMapper.toProductResponse(anyList())).thenReturn(Collections.emptyList());
+		
+		Map<String, Object> result = productSearchService.searchProducts(query);
+		
+		assertNotNull(result);
+		assertEquals(2, result.size());
+		assertEquals(query, result.get("query"));
+		assertTrue(((Collection<?>) result.get("products")).isEmpty());
+		
+		verify(productRepository).searchWithPriority("");
+		verify(productMapper).toProductResponse(Collections.emptyList());
+	}
+	
+	@Test
+	void searchProductsNullQuery() {
+		String query = null;
+		
+		when(productRepository.searchWithPriority("")).thenReturn(Collections.emptyList());
+		when(productMapper.toProductResponse(anyList())).thenReturn(Collections.emptyList());
+		
+		Map<String, Object> result = productSearchService.searchProducts(query);
+		
+		assertNotNull(result);
+		assertTrue(result.containsKey("query"));
+		assertEquals("", result.get("query"));
+		assertTrue(((Collection<?>) result.get("products")).isEmpty());
+		
+		verify(productRepository).searchWithPriority("");
+		verify(productMapper).toProductResponse(Collections.emptyList());
 	}
 	
 	@Test
@@ -120,10 +145,64 @@ class ProductSearchServiceTest {
 		
 		when(productRepository.findSuggestions(query)).thenReturn(mockSuggestions);
 		
-		Collection<String> suggestions = productSearchService.getSuggestions(query);
+		Map<String, Object> suggestions = productSearchService.getSuggestions(query);
 		
-		assertEquals(mockSuggestions, suggestions);
+		assertNotNull(suggestions);
+		assertEquals(2, suggestions.size());
+		assertEquals(query, suggestions.get("query"));
+		assertEquals(mockSuggestions, suggestions.get("suggestions"));
 		
 		verify(productRepository, times(1)).findSuggestions(query);
+	}
+	
+	@Test
+	void getSuggestionsEmptyQuery() {
+		String query = "";
+		
+		when(productRepository.findSuggestions(query)).thenReturn(Collections.emptyList());
+		
+		Map<String, Object> suggestions = productSearchService.getSuggestions(query);
+		
+		assertNotNull(suggestions);
+		assertEquals(2, suggestions.size());
+		assertEquals(query, suggestions.get("query"));
+		assertTrue(((Collection<?>) suggestions.get("suggestions")).isEmpty());
+		
+		verify(productRepository, times(1)).findSuggestions(query);
+	}
+	
+	@Test
+	void getSuggestionsNullQuery() {
+		String query = null;
+		
+		when(productRepository.findSuggestions("")).thenReturn(Collections.emptyList());
+		
+		Map<String, Object> suggestions = productSearchService.getSuggestions(query);
+		
+		assertNotNull(suggestions);
+		assertTrue(suggestions.containsKey("query"));
+		assertEquals("", suggestions.get("query"));
+		assertTrue(((Collection<?>) suggestions.get("suggestions")).isEmpty());
+		
+		verify(productRepository, times(1)).findSuggestions("");
+	}
+	
+	@Test
+	void processQueryHandlesNullAndEmpty() {
+
+		String nullQuery = null;
+		String processedNull = KeywordService.processQuery(nullQuery);
+		assertNotNull(processedNull);
+		assertEquals("", processedNull);
+		
+		String emptyQuery = "";
+		String processedEmpty = KeywordService.processQuery(emptyQuery);
+		assertNotNull(processedEmpty);
+		assertEquals("", processedEmpty);
+		
+		String validQuery = "Example Query";
+		String processedValid = KeywordService.processQuery(validQuery);
+		assertNotNull(processedValid);
+		assertEquals("example & query:*", processedValid);
 	}
 }

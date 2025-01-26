@@ -1,22 +1,20 @@
 package com.khutircraftubackend.search;
 
-import com.khutircraftubackend.product.response.ProductResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collection;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/v1/search")
 @RequiredArgsConstructor
 public class SearchController {
-	
 	private final ProductSearchService productSearchService;
 	
 	@GetMapping
 	@ResponseStatus(HttpStatus.OK)
-	public Collection<ProductResponse> search(
+	public Map<String, Object> search(
 			@RequestParam String query) {
 		
 		return productSearchService.searchProducts(query);
@@ -24,7 +22,7 @@ public class SearchController {
 	
 	@GetMapping("/suggestions")
 	@ResponseStatus(HttpStatus.OK)
-	public Collection<String> getSuggestions(
+	public Map<String, Object> getSuggestions(
 			@RequestParam String query) {
 		
 		return productSearchService.getSuggestions(query);

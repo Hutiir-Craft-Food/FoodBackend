@@ -9,24 +9,43 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class ProductSearchService {
 	private final ProductRepository productRepository;
 	private final ProductMapper productMapper;
-	private final KeywordService keywordService;
 	
-	public Collection<ProductResponse> searchProducts(String query) {
+	/**
+	 * Пошук продуктів за ключовим словом із пріоритетом.
+	 *
+	 * @param query Ключове слово для пошуку.
+	 * @return Мапа з ключовим словом та результатами пошуку.
+	 */
+	public Map<String, Object> searchProducts(String query) {
 		
-		String postgresQuery = keywordService.processQuery(query);
+		String postgresQuery = query == null ? "" : KeywordService.processQuery(query);
 		List<ProductEntity> result = productRepository.searchWithPriority(postgresQuery);
+		Collection<ProductResponse> products = productMapper.toProductResponse(result);
 		
-		return productMapper.toProductResponse(result);
+		return Map.of(
+				"query", query == null ? "" : query,
+				"products", products
+		);
 	}
 	
-	public Collection<String> getSuggestions(String query) {
+	/**
+	 * Отримання підказок для пошуку.
+	 *
+	 * @param query Ключове слово для пошуку.
+	 * @return Мапа з ключовим словом та списком підказок.
+	 */
+	public Map<String, Object> getSuggestions(String query) {
+		String processedQuery = (query == null || query.isBlank()) ? "" : query;
 		
-		return productRepository.findSuggestions(query);
-	}
-}
+		return Map.of(
+				"query", processedQuery,
+				"suggestions", productRepository.findSuggestions(processedQuery)
+		);
+	}}

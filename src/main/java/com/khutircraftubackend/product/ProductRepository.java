@@ -23,9 +23,10 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
 	
 	/**
 	 * Пошук здійснюється з пріоритетом:
-	 * 1. Спочатку шукаємо за назвою категорії.
-	 * 2. Якщо не знайдено, шукаємо за назвою продукту.
-	 * 3. Якщо не знайдено, шукаємо за описом продукту.
+	 * 1. Спочатку Перевіряємо наявність продукту.
+	 * 2. Якщо продукт наявний(available=true):
+	 * 		a. Шукаємо за назвою категорії.
+	 * 		б. Якщо не знайдено, шукаємо за назвою продукту.
 	 *
 	 * @param keyword Ключове слово для пошуку. Пошук здійснюється за цим словом в трьох полях.
 	 * @return Список продуктів (List<ProductEntity>), що відповідають критеріям пошуку, відсортований за пріоритетом.
@@ -36,9 +37,10 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
 			    SELECT p.*
 			    FROM products p
 			    JOIN categories c ON p.category_id = c.id
-			    WHERE
+			    WHERE p.available = true AND (
 			        to_tsvector('simple', c.name) @@ to_tsquery('simple', :keyword) OR
 			        to_tsvector('simple', p.name) @@ to_tsquery('simple', :keyword)
+			        )
 			    ORDER BY
 			        CASE
 			            WHEN to_tsvector('simple', c.name) @@ to_tsquery('simple', :keyword) THEN 1

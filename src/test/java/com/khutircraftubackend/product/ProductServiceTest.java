@@ -1,13 +1,16 @@
 package com.khutircraftubackend.product;
 
 import com.khutircraftubackend.category.CategoryEntity;
+import com.khutircraftubackend.category.CategoryMapper;
 import com.khutircraftubackend.category.CategoryService;
 import com.khutircraftubackend.category.exception.category.CategoryNotFoundException;
 import com.khutircraftubackend.product.exception.product.ProductNotFoundException;
-import com.khutircraftubackend.storage.StorageService;
 import com.khutircraftubackend.product.request.ProductRequest;
+import com.khutircraftubackend.product.response.ProductResponse;
 import com.khutircraftubackend.seller.SellerEntity;
+import com.khutircraftubackend.seller.SellerMapper;
 import com.khutircraftubackend.seller.SellerService;
+import com.khutircraftubackend.storage.StorageService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -18,6 +21,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,7 +29,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.AccessDeniedException;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -33,7 +39,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class ProductServiceTest {
+class ProductServiceTest {
 	
 	@Mock
 	private ProductRepository productRepository;
@@ -42,18 +48,25 @@ public class ProductServiceTest {
 	@Mock
 	private StorageService storageService;
 	@Mock
-	private MultipartFile mockThumbnailFile;
-	@Mock
-	private MultipartFile mockImageFile;
-	@Mock
 	private CategoryService categoryService;
+	
 	@Spy
+	private SellerMapper sellerMapper = Mappers.getMapper(SellerMapper.class);
+	
+	@Spy
+	private CategoryMapper categoryMapper = Mappers.getMapper(CategoryMapper.class);
+	
+	@Spy
+	@InjectMocks
 	private ProductMapper productMapper = Mappers.getMapper(ProductMapper.class);
 	@InjectMocks
 	private ProductService productService;
 	
 	private SellerEntity seller;
 	private ProductEntity product;
+	private MultipartFile mockThumbnailFile;
+	private MultipartFile mockImageFile;
+	
 	
 	@BeforeEach
 	void setUp() {
@@ -75,20 +88,45 @@ public class ProductServiceTest {
 	@Test
 	void getProducts_Success() {
 		
-		when(productRepository.findAllBy(any(Pageable.class))).thenReturn(List.of(product));
+		Pageable pageable = PageRequest.of(0, 10);
 		
-		List<ProductEntity> products = productService.getProducts(0, 10);
+		SellerEntity sellerEntity = SellerEntity.builder()
+				.id(1L)
+				.companyName("Test company")
+				.build();
 		
+		ProductEntity productEntity = ProductEntity.builder()
+				.id(1L)
+				.name("Test Product")
+				.seller(sellerEntity)
+				.build();
+		
+		when(productRepository.findAllBy(pageable)).thenReturn(List.of(productEntity));
+		when(productRepository.count()).thenReturn(1L);
+		
+		Map<String, Object> result = productService.getProducts(0, 10);
+		
+		assertNotNull(result);
+		assertEquals(4, result.size());
+		assertEquals(1L, result.get("total"));
+		assertEquals(0, result.get("offset"));
+		assertEquals(10, result.get("limit"));
+		
+		@SuppressWarnings("unchecked")
+		Collection<ProductResponse> products = (Collection<ProductResponse>) result.get("products");
+		assertNotNull(products);
 		assertEquals(1, products.size());
-		assertEquals("Test product", products.get(0).getName());
-		verify(productRepository, times(1)).findAllBy(any(Pageable.class));
+		ProductResponse response = products.iterator().next();
+		assertEquals("Test Product", response.name());
+		assertNotNull(response.seller());
+		assertEquals("Test company", response.seller().companyName());
 	}
 	
 	@Nested
 	@DisplayName("Tests for modify product")
 	class CanModify {
 		@Test
-		public void canModifyProduct_Success() throws AccessDeniedException {
+		void canModifyProduct_Success() throws AccessDeniedException {
 			
 			when(sellerService.getCurrentSeller()).thenReturn(seller);
 			when(productRepository.findProductById(1L)).thenReturn(Optional.of(product));
@@ -99,7 +137,7 @@ public class ProductServiceTest {
 		}
 		
 		@Test
-		public void canModifyProduct_Failure() {
+		void canModifyProduct_Failure() {
 			
 			SellerEntity otherSeller = new SellerEntity();
 			otherSeller.setId(2L);
@@ -207,8 +245,10 @@ public class ProductServiceTest {
 					.description("Updated description")
 					.categoryId(2L)
 					.build();
+			CategoryEntity mockCategory = new CategoryEntity(2L, "Updated Category", null, null, null);
 			
 			when(productRepository.findProductById(1L)).thenReturn(Optional.of(existingProduct));
+			when(categoryService.findCategoryById(2L)).thenReturn(mockCategory);
 			when(storageService.upload(mockImageFile)).thenReturn("new-uploaded-image-url");
 			when(storageService.upload(mockThumbnailFile)).thenReturn("new-uploaded-thumbnail-url");
 			when(productRepository.save(any(ProductEntity.class))).thenReturn(existingProduct);
@@ -251,8 +291,10 @@ public class ProductServiceTest {
 					.categoryId(2L)
 					.build();
 			
+			CategoryEntity mockCategory = new CategoryEntity(2L, "Updated Category", null, null, null);
 			
 			when(productRepository.findProductById(1L)).thenReturn(Optional.of(existingProduct));
+			when(categoryService.findCategoryById(2L)).thenReturn(mockCategory);
 			when(productRepository.save(any(ProductEntity.class))).thenReturn(existingProduct);
 			
 			ProductEntity updatedProduct = productService.updateProduct(1L, request, null, null);
