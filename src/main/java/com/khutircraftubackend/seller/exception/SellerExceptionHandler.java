@@ -1,19 +1,21 @@
 package com.khutircraftubackend.seller.exception;
 
-import com.khutircraftubackend.GlobalExceptionHandler;
-import com.khutircraftubackend.seller.exception.seller.SellerNotFoundException;
+import com.khutircraftubackend.exception.GlobalErrorResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-public class SellerExceptionHandler extends GlobalExceptionHandler {
-
-    public record ErrorResponse ( String message ) {}
+public class SellerExceptionHandler {
 
     @ExceptionHandler(SellerNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleSellerNotFoundException(SellerNotFoundException e) {
-        return new ErrorResponse("Продавець не знайдений");
+    public Object handleSellerNotFoundException(SellerNotFoundException ex, HttpServletRequest request) {
+        return GlobalErrorResponse.builder()
+                .status(HttpStatus.NOT_FOUND.value())
+                .error(HttpStatus.NOT_FOUND.getReasonPhrase())
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
     }
-
 }
