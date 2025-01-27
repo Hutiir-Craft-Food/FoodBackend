@@ -4,6 +4,8 @@ import com.khutircraftubackend.category.CategoryEntity;
 import com.khutircraftubackend.category.CategoryService;
 import com.khutircraftubackend.product.exception.product.ProductNotFoundException;
 import com.khutircraftubackend.product.request.ProductRequest;
+import com.khutircraftubackend.product.response.ProductResponse;
+import com.khutircraftubackend.search.KeywordService;
 import com.khutircraftubackend.seller.SellerEntity;
 import com.khutircraftubackend.seller.SellerService;
 import com.khutircraftubackend.storage.StorageService;
@@ -17,7 +19,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.AccessDeniedException;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -70,6 +75,9 @@ public class ProductService {
 		productEntity.setCategory(category);
 		productEntity.setSeller(currentSeller);
 		
+		Set<String> keywords = KeywordService.generateKeywords(productEntity, category);
+		productEntity.setKeywords(keywords);
+		
 		return productRepository.save(productEntity);
 	}
 	
@@ -81,13 +89,18 @@ public class ProductService {
 		
 		productMapper.updateProductFromRequest(existingProduct, request);
 		
+		CategoryEntity categoryToUse = existingProduct.getCategory();
+		
 		if (request.categoryId() != null) {
-			CategoryEntity newCategory = categoryService.findCategoryById(request.categoryId());
-			existingProduct.setCategory(newCategory);
+			categoryToUse = categoryService.findCategoryById(request.categoryId());
+			existingProduct.setCategory(categoryToUse);
 		}
 		
 		existingProduct.setThumbnailImageUrl(handleIcon(thumbnailImageFile));
 		existingProduct.setImageUrl(handleIcon(imageFile));
+		
+		Set<String> keywords = KeywordService.generateKeywords(existingProduct, categoryToUse);
+		existingProduct.setKeywords(keywords);
 		
 		return productRepository.save(existingProduct);
 	}
@@ -107,7 +120,7 @@ public class ProductService {
 		
 		List<ProductEntity> products = productRepository.findAllBySeller(seller);
 		
-		if(products != null) {
+		if (products != null) {
 			for (ProductEntity product : products) {
 				deleteProductImages(product);
 			}
@@ -127,10 +140,20 @@ public class ProductService {
 		}
 	}
 	
-	public List<ProductEntity> getProducts(int offset, int limit) {
+	public Map<String, Object> getProducts(int offset, int limit) {
 		
 		Pageable pageable = PageRequest.of(offset, limit);
+		Collection<ProductEntity> productEntities = productRepository.findAllBy(pageable);
 		
-		return productRepository.findAllBy(pageable);
+		Collection<ProductResponse> products = productMapper.toProductResponse(productEntities);
+		
+		long total = productRepository.count();
+		
+		return Map.of(
+				"products", products,
+				"total", total,
+				"offset", offset,
+				"limit", limit
+		);
 	}
 }

@@ -24,6 +24,8 @@ services:
     restart: always
     environment:
       POSTGRES_PASSWORD: postgres
+      LC_COLLATE: uk_UA.UTF-8
+      LC_CTYPE: uk_UA.UTF-8
     ports:
       - "5432:5432"
     volumes:
@@ -33,6 +35,7 @@ services:
   mail:
     container_name: "khutir-mail"
     image: mailhog/mailhog:latest
+    platform: linux/amd64
     restart: always
     ports:
       - "8025:8025"
