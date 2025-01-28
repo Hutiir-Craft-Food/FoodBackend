@@ -2,30 +2,32 @@ package com.khutircraftubackend.category;
 
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Entity
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
 @Table(name = "categories")
 public class CategoryEntity {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+	Long id;
 	
 	@Column(name = "name", nullable = false, unique = true)
-	private String name;
+	String name;
 	
 	@Column(name = "description")
-	private String description;
+	String description;
 	
 	@Column(name = "icon_url")
-	private String iconUrl;
+	String iconUrl;
 	
 	@ManyToOne
 	@JoinColumn(name = "parent_id")
-	private CategoryEntity parentCategory;
+	CategoryEntity parentCategory;
 }

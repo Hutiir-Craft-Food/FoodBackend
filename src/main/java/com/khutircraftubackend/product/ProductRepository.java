@@ -25,26 +25,29 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
 	 * Пошук здійснюється з пріоритетом:
 	 * 1. Спочатку Перевіряємо наявність продукту.
 	 * 2. Якщо продукт наявний(available=true):
-	 * 		a. Шукаємо за назвою категорії.
-	 * 		б. Якщо не знайдено, шукаємо за назвою продукту.
+	 * a. Шукаємо за назвою категорії.
+	 * б. Якщо не знайдено, шукаємо за назвою продукту.
 	 *
 	 * @param keyword Ключове слово для пошуку. Пошук здійснюється за цим словом в трьох полях.
 	 * @return Список продуктів (List<ProductEntity>), що відповідають критеріям пошуку, відсортований за пріоритетом.
-	 *
+	 * <p>
 	 * Використання to_tsvector та to_tsquery залежить від локалі бази даних (uk_UA.UTF-8).
 	 */
 	@Query(value = """
 			    SELECT p.*
 			    FROM products p
 			    JOIN categories c ON p.category_id = c.id
+			    LEFT JOIN categories parent ON c.parent_id = parent.id
 			    WHERE p.available = true AND (
 			        to_tsvector('simple', c.name) @@ to_tsquery('simple', :keyword) OR
+			        to_tsvector('simple', parent.name) @@ to_tsquery('simple', :keyword) OR
 			        to_tsvector('simple', p.name) @@ to_tsquery('simple', :keyword)
 			        )
 			    ORDER BY
 			        CASE
-			            WHEN to_tsvector('simple', c.name) @@ to_tsquery('simple', :keyword) THEN 1
-			            WHEN to_tsvector('simple', p.name) @@ to_tsquery('simple', :keyword) THEN 2
+			            WHEN to_tsvector('simple', c.name) @@ plainto_tsquery('simple', :keyword) THEN 1
+			            WHEN to_tsvector('simple', parent.name) @@ to_tsquery('simple', :keyword) THEN 2
+			            WHEN to_tsvector('simple', p.name) @@ plainto_tsquery('simple', :keyword) THEN 3
 			        END
 			""", nativeQuery = true)
 	List<ProductEntity> searchWithPriority(@Param("keyword") String keyword);
@@ -56,20 +59,22 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
 	 *
 	 * @param query Ключове слово для пошуку. Використовується для пошуку збігів, що починаються з введеного слова.
 	 * @return Список унікальних рядків, що відповідають критеріям пошуку, відсортованих за алфавітом.
-	 *
+	 * <p>
 	 * Використання ILIKE залежить від локалі бази даних (uk_UA.UTF-8).
 	 */
 	@Query(value = """
 			    SELECT DISTINCT name
-			             FROM (
-			                 SELECT p.name AS name
-			                 FROM products p
-			                 JOIN categories c ON p.category_id = c.id
-			                 WHERE c.name ILIKE (CONCAT('%', :query, '%')) OR
-			                       p.name ILIKE (CONCAT('%', :query, '%'))
-			             ) suggestions /*тимчасова таблиця*/
-			             ORDER BY name
-			             LIMIT 10;
+			    FROM (
+			        SELECT p.name AS name
+			        FROM products p
+			        JOIN categories c ON p.category_id = c.id
+			        LEFT JOIN categories parent ON c.parent_id = parent.id
+			        WHERE c.name ILIKE (CONCAT('%', :query, '%')) OR
+			              COALESCE(parent.name, '') ILIKE (CONCAT('%', :query, '%')) OR
+			              p.name ILIKE (CONCAT('%', :query, '%'))
+			    ) suggestions /*тимчасова таблиця*/
+			    ORDER BY name
+			    LIMIT 10;
 			""", nativeQuery = true)
 	List<String> findSuggestions(@Param("query") String query);
 }

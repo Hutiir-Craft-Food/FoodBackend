@@ -48,4 +48,5 @@ public class ProductSearchService {
 				"query", processedQuery,
 				"suggestions", productRepository.findSuggestions(processedQuery)
 		);
-	}}
+	}
+}

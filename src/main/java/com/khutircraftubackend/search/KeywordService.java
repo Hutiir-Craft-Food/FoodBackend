@@ -2,6 +2,7 @@ package com.khutircraftubackend.search;
 
 import com.khutircraftubackend.category.CategoryEntity;
 import com.khutircraftubackend.product.ProductEntity;
+import lombok.experimental.UtilityClass;
 
 import java.util.Arrays;
 import java.util.List;
@@ -9,10 +10,15 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@UtilityClass
 public class KeywordService {
 	
 	public static Set<String> generateKeywords(ProductEntity product, CategoryEntity category) {
-		List<String> sources = Arrays.asList(product.getName(), category.getName());
+		
+		List<String> sources = Arrays.asList(
+				product.getName(),
+				category.getName(),
+				category.getParentCategory() != null ? category.getParentCategory().getName() : null);
 		
 		return sources.stream()
 				.filter(Objects::nonNull)
@@ -30,7 +36,7 @@ public class KeywordService {
 		return Arrays.stream(query.split("\\s+"))
 				.map(String::toLowerCase)
 				.filter(word -> word.length() > 1)
-				.collect(Collectors.joining(" & ")) + ":*";
+				.collect(Collectors.joining(" "));
 	}
 	
 }

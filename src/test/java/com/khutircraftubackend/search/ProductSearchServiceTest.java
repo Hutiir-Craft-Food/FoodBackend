@@ -67,7 +67,7 @@ class ProductSearchServiceTest {
 		
 		List<ProductResponse> productResponses = List.of(productResponses1, productResponses2);
 		
-		when(productRepository.searchWithPriority("example & query:*")).thenReturn(productEntities);
+		when(productRepository.searchWithPriority(query)).thenReturn(productEntities);
 		when(productMapper.toProductResponse(productEntities)).thenReturn(productResponses);
 		
 		Map<String, Object> result = productSearchService.searchProducts(query);
@@ -77,7 +77,7 @@ class ProductSearchServiceTest {
 		assertEquals(query, result.get("query"));
 		assertEquals(productResponses, result.get("products"));
 		
-		verify(productRepository).searchWithPriority("example & query:*");
+		verify(productRepository).searchWithPriority(query);
 		verify(productMapper).toProductResponse(productEntities);
 	}
 	
@@ -86,7 +86,7 @@ class ProductSearchServiceTest {
 
 		String query = "nonexistent query";
 		
-		when(productRepository.searchWithPriority("nonexistent & query:*")).thenReturn(List.of());
+		when(productRepository.searchWithPriority(query)).thenReturn(List.of());
 		when(productMapper.toProductResponse(List.of())).thenReturn(List.of());
 		
 		Map<String, Object> result = productSearchService.searchProducts(query);
@@ -96,7 +96,7 @@ class ProductSearchServiceTest {
 		assertEquals(query, result.get("query"));
 		assertTrue(((Collection<?>) result.get("products")).isEmpty());
 		
-		verify(productRepository).searchWithPriority("nonexistent & query:*");
+		verify(productRepository).searchWithPriority(query);
 		verify(productMapper).toProductResponse(List.of());
 	}
 	
@@ -203,6 +203,6 @@ class ProductSearchServiceTest {
 		String validQuery = "Example Query";
 		String processedValid = KeywordService.processQuery(validQuery);
 		assertNotNull(processedValid);
-		assertEquals("example & query:*", processedValid);
+		assertEquals("example query", processedValid);
 	}
 }

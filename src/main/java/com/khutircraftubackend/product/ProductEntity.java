@@ -4,6 +4,7 @@ import com.khutircraftubackend.category.CategoryEntity;
 import com.khutircraftubackend.seller.SellerEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -16,6 +17,7 @@ import java.util.Set;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
 @Table(name = "products")
 public class ProductEntity {
@@ -59,6 +61,6 @@ public class ProductEntity {
     @CollectionTable(name = "product_keywords",
     joinColumns = @JoinColumn(name = "product_id"))
     @Column(name = "keyword")
-    private Set<String> keywords = new HashSet<>();
+    Set<String> keywords = new HashSet<>();
     
 }
