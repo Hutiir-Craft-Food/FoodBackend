@@ -24,8 +24,9 @@ services:
     restart: always
     environment:
       POSTGRES_PASSWORD: postgres
-      LC_COLLATE: uk_UA.UTF-8
-      LC_CTYPE: uk_UA.UTF-8
+      LANG: "uk_UA-x-icu"
+      LC_COLLATE: "uk_UA-x-icu"
+      LC_CTYPE: "uk_UA-x-icu"
     ports:
       - "5432:5432"
     volumes:

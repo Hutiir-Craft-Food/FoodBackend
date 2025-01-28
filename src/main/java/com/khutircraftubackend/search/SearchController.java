@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
+import java.util.List;
 
 @RestController
 @RequestMapping("/v1/search")
@@ -14,17 +14,10 @@ public class SearchController {
 	
 	@GetMapping
 	@ResponseStatus(HttpStatus.OK)
-	public Map<String, Object> search(
+	public List<ProductSearchResult> getProducts(
 			@RequestParam String query) {
 		
-		return productSearchService.searchProducts(query);
+		return productSearchService.searchProductsByQuery(query);
 	}
 	
-	@GetMapping("/suggestions")
-	@ResponseStatus(HttpStatus.OK)
-	public Map<String, Object> getSuggestions(
-			@RequestParam String query) {
-		
-		return productSearchService.getSuggestions(query);
-	}
 }

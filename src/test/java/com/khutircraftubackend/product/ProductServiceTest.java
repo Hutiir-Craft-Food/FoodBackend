@@ -245,7 +245,7 @@ class ProductServiceTest {
 					.description("Updated description")
 					.categoryId(2L)
 					.build();
-			CategoryEntity mockCategory = new CategoryEntity(2L, "Updated Category", null, null, null);
+			CategoryEntity mockCategory = new CategoryEntity(2L, "Updated Category", null, null, null, null);
 			
 			when(productRepository.findProductById(1L)).thenReturn(Optional.of(existingProduct));
 			when(categoryService.findCategoryById(2L)).thenReturn(mockCategory);
@@ -291,7 +291,7 @@ class ProductServiceTest {
 					.categoryId(2L)
 					.build();
 			
-			CategoryEntity mockCategory = new CategoryEntity(2L, "Updated Category", null, null, null);
+			CategoryEntity mockCategory = new CategoryEntity(2L, "Updated Category", null, null, null, null);
 			
 			when(productRepository.findProductById(1L)).thenReturn(Optional.of(existingProduct));
 			when(categoryService.findCategoryById(2L)).thenReturn(mockCategory);

@@ -89,3 +89,53 @@ To stop the running containers, use the following command:
 docker compose --file ./docker/docker-compose.yml down
 ```
 This command will stop and remove the containers, but the data stored in the PostgreSQL volume will be preserved.
+
+### 4. Команди для роботи з БД з під docker:
+
+1. Перевірка чи працює контейнер: 
+
+```docker ps```
+
+2. IP-адреса з БД: docker inspect -f 
+
+```{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' khutir-db```
+
+3. Доступ до БД khutir-db запущеної в контейнері docker:
+
+```docker exec -it khutir-db psql -U postgres```
+
+4. Перегляд БД:
+
+```\l```
+
+5. Вибір БД:
+
+```\c khutir_craft```
+
+6. Перевірка таблиць:
+
+```\dt```
+
+7. Структура:
+
+```\d імʼя```
+
+8. Всередині працюють команди притаманні sql: 
+
+```SELECT * FROM table_name```
+
+9. Лічильник записів даних: 
+
+```SELECT COUNT(*) FROM table_name```
+
+10. Довідка по командах: 
+
+```\?```
+
+11. Довідка по SQL-командах: 
+
+```\h```
+
+12. Вихід із клієнта: 
+
+```\q```

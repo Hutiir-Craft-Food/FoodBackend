@@ -1,5 +1,6 @@
 package com.khutircraftubackend.category;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -28,4 +29,8 @@ public class CategoryEntity {
 	@ManyToOne
 	@JoinColumn(name = "parent_id")
 	private CategoryEntity parentCategory;
+	
+	@Column(name = "keywords", columnDefinition = "TEXT")
+	@JsonIgnore
+	private String keywords;
 }

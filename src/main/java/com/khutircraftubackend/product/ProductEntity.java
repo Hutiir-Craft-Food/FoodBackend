@@ -8,8 +8,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
 
 @Entity
 @Getter
@@ -22,43 +20,37 @@ public class ProductEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    private Long id;
 
     @Column(name = "name")
-    String name;
+    private String name;
 
     @Column(name = "thumbnail_image")
-    String thumbnailImageUrl;
+    private String thumbnailImageUrl;
 
     @Column(name = "image")
-    String imageUrl;
+    private String imageUrl;
 
     @Column(name = "available")
-    boolean available;
+    private boolean available;
 
     @Column(name = "description")
-    String description;
+    private String description;
 
     @ManyToOne
     @JoinColumn(name = "seller_id")
-    SellerEntity seller;
+    private SellerEntity seller;
 
     @ManyToOne
     @JoinColumn(name = "category_id")
-    CategoryEntity category;
+    private CategoryEntity category;
 
     @Column(name = "created_at")
     @CreationTimestamp
-    LocalDateTime createdAt;
+    private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
     @UpdateTimestamp
-    LocalDateTime updatedAt;
-    
-    @ElementCollection
-    @CollectionTable(name = "product_keywords",
-    joinColumns = @JoinColumn(name = "product_id"))
-    @Column(name = "keyword")
-    private Set<String> keywords = new HashSet<>();
+    private LocalDateTime updatedAt;
     
 }
