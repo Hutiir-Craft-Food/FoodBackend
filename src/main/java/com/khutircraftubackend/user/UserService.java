@@ -1,8 +1,7 @@
 package com.khutircraftubackend.user;
 
-import com.khutircraftubackend.auth.AuthResponseMessages;
-import com.khutircraftubackend.auth.CustomAuthenticationException;
 import com.khutircraftubackend.auth.request.RegisterRequest;
+import com.khutircraftubackend.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -28,6 +27,7 @@ public class UserService {
         return user;
     }
 
+    // TODO: remove redundant method
     public void updateUser (UserEntity user){
         userRepository.save(user);
     }
@@ -46,7 +46,7 @@ public class UserService {
     public UserEntity findByEmail(String email) {
         return userRepository.findByEmail(email)
                .orElseThrow(() ->
-                       new CustomAuthenticationException(AuthResponseMessages.USER_NOT_FOUND));
+                       new NotFoundException(String.format(UserResponseMessages.USER_NOT_FOUND, email)));
     }
 
     /**
