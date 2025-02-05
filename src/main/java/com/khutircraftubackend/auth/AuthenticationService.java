@@ -52,7 +52,7 @@ public class AuthenticationService {
 
         UserEntity user = userService.findByEmail(request.email());
         if (Boolean.FALSE.equals(user.isEnabled())) {
-            log.info("path - login; " + String.format(AuthResponseMessages.USER_BLOCKED, user.getEmail()));
+            log.info(String.format(AuthResponseMessages.USER_BLOCKED, user.getEmail()));
             throw new CustomAuthenticationException(String.format(AuthResponseMessages.USER_BLOCKED, user.getEmail()));
         }
 
