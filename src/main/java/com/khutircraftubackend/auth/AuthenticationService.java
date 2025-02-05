@@ -1,5 +1,6 @@
 package com.khutircraftubackend.auth;
 
+import com.khutircraftubackend.auth.exception.AuthenticationException;
 import com.khutircraftubackend.mail.EmailSender;
 import com.khutircraftubackend.confirm.ConfirmService;
 import com.khutircraftubackend.auth.request.LoginRequest;
@@ -45,7 +46,7 @@ public class AuthenticationService {
      *
      * @param request Запит на авторизацію, що містить email та пароль.
      * @return Об'єкт AuthResponse з JWT токеном та email користувача.
-     * @throws CustomAuthenticationException Якщо вказані невірні дані для входу.
+     * @throws AuthenticationException Якщо вказані невірні дані для входу.
      */
     @Transactional
     public AuthResponse authenticate(LoginRequest request) {
@@ -53,7 +54,7 @@ public class AuthenticationService {
         UserEntity user = userService.findByEmail(request.email());
         if (Boolean.FALSE.equals(user.isEnabled())) {
             log.info(String.format(AuthResponseMessages.USER_BLOCKED, user.getEmail()));
-            throw new CustomAuthenticationException(String.format(AuthResponseMessages.USER_BLOCKED, user.getEmail()));
+            throw new AuthenticationException(String.format(AuthResponseMessages.USER_BLOCKED, user.getEmail()));
         }
 
         authenticateUser(request.email(), request.password());
@@ -79,7 +80,7 @@ public class AuthenticationService {
                     AuthResponseMessages.AUTH_CODE_SUBJECT,
                     String.format(
                             AuthResponseMessages.AUTH_CODE_TEXT));
-            throw new CustomAuthenticationException(AuthResponseMessages.USER_EXISTS);
+            throw new AuthenticationException(AuthResponseMessages.USER_EXISTS);
         }
 
         UserEntity user = userService.createdUser(request);
