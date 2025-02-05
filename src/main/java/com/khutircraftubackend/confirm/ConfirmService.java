@@ -1,5 +1,6 @@
 package com.khutircraftubackend.confirm;
 
+import com.khutircraftubackend.confirm.exception.ConfirmationException;
 import com.khutircraftubackend.mail.EmailSender;
 import com.khutircraftubackend.user.UserEntity;
 import com.khutircraftubackend.user.UserService;
@@ -70,7 +71,7 @@ public class ConfirmService {
     private ConfirmEntity findConfirmByUser(UserEntity user) {
         return confirmRepository.findByUser(user)
                 .orElseThrow(() ->
-                        new CustomConfirmException(ConfirmResponseMessages.CONFIRM_NOT_FOUND));
+                        new ConfirmationException(ConfirmResponseMessages.CONFIRM_NOT_FOUND));
     }
 
     private String generateCode() {
@@ -98,11 +99,11 @@ public class ConfirmService {
     private void validateConfirmationToken(String requestConfirmedToken, ConfirmEntity existingToken) {
         if (Boolean.FALSE.equals(
                 requestConfirmedToken.equals(existingToken.getConfirmationToken()))) {
-            throw new CustomConfirmException(ConfirmResponseMessages.CONFIRM_NOT_FOUND);
+            throw new ConfirmationException(ConfirmResponseMessages.CONFIRM_NOT_FOUND);
         }
 
         if (existingToken.getExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new CustomConfirmException(ConfirmResponseMessages.CONFIRM_TIME_IS_UP);
+            throw new ConfirmationException(ConfirmResponseMessages.CONFIRM_TIME_IS_UP);
         }
     }
 
@@ -112,7 +113,7 @@ public class ConfirmService {
         ConfirmEntity confirmedByUser = findConfirmByUser(user);
 
         if (LocalDateTime.now().isBefore(confirmedByUser.getCreatedAt().plusMinutes(RE_UPDATE_TOKEN))) {
-            throw new CustomConfirmException(ConfirmResponseMessages.TIME_IS_BEFORE);
+            throw new ConfirmationException(ConfirmResponseMessages.TIME_IS_BEFORE);
         }
 
         sendVerificationEmail(user, true);
