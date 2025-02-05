@@ -9,4 +9,4 @@ spring:
     hibernate:
       ddl-auto: update
 jwt:
-  expiration: 180
+  session-timeout: 180
