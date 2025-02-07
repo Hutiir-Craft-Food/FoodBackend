@@ -1,5 +1,8 @@
 package com.khutircraftubackend.confirm;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class ConfirmResponseMessages {
 
     public static final String EMAIL_ACCEPTED = "Ваш email вже підтверджено.";
@@ -7,9 +10,8 @@ public class ConfirmResponseMessages {
     public static final String CONFIRM_TIME_IS_UP = "Час дії токена підтвердження пошти вичерпано.";
     public static final String CONFIRM_ACCEPTED = "Ваш email підтверджено.";
     public static final String VERIFICATION_CODE_SUBJECT = "Підтвердження реєстрації.";
+    public static final String TIME_IS_BEFORE = "Час для потвторного отримання кода, ще не настав. Зачекайте.";
     public static final String VERIFICATION_CODE_TEXT =
             "Будь ласка, підтвердіть вашу реєстрацію. Введіть 6-значний код %s.";
 
-    private ConfirmResponseMessages() {
-    }
 }

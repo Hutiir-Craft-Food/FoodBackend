@@ -19,14 +19,14 @@ public class JwtUtils {
 	
 	private final Algorithm algorithm;
 
-	@Value("${jwt.expiration}")
-	private long jwtExpirationMillis;
+	@Value("${jwt.session-timeout}")
+	private long sessionTimeoutSeconds;
 	
 	public String generateJwtToken(String email) {
 		return JWT.create()
 				.withSubject(email)
 				.withIssuedAt(new Date(System.currentTimeMillis()))
-				.withExpiresAt(new Date(System.currentTimeMillis() + jwtExpirationMillis))
+				.withExpiresAt(new Date(System.currentTimeMillis() + sessionTimeoutSeconds * 1000))
 				.sign(algorithm);
 	}
 }
