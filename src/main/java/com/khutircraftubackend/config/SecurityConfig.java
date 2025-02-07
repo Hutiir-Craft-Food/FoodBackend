@@ -1,7 +1,7 @@
 package com.khutircraftubackend.config;
 
-import com.khutircraftubackend.jwt.exception.CustomAccessDeniedHandler;
-import com.khutircraftubackend.jwt.exception.CustomAuthenticationEntryPoint;
+import com.khutircraftubackend.exception.CustomAccessDeniedHandler;
+import com.khutircraftubackend.exception.CustomAuthenticationEntryPoint;
 import com.khutircraftubackend.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
