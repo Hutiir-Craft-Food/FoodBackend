@@ -19,6 +19,7 @@ spring:
       hibernate:
         show-sql: true
         format_sql: true
+        dialect: com.khutircraftubackend.search.CustomPostgreSQLDialect
 
   flyway:
     enabled: false
@@ -47,4 +48,4 @@ logging:
 
 storage:
   local:
-    base-path: ${LOCAL_STORAGE_BASEPATH:'./uploads'}
+    base-path: ${LOCAL_STORAGE_BASEPATH:./uploads}

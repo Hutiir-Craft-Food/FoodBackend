@@ -67,15 +67,15 @@ public class ProductService {
 		
 		ProductEntity productEntity = productMapper.toProductEntity(request);
 		
-		CategoryEntity category = categoryService.findCategoryById(request.categoryId());
+		CategoryEntity categoryEntity = categoryService.findCategoryById(request.categoryId());
 		
 		productEntity.setImageUrl(handleIcon(image));
 		productEntity.setThumbnailImageUrl(handleIcon(thumbnailImage));
 		
-		productEntity.setCategory(category);
+		productEntity.setCategory(categoryEntity);
 		productEntity.setSeller(currentSeller);
 		
-		Set<String> keywords = KeywordService.generateKeywords(productEntity, category);
+		Set<String> keywords = KeywordService.generateKeywords(productEntity, categoryEntity);
 		productEntity.setKeywords(keywords);
 		
 		return productRepository.save(productEntity);

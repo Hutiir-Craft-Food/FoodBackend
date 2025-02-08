@@ -22,38 +22,38 @@ public class ProductEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    private Long id;
 
     @Column(name = "name")
-    String name;
+    private String name;
 
     @Column(name = "thumbnail_image")
-    String thumbnailImageUrl;
+    private String thumbnailImageUrl;
 
     @Column(name = "image")
-    String imageUrl;
+    private String imageUrl;
 
     @Column(name = "available")
-    boolean available;
+    private boolean available;
 
     @Column(name = "description")
-    String description;
+    private String description;
 
     @ManyToOne
     @JoinColumn(name = "seller_id")
-    SellerEntity seller;
+    private SellerEntity seller;
 
     @ManyToOne
     @JoinColumn(name = "category_id")
-    CategoryEntity category;
+    private CategoryEntity category;
 
     @Column(name = "created_at")
     @CreationTimestamp
-    LocalDateTime createdAt;
+    private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
     @UpdateTimestamp
-    LocalDateTime updatedAt;
+    private LocalDateTime updatedAt;
     
     @ElementCollection
     @CollectionTable(name = "product_keywords",

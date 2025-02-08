@@ -4,7 +4,6 @@ import com.khutircraftubackend.category.CategoryEntity;
 import com.khutircraftubackend.product.ProductEntity;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Set;
@@ -13,9 +12,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 class KeywordServiceTest {
-	@InjectMocks
-	private KeywordService keywordService;
-	
 	@Test
 	void generateKeywords() {
 		
@@ -23,6 +19,8 @@ class KeywordServiceTest {
 		productEntity.setName("Fanta mandarin");
 		CategoryEntity categoryEntity = new CategoryEntity();
 		categoryEntity.setName("drinks");
+		categoryEntity.setParentCategory(new CategoryEntity());
+		categoryEntity.getParentCategory().setName("beverages");
 		
 		Set<String> result = KeywordService.generateKeywords(productEntity, categoryEntity);
 		
@@ -30,6 +28,8 @@ class KeywordServiceTest {
 		assertTrue(result.contains("fanta"));
 		assertTrue(result.contains("mandarin"));
 		assertTrue(result.contains("drinks"));
+		assertTrue(result.contains("beverages"));
+		assertFalse(result.contains("dr"));
 		
 	}
 	
@@ -38,14 +38,14 @@ class KeywordServiceTest {
 		
 		String query = "fanta orange для drink";
 		
-		String result = keywordService.processQuery(query);
+		String result = KeywordService.processQuery(query);
 		
 		assertNotNull(result);
 		assertTrue(result.contains("fanta"));
 		assertTrue(result.contains("orange"));
 		assertTrue(result.contains("для"));
 		assertTrue(result.contains("drink"));
-		assertEquals("fanta & orange & для & drink:*", result);
+		assertEquals("fanta orange для drink", result);
 	}
 	
 	@Test
@@ -54,6 +54,7 @@ class KeywordServiceTest {
 		productEntity.setName(null);
 		CategoryEntity categoryEntity = new CategoryEntity();
 		categoryEntity.setName("Test category");
+		categoryEntity.setParentCategory(null);
 		
 		Set<String> result = KeywordService.generateKeywords(productEntity, categoryEntity);
 		
