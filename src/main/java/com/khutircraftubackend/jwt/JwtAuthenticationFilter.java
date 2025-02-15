@@ -3,9 +3,7 @@ package com.khutircraftubackend.jwt;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.khutircraftubackend.config.UserDetailsConfig;
-import com.khutircraftubackend.exception.GlobalErrorResponse;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,9 +12,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -56,19 +51,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 			} catch (JWTVerificationException e) {
 				log.error(e.getMessage());
-
-				response.setStatus(HttpStatus.UNAUTHORIZED.value());
-				response.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
-
-				GlobalErrorResponse error = GlobalErrorResponse.builder()
-						.status(HttpStatus.UNAUTHORIZED.value())
-						.error("Unauthorized. Invalid token")
-						.message(e.getMessage())
-						.path(request.getRequestURI())
-						.build();
-
-				response.getWriter()
-						.write(new ObjectMapper().writer().writeValueAsString(error));
 			}
 		}
 		filterChain.doFilter(request, response);
