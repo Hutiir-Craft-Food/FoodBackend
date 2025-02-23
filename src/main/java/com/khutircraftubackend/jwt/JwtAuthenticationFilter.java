@@ -50,7 +50,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 				SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
 			} catch (JWTVerificationException e) {
-				log.error(e.getMessage());
+				response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid ячайник Token");
+				return;
 			}
 		}
 		filterChain.doFilter(request, response);
