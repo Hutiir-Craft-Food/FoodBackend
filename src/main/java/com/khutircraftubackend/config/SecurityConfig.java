@@ -1,7 +1,5 @@
 package com.khutircraftubackend.config;
 
-//import com.khutircraftubackend.exception.CustomAccessDeniedHandler;
-//import com.khutircraftubackend.exception.CustomAuthenticationEntryPoint;
 import com.khutircraftubackend.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -37,7 +35,6 @@ import static jakarta.servlet.DispatcherType.FORWARD;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-//    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -54,19 +51,11 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(c -> corsConfigurationSource())
-//                .httpBasic(b -> b.authenticationEntryPoint(customAuthenticationEntryPoint))
                 .authorizeHttpRequests(auth -> auth
                         .dispatcherTypeMatchers(FORWARD, ERROR).permitAll()
                         .requestMatchers("/swagger-ui/index.html", "/swagger-ui/**", "/v3/api-docs/**", "/actuator/**").permitAll()
                         .requestMatchers("/v1/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET,"/v1/products/**", "/v1/resources/**", "/v1/blogPosts/**", "/v1/advPosts/**", "/v1/search/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/v1/products/**").hasRole("SELLER")
-                        .requestMatchers(HttpMethod.PUT, "/v1/products/**").hasRole("SELLER")
-                        .requestMatchers(HttpMethod.DELETE, "/v1/products/**").hasRole("SELLER")
-                        .requestMatchers(HttpMethod.POST, "/v1/add_posts/**").hasRole("ADMIN")
-                        .requestMatchers("/seller/**").hasRole("SELLER")
-                        .requestMatchers("/buyer/**").hasRole("BUYER")
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

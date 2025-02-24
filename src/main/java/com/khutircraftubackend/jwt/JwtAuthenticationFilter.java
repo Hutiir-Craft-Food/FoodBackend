@@ -3,7 +3,9 @@ package com.khutircraftubackend.jwt;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.khutircraftubackend.config.UserDetailsConfig;
+import com.khutircraftubackend.exception.GlobalErrorResponse;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,6 +14,8 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -48,9 +52,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 				authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
 				SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+			} catch (JWTVerificationException ex) {
 
-			} catch (JWTVerificationException e) {
-				response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid ячайник Token");
+				// TODO:
+				//  get Principal's email/name from claims
+				//  add it to the error log below:
+				logger.error(ex.getMessage());
+
+				response.setStatus(HttpStatus.UNAUTHORIZED.value());
+				response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+
+				ObjectMapper mapper = new ObjectMapper();
+				GlobalErrorResponse errorResponse = GlobalErrorResponse.builder()
+						.status(HttpStatus.UNAUTHORIZED.value())
+						.error(HttpStatus.UNAUTHORIZED.getReasonPhrase())
+						.message(ex.getMessage())
+						.path(request.getRequestURI())
+						.build();
+
+				response.getWriter().write(mapper.writeValueAsString(errorResponse));
 				return;
 			}
 		}

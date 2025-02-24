@@ -10,12 +10,13 @@ import java.util.Date;
 
 @Builder
 public record GlobalErrorResponse(
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss.SSSZ")
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss.SSSX")
         Date timestamp,
         int status,
         String error,
         String  message,
         String path,
+
         @Nullable
         @JsonInclude(JsonInclude.Include.NON_NULL)
         Object data
