@@ -15,6 +15,9 @@ import java.time.LocalDateTime;
 @Builder
 public class ConfirmEntity {
 
+    // TODO:
+    //  Rename this class to ConfirmationEntity
+
     @Id
     @Column (name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
