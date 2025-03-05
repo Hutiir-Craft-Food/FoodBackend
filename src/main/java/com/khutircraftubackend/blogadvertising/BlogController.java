@@ -14,13 +14,11 @@ public class BlogController {
     private final BlogService blogService;
 
     @GetMapping(value = "/advPosts")
-    @ResponseStatus(HttpStatus.OK)
     public BlogResponse blogPosts() {
         return blogService.sendRequest();
     }
 
     @GetMapping(value = "/blogPosts")
-    @ResponseStatus(HttpStatus.OK)
     public BlogResponse advPosts() {
         return blogService.sendRequest();
     }

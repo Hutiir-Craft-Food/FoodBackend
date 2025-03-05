@@ -1,13 +1,12 @@
 package com.khutircraftubackend.confirm;
 
+import com.khutircraftubackend.confirm.exception.ConfirmationException;
 import com.khutircraftubackend.mail.EmailSender;
 import com.khutircraftubackend.user.UserEntity;
 import com.khutircraftubackend.user.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
@@ -16,22 +15,24 @@ import java.util.Random;
 @Service
 @RequiredArgsConstructor
 public class ConfirmService {
+    // TODO:
+    //  rename this class into `ConfirmationService`
 
     private final Random random = new Random();
     private final EmailSender emailSender;
     private final ConfirmRepository confirmRepository;
     private final UserService userService;
     private static final byte LIFE_TOKEN = 5;
-    private static final byte RE_UPDATE_TOKEN = 2;
+    private static final Long RE_UPDATE_TOKEN = 2L;
 
     public void sendVerificationEmail(UserEntity user, boolean isUpdateOrCreateToken) {
-        String verificationCode = genetateCode();
+        String verificationCode = generateCode();
         emailSender.sendSimpleMessage(user.getEmail(),
-                ConfirmResponseMessages.VERIFICATION_CODE_SUBJECT,
+                ConfirmationResponseMessages.VERIFICATION_CODE_SUBJECT,
                 String.format(
-                        ConfirmResponseMessages.VERIFICATION_CODE_TEXT, verificationCode));
+                        ConfirmationResponseMessages.VERIFICATION_CODE_TEXT, verificationCode));
 
-        saveConfirmToken(verificationCode, user, isUpdateOrCreateToken);
+        saveConfirmationToken(verificationCode, user, isUpdateOrCreateToken);
     }
     /**
      * Method to create or update a token in the database.
@@ -41,7 +42,7 @@ public class ConfirmService {
      * @param isUpdateOrCreateToken - Parameter indicating whether to update or create a new token.
      *                              "true" - update, "false" - create.
      */
-    private void saveConfirmToken(String token, UserEntity user, boolean isUpdateOrCreateToken) {
+    private void saveConfirmationToken(String token, UserEntity user, boolean isUpdateOrCreateToken) {
         ConfirmEntity confirmEntity = isUpdateOrCreateToken
                 ? updateExistingToken(token, user)
                 : createUserConfirmationToke(token, user);
@@ -62,6 +63,7 @@ public class ConfirmService {
 
     private ConfirmEntity setTokenProperties(ConfirmEntity confirmEntity, String token) {
         confirmEntity.setConfirmationToken(token);
+        confirmEntity.setCreatedAt(LocalDateTime.now());
         confirmEntity.setExpiresAt(LocalDateTime.now().plusMinutes(LIFE_TOKEN));
         return confirmEntity;
     }
@@ -69,10 +71,10 @@ public class ConfirmService {
     private ConfirmEntity findConfirmByUser(UserEntity user) {
         return confirmRepository.findByUser(user)
                 .orElseThrow(() ->
-                        new ResponseStatusException(HttpStatus.BAD_REQUEST, ConfirmResponseMessages.CONFIRM_NOT_FOUND));
+                        new ConfirmationException(ConfirmationResponseMessages.CONFIRMATION_TOKEN_INVALID));
     }
 
-    private String genetateCode() {
+    private String generateCode() {
         int randomNumber = 100000 + random.nextInt(900000);
         return String.valueOf(randomNumber);
     }
@@ -81,7 +83,7 @@ public class ConfirmService {
     public ConfirmResponse confirmToken(Principal principal, ConfirmRequest request) {
         UserEntity user = userService.findByPrincipal(principal);
         if (user.isConfirmed()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ConfirmResponseMessages.EMAIL_ACCEPTED);
+            throw new ConfirmationException(ConfirmationResponseMessages.EMAIL_ALREADY_CONFIRMED);
         }
         ConfirmEntity confirmedByUser = findConfirmByUser(user);
         validateConfirmationToken(request.confirmationToken(), confirmedByUser);
@@ -90,18 +92,18 @@ public class ConfirmService {
         userService.updateUser(user);
         return ConfirmResponse.builder()
                 .confirmed(true)
-                .message(ConfirmResponseMessages.CONFIRM_ACCEPTED)
+                .message(ConfirmationResponseMessages.EMAIL_CONFIRMED)
                 .build();
     }
 
     private void validateConfirmationToken(String requestConfirmedToken, ConfirmEntity existingToken) {
         if (Boolean.FALSE.equals(
                 requestConfirmedToken.equals(existingToken.getConfirmationToken()))) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ConfirmResponseMessages.CONFIRM_NOT_FOUND);
+            throw new ConfirmationException(ConfirmationResponseMessages.CONFIRMATION_TOKEN_INVALID);
         }
 
         if (existingToken.getExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ConfirmResponseMessages.CONFIRM_TIME_IS_UP);
+            throw new ConfirmationException(ConfirmationResponseMessages.CONFIRMATION_TOKEN_EXPIRED);
         }
     }
 
@@ -111,8 +113,7 @@ public class ConfirmService {
         ConfirmEntity confirmedByUser = findConfirmByUser(user);
 
         if (LocalDateTime.now().isBefore(confirmedByUser.getCreatedAt().plusMinutes(RE_UPDATE_TOKEN))) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Время для повторного получения еще не настало" +
-                    " - Временная ошибка, до рефактора ошибок!");
+            throw new ConfirmationException(ConfirmationResponseMessages.WAIT_FOR_NEXT_ATTEMPT);
         }
 
         sendVerificationEmail(user, true);

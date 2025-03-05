@@ -1,8 +1,8 @@
 package com.khutircraftubackend.storage;
 
-import com.khutircraftubackend.storage.exception.storage.FileNotFoundException;
-import com.khutircraftubackend.storage.exception.storage.InvalidArgumentException;
-import com.khutircraftubackend.storage.exception.storage.InvalidFileFormatException;
+import com.khutircraftubackend.storage.exception.FileNotFoundException;
+import com.khutircraftubackend.storage.exception.InvalidArgumentException;
+import com.khutircraftubackend.storage.exception.InvalidFileFormatException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

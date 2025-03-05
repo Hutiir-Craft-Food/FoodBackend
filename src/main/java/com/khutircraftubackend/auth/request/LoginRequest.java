@@ -3,12 +3,10 @@ package com.khutircraftubackend.auth.request;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-import lombok.Builder;
 
 /**
  * Клас LoginRequest використовується для передачі даних запиту на вхід.
  */
-@Builder
 public record LoginRequest (
     @NotBlank(message = "E-mail не може бути порожнім")
     @Pattern(regexp = "^[A-Za-z\\d+_.-]+@[A-Za-z\\d.-]+\\.[A-Za-z]{2,}$")
