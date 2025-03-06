@@ -13,10 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ConfirmEntity {
-
-    // TODO:
-    //  Rename this class to ConfirmationEntity
+public class ConfirmationEntity {
 
     @Id
     @Column (name = "id")
