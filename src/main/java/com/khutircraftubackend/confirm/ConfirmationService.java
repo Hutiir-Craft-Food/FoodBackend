@@ -14,9 +14,7 @@ import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
-public class ConfirmService {
-    // TODO:
-    //  rename this class into `ConfirmationService`
+public class ConfirmationService {
 
     private final Random random = new Random();
     private final EmailSender emailSender;
@@ -43,32 +41,32 @@ public class ConfirmService {
      *                              "true" - update, "false" - create.
      */
     private void saveConfirmationToken(String token, UserEntity user, boolean isUpdateOrCreateToken) {
-        ConfirmEntity confirmEntity = isUpdateOrCreateToken
+        ConfirmationEntity confirmationEntity = isUpdateOrCreateToken
                 ? updateExistingToken(token, user)
                 : createUserConfirmationToke(token, user);
-        confirmRepository.save(confirmEntity);
+        confirmRepository.save(confirmationEntity);
     }
 
-    private ConfirmEntity updateExistingToken(String token, UserEntity user) {
-        ConfirmEntity confirmedByUser = findConfirmByUser(user);
+    private ConfirmationEntity updateExistingToken(String token, UserEntity user) {
+        ConfirmationEntity confirmedByUser = findConfirmByUser(user);
         return setTokenProperties(confirmedByUser, token);
     }
 
-    private ConfirmEntity createUserConfirmationToke(String token, UserEntity user) {
-        ConfirmEntity newConfirmedByUser = ConfirmEntity.builder()
+    private ConfirmationEntity createUserConfirmationToke(String token, UserEntity user) {
+        ConfirmationEntity newConfirmedByUser = ConfirmationEntity.builder()
                 .user(user)
                 .build();
         return setTokenProperties(newConfirmedByUser, token);
     }
 
-    private ConfirmEntity setTokenProperties(ConfirmEntity confirmEntity, String token) {
+    private ConfirmationEntity setTokenProperties(ConfirmationEntity confirmEntity, String token) {
         confirmEntity.setConfirmationToken(token);
         confirmEntity.setCreatedAt(LocalDateTime.now());
         confirmEntity.setExpiresAt(LocalDateTime.now().plusMinutes(LIFE_TOKEN));
         return confirmEntity;
     }
 
-    private ConfirmEntity findConfirmByUser(UserEntity user) {
+    private ConfirmationEntity findConfirmByUser(UserEntity user) {
         return confirmRepository.findByUser(user)
                 .orElseThrow(() ->
                         new ConfirmationException(ConfirmationResponseMessages.CONFIRMATION_TOKEN_INVALID));
@@ -80,23 +78,23 @@ public class ConfirmService {
     }
 
     @Transactional
-    public ConfirmResponse confirmToken(Principal principal, ConfirmRequest request) {
+    public ConfirmationResponse confirmToken(Principal principal, ConfirmationRequest request) {
         UserEntity user = userService.findByPrincipal(principal);
         if (user.isConfirmed()) {
             throw new ConfirmationException(ConfirmationResponseMessages.EMAIL_ALREADY_CONFIRMED);
         }
-        ConfirmEntity confirmedByUser = findConfirmByUser(user);
+        ConfirmationEntity confirmedByUser = findConfirmByUser(user);
         validateConfirmationToken(request.confirmationToken(), confirmedByUser);
         user.setConfirmed(true);
         confirmRepository.delete(confirmedByUser);
         userService.updateUser(user);
-        return ConfirmResponse.builder()
+        return ConfirmationResponse.builder()
                 .confirmed(true)
                 .message(ConfirmationResponseMessages.EMAIL_CONFIRMED)
                 .build();
     }
 
-    private void validateConfirmationToken(String requestConfirmedToken, ConfirmEntity existingToken) {
+    private void validateConfirmationToken(String requestConfirmedToken, ConfirmationEntity existingToken) {
         if (Boolean.FALSE.equals(
                 requestConfirmedToken.equals(existingToken.getConfirmationToken()))) {
             throw new ConfirmationException(ConfirmationResponseMessages.CONFIRMATION_TOKEN_INVALID);
@@ -110,7 +108,7 @@ public class ConfirmService {
     @Transactional
     public void reConfirmToken(Principal principal) {
         UserEntity user = userService.findByPrincipal(principal);
-        ConfirmEntity confirmedByUser = findConfirmByUser(user);
+        ConfirmationEntity confirmedByUser = findConfirmByUser(user);
 
         if (LocalDateTime.now().isBefore(confirmedByUser.getCreatedAt().plusMinutes(RE_UPDATE_TOKEN))) {
             throw new ConfirmationException(ConfirmationResponseMessages.WAIT_FOR_NEXT_ATTEMPT);

@@ -2,7 +2,7 @@ package com.khutircraftubackend.auth;
 
 import com.khutircraftubackend.auth.exception.AuthenticationException;
 import com.khutircraftubackend.mail.EmailSender;
-import com.khutircraftubackend.confirm.ConfirmService;
+import com.khutircraftubackend.confirm.ConfirmationService;
 import com.khutircraftubackend.auth.request.LoginRequest;
 import com.khutircraftubackend.auth.request.RegisterRequest;
 import com.khutircraftubackend.auth.response.AuthResponse;
@@ -37,7 +37,7 @@ public class AuthenticationService {
     private final UserService userService;
     private final JwtUtils jwtUtils;
     private final AuthenticationManager authenticationManager;
-    private final ConfirmService confirmService;
+    private final ConfirmationService confirmationService;
     private final SellerService sellerService;
     private final EmailSender emailSender;
 
@@ -84,7 +84,7 @@ public class AuthenticationService {
         }
 
         UserEntity user = userService.createdUser(request);
-        confirmService.sendVerificationEmail(user, false);
+        confirmationService.sendVerificationEmail(user, false);
         marketingCampaignService.createReceiveAdvertising(request, user);
 
         if (request.role().equals(Role.SELLER)) {

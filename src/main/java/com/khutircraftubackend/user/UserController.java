@@ -1,8 +1,8 @@
 package com.khutircraftubackend.user;
 
-import com.khutircraftubackend.confirm.ConfirmRequest;
-import com.khutircraftubackend.confirm.ConfirmResponse;
-import com.khutircraftubackend.confirm.ConfirmService;
+import com.khutircraftubackend.confirm.ConfirmationRequest;
+import com.khutircraftubackend.confirm.ConfirmationResponse;
+import com.khutircraftubackend.confirm.ConfirmationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -18,7 +18,7 @@ import java.security.Principal;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final ConfirmService confirmService;
+    private final ConfirmationService confirmationService;
 
     @Operation(summary = "Confirm user registration", description = "Confirm user registration with email and confirmation token.")
     @ApiResponses(value = {
@@ -27,14 +27,14 @@ public class UserController {
     })
     @PostMapping(value = "/confirm", produces = "application/json")
     @ResponseStatus(HttpStatus.OK)
-    public ConfirmResponse confirmUser(@Valid @RequestBody ConfirmRequest request, Principal principal) {
-        return confirmService.confirmToken(principal, request);
+    public ConfirmationResponse confirmUser(@Valid @RequestBody ConfirmationRequest request, Principal principal) {
+        return confirmationService.confirmToken(principal, request);
     }
 
     @PostMapping("/re-confirm")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void reConfirmToken(Principal principal){
-        confirmService.reConfirmToken(principal);
+        confirmationService.reConfirmToken(principal);
     }
 
     //TODO Need update after design

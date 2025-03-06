@@ -11,5 +11,5 @@ public class ConfirmationResponseMessages {
     public static final String EMAIL_ALREADY_CONFIRMED = "Ваш email вже підтверджено.";
     public static final String VERIFICATION_CODE_SUBJECT = "Підтвердження реєстрації.";
     public static final String VERIFICATION_CODE_TEXT = "Будь ласка, підтвердіть вашу реєстрацію. Введіть 6-значний код %s.";
-    public static final String WAIT_FOR_NEXT_ATTEMPT = "Час для потвторного отримання кода, ще не настав. Зачекайте.";
+    public static final String WAIT_FOR_NEXT_ATTEMPT = "Час для повторного отримання кода ще не настав. Зачекайте.";
 }
