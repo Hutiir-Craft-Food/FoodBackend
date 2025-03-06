@@ -5,7 +5,6 @@ import com.khutircraftubackend.category.CategoryService;
 import com.khutircraftubackend.product.exception.ProductNotFoundException;
 import com.khutircraftubackend.product.request.ProductRequest;
 import com.khutircraftubackend.product.response.ProductResponse;
-import com.khutircraftubackend.search.KeywordService;
 import com.khutircraftubackend.seller.SellerEntity;
 import com.khutircraftubackend.seller.SellerService;
 import com.khutircraftubackend.storage.StorageService;
@@ -18,10 +17,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.AccessDeniedException;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -66,16 +65,14 @@ public class ProductService {
 		
 		ProductEntity productEntity = productMapper.toProductEntity(request);
 		
-		CategoryEntity category = categoryService.findCategoryById(request.categoryId());
+		CategoryEntity categoryEntity = categoryService.findCategoryById(request.categoryId());
 		
 		productEntity.setImageUrl(handleIcon(image));
 		productEntity.setThumbnailImageUrl(handleIcon(thumbnailImage));
 		
-		productEntity.setCategory(category);
+		productEntity.setCategory(categoryEntity);
 		productEntity.setSeller(currentSeller);
-		
-		Set<String> keywords = KeywordService.generateKeywords(productEntity, category);
-		productEntity.setKeywords(keywords);
+		productEntity.setCreatedAt(LocalDateTime.now());
 		
 		return productRepository.save(productEntity);
 	}
@@ -88,7 +85,7 @@ public class ProductService {
 		
 		productMapper.updateProductFromRequest(existingProduct, request);
 		
-		CategoryEntity categoryToUse = existingProduct.getCategory();
+		CategoryEntity categoryToUse;
 		
 		if (request.categoryId() != null) {
 			categoryToUse = categoryService.findCategoryById(request.categoryId());
@@ -97,9 +94,7 @@ public class ProductService {
 		
 		existingProduct.setThumbnailImageUrl(handleIcon(thumbnailImageFile));
 		existingProduct.setImageUrl(handleIcon(imageFile));
-		
-		Set<String> keywords = KeywordService.generateKeywords(existingProduct, categoryToUse);
-		existingProduct.setKeywords(keywords);
+		existingProduct.setUpdatedAt(LocalDateTime.now());
 		
 		return productRepository.save(existingProduct);
 	}

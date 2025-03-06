@@ -19,7 +19,6 @@ spring:
       hibernate:
         show-sql: true
         format_sql: true
-
   flyway:
     enabled: false
 
@@ -47,4 +46,4 @@ logging:
 
 storage:
   local:
-    base-path: ${LOCAL_STORAGE_BASEPATH:'./uploads'}
+    base-path: ${LOCAL_STORAGE_BASEPATH:./uploads}

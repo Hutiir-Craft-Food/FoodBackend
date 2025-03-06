@@ -2,6 +2,7 @@ package com.khutircraftubackend.category;
 
 import com.khutircraftubackend.category.request.CategoryRequest;
 import com.khutircraftubackend.category.response.CategoryResponse;
+import com.khutircraftubackend.search.ProductSearchService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +16,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/v1/categories")
@@ -24,6 +26,7 @@ public class CategoryController {
 	
 	private final CategoryService categoryService;
 	private final CategoryMapper categoryMapper;
+	private final ProductSearchService productSearchService;
 	
 	@GetMapping
 	public Collection<CategoryResponse> getAllRootCategories() {
@@ -75,6 +78,16 @@ public class CategoryController {
 			@RequestParam(required = false) boolean forceDelete) {
 		
 		categoryService.deleteCategory(id, forceDelete);
+	}
+	
+	@PutMapping("/keywords")
+	@ResponseStatus(HttpStatus.OK)
+	@PreAuthorize("hasRole('ADMIN')")
+	public Set<String> updateKeywords(
+			@RequestParam Long categoryId,
+			@RequestParam Set<String> keywords) {
+		
+		return productSearchService.updateKeywords(categoryId, keywords);
 	}
 	
 }
