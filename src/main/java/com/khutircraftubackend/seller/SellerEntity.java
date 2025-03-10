@@ -27,12 +27,6 @@ public class SellerEntity {
     @Column(name = "seller_name")
     private String sellerName;
 
-    @Column(name = "company_name")
-    private String companyName;
-
-    @Column(name = "phone_number", nullable = false, unique = true)
-    private String phoneNumber;
-
     @OneToOne
     @JoinColumn(name = "user_id")
     private UserEntity user;
@@ -54,11 +48,11 @@ public class SellerEntity {
         
         SellerEntity seller = (SellerEntity) o;
         
-        return Objects.equals(id, seller.id) && Objects.equals(companyName, seller.companyName);
+        return Objects.equals(id, seller.id) && Objects.equals(sellerName, seller.sellerName);
     }
     
     @Override
     public int hashCode() {
-        return Objects.hash(id, companyName);
+        return Objects.hash(id, sellerName);
     }
 }
