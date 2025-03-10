@@ -11,7 +11,7 @@ import static org.mapstruct.ReportingPolicy.IGNORE;
 
 @Mapper(componentModel = SPRING, unmappedTargetPolicy = IGNORE)
 public interface SellerMapper {
-    SellerEntity SellerDTOToSeller(SellerDTO sellerDTO);
+    SellerEntity sellerDTOToSeller(SellerDTO sellerDTO);
     
     SellerResponse toSellerResponse(SellerEntity sellerEntity);
 }
