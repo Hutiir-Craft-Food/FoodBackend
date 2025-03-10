@@ -1,5 +1,6 @@
 package com.khutircraftubackend.seller;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -13,6 +14,7 @@ import lombok.Builder;
  */
 
 @Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public record SellerDTO(
 
         @NotBlank (message = "Назва компанії не може бути порожнім")
@@ -21,7 +23,6 @@ public record SellerDTO(
                 "українські або англійські літери, цифри і знаки \"&-,'`\"")
         String companyName,
 
-        @NotBlank (message = "Ім'я не може бути порожнім")
         @Size (max = 100, message = "Ім'я не може перевищувати 100 символів")
         String sellerName,
 
