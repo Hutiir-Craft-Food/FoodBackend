@@ -33,8 +33,7 @@ public class AuthenticationController {
     @Operation(summary = "Authenticate user", description = "Authenticate user with email and password.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User authenticated successfully"),
-            @ApiResponse(responseCode = "403", description = "Invalid credentials"),
-            @ApiResponse(responseCode = "423", description = "User blocked")
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
     @PostMapping("/login")
     @ResponseStatus(HttpStatus.OK)
@@ -46,7 +45,7 @@ public class AuthenticationController {
     @Operation(summary = "Register a new user", description = "Register a new user with email and password.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "User registered successfully"),
-            @ApiResponse(responseCode = "400", description = "User already exists")
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
