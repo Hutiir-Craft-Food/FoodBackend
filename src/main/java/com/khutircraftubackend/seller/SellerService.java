@@ -36,7 +36,7 @@ public class SellerService {
     }
 
     public void createSeller(RegisterRequest request, UserEntity user) {
-        SellerEntity seller = sellerMapper.SellerDTOToSeller(request.details());
+        SellerEntity seller = sellerMapper.sellerDTOToSeller(request.details());
         seller.setUser(user);
         sellerRepository.save(seller);
     }
