@@ -1,8 +1,11 @@
 package com.khutircraftubackend.auth;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.khutircraftubackend.auth.request.LoginRequest;
 import com.khutircraftubackend.exception.GlobalErrorResponse;
+import config.JwtTestConfig;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -12,6 +15,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -20,7 +24,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-import java.util.List;
+import java.util.Date;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -32,7 +36,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @AutoConfigureMockMvc
 @ActiveProfiles({"local", "test"})
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = {"spring.main.allow-bean-definition-overriding=true"})
+@Import(JwtTestConfig.class)
 class AuthenticationControllerTest {
 
     @LocalServerPort
@@ -44,6 +50,9 @@ class AuthenticationControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private Algorithm algorithm;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Nested
@@ -53,11 +62,12 @@ class AuthenticationControllerTest {
         @DisplayName("should fail on expired token")
         void fail_when_authenticating_with_expired_token () {
 
-            // TODO:
-            //  programmatically generate expired token here:
-            String expiredToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9." +
-                    "eyJzdWIiOiJzZWxsZXJAZXhhbXBsZS5jb20iLCJleHAiOjE3Mzk4NzI2NzUsImlhdCI6MTczOTg3MjU4NX0." +
-                    "01eFWh1MTQ4rc24uaY0A1G97SlwTtmm-qGWrwwo6fc6h6eRXIJQLhUwfVlegXeCN0U_1G6exe9UFvIRzAHqDLQ";
+            String email = "seller@example.com";
+            String expiredToken = JWT.create()
+                    .withSubject(email)
+                    .withIssuedAt(new Date(System.currentTimeMillis() - 1000))
+                    .withExpiresAt(new Date(System.currentTimeMillis() - 100))
+                    .sign(algorithm);
 
             HttpHeaders headers = new HttpHeaders();
             headers.add("Authorization", "Bearer " + expiredToken);
@@ -78,11 +88,13 @@ class AuthenticationControllerTest {
         @Test
         @DisplayName("should fail when someone forges token's signature")
         void fail_when_authenticating_with_token_having_wrong_signature () {
-            // TODO:
-            //  programmatically generate token with valid claims but wrong signature:
-            String forgedToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9." +
-                    "eyJzdWIiOiJibGFoLXVzZXIiLCJleHAiOjE3NDAzNTM2MjIsImlhdCI6MTc0MDM1MzU2Mn0." +
-                    "gXCdsHdrNsK80dIwYAzIiC78uIteujERUTdJWHNTRnMhh_-rKn7BlTn3x1fxwXVhHah2Sc5zySJwBx6ADmW_Ww";
+
+            String email = "blah@example.com";
+            String forgedToken = JWT.create()
+                    .withSubject(email)
+                    .withIssuedAt(new Date(System.currentTimeMillis() - 1000))
+                    .withExpiresAt(new Date(System.currentTimeMillis() - 100))
+                    .sign(Algorithm.HMAC512("blah"));
 
             HttpHeaders headers = new HttpHeaders();
             headers.add("Authorization", "Bearer " + forgedToken);
