@@ -11,7 +11,13 @@ CREATE TABLE IF NOT EXISTS products (
     seller_id BIGINT REFERENCES sellers(id) ON DELETE CASCADE
 );
 
+CREATE EXTENSION IF NOT EXISTS vector;
+
 CREATE INDEX idx_product_name_tsvector ON products
     USING GIN (to_tsvector('simple', name));
 
 CREATE INDEX idx_products_category_id ON products (category_id);
+
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+CREATE INDEX products_name_trgm_idx ON products USING GIN (name gin_trgm_ops);
+
