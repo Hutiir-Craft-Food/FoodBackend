@@ -26,31 +26,39 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
     with recursive catalogue as (
             -- root categories:
         select
-              c.id, concat(c.name, ',', coalesce(c.keywords, ''))::text as "text"
+              c.id,
+              concat(c.name, ',', coalesce(c.keywords, ''))::text as "text"
         from categories c
         where parent_id is null
         
         union all
               -- sub categories:
         select
-              c.id, concat(ctg.text, ',', c.name, ',', coalesce(c.keywords, ''))::text as "text"
+              c.id,
+              concat(ctg.text, ',', c.name, ',', coalesce(c.keywords, ''))::text as "text"
         from catalogue ctg
         inner join categories c on c.parent_id = ctg.id
     ), suggestions as (
         select
             distinct p.id, p.name,
-              to_tsvector('simple', concat(p.name, ' ', coalesce(c."text", ''))) as "tsvector",
-              to_tsquery('simple', concat(replace(:query, ' ', ':* & '), ':*')) as "tsquery"
+            to_tsvector('simple', concat(p.name, ' ', coalesce(c."text", ''))) as "tsvector",
+            CASE
+                WHEN length(trim(regexp_replace(:query, '[^a-zA-Zа-яА-ЯїЇєЄґҐ\\d\\s]', '', 'g'))) = 0
+                    THEN NULL
+                ELSE to_tsquery('simple', regexp_replace(regexp_replace(:query, '[^a-zA-Zа-яА-ЯїЇєЄґҐ\\d\\s]', '', 'g'),'\\s+', ':* & ', 'g') || ':*')
+            END as "tsquery",
+            similarity(p.name, :query) as "similarity"
         from products p
         inner join catalogue c on c.id = p.category_id
         where p.available = true
     )
         select
             s.id, s.name,
-              ts_rank_cd("tsvector", "tsquery") as rank
+            ts_rank_cd("tsvector", "tsquery") as rank,
+            "similarity"
         from suggestions s
-        where "tsvector" @@ "tsquery"
-        order by rank desc
+        where "tsvector" @@ "tsquery" or "similarity" > 0.3
+        order by rank desc, similarity desc
         limit 50;
     """, nativeQuery = true)
     List<ProductSearchResult> searchProducts(@Param("query") String query);
