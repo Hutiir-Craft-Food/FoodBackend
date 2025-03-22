@@ -47,4 +47,3 @@ logging:
 storage:
   local:
     base-path: ${LOCAL_STORAGE_BASEPATH:./uploads}
-    api-path: /v1/resources

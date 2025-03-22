@@ -19,13 +19,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.regex.Pattern;
 
 @RequiredArgsConstructor
 @Slf4j
 public class LocalStorageService implements StorageService {
     private final String basePath;
-    private final String apiPath;
     
     @Override
     public String upload(MultipartFile multipartFile) throws IOException {
@@ -53,7 +51,7 @@ public class LocalStorageService implements StorageService {
         HttpServletRequest request = ((ServletRequestAttributes)
                 Objects.requireNonNull(RequestContextHolder.getRequestAttributes()))
                 .getRequest();
-        String relativeUriStr = apiPath + uploadPath
+        String relativeUriStr = LocalStorageController.API_PATH + uploadPath
                 .relativize(filePath).normalize();
         
         return UriComponentsBuilder.newInstance()
@@ -80,18 +78,13 @@ public class LocalStorageService implements StorageService {
     @Override
     public void deleteByUrl(String fileUrl) throws IOException {
         
-        if (!fileUrl.contains(apiPath)) {
+        if (!fileUrl.contains(LocalStorageController.API_PATH)) {
             throw new InvalidArgumentException(fileUrl + " -URL не відповідає шаблону для зображення");
         }
         
-        String[] parts = fileUrl.split(Pattern.quote(apiPath + "/"));
+        String filePathStr = fileUrl.split(LocalStorageController.API_PATH + "/")[1];
         
-        if (parts.length < 2) {
-            throw new InvalidArgumentException("Некоректний URL: " + fileUrl);
-        }
-        
-        String filePathStr = parts[1];
-        Path filePath = Paths.get(basePath, filePathStr).normalize();
+        Path filePath = Paths.get(basePath).resolve(filePathStr);
         
         if (Files.notExists(filePath)) {
             throw new FileNotFoundException("Файл з іменем " + filePath + " не знайдено.");

@@ -12,13 +12,15 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.nio.file.Files;
 
+import static com.khutircraftubackend.storage.LocalStorageController.API_PATH;
+
 @RestController
 @Profile("local")
-@RequestMapping("${storage.local.api-path}")
+@RequestMapping(API_PATH)
 @RequiredArgsConstructor
 public class LocalStorageController {
+    public static final String API_PATH = "/v1/resources";
     public final LocalStorageService storageService;
-    private final String apiPath;
     
     @GetMapping("/{fileName:.+}")
     @ResponseStatus(HttpStatus.OK)
@@ -36,12 +38,6 @@ public class LocalStorageController {
                 .contentType(MediaType.parseMediaType(contentType))
                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
                 .body(resource);
-    }
-    
-    @RequestMapping("${storage.local.api-path}")
-    public String getApiPath() {
-        
-        return apiPath;
     }
     
 }

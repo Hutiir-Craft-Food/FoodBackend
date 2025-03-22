@@ -13,7 +13,7 @@ import java.io.IOException;
 @ControllerAdvice
 @Slf4j
 public class FileExceptionHandler {
-
+    
     @ExceptionHandler(IOException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public Object handleIOException(IOException ex, HttpServletRequest request) {
@@ -37,7 +37,7 @@ public class FileExceptionHandler {
                 .path(request.getRequestURI())
                 .build();
     }
-
+    
     @ExceptionHandler(InvalidFileFormatException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Object handleInvalidFileFormatException(InvalidFileFormatException ex, HttpServletRequest request) {
