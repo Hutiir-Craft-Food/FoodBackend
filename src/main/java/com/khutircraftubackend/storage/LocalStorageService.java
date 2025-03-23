@@ -1,6 +1,6 @@
 package com.khutircraftubackend.storage;
 
-import com.khutircraftubackend.storage.exception.FileNotFoundException;
+import com.khutircraftubackend.exception.NotFoundException;
 import com.khutircraftubackend.storage.exception.InvalidArgumentException;
 import com.khutircraftubackend.storage.exception.InvalidFileFormatException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,7 +29,7 @@ public class LocalStorageService implements StorageService {
     public String upload(MultipartFile multipartFile) throws IOException {
         
         if (multipartFile == null || multipartFile.isEmpty()) {
-            throw new InvalidFileFormatException("Файл не надано або він порожній");
+            throw new InvalidFileFormatException(StorageResponseMessage.INVALID_FILE);
         }
         String fileName = UUID.randomUUID().toString();
         
@@ -64,12 +64,12 @@ public class LocalStorageService implements StorageService {
         
     }
     
-    public Resource getResource(String fileName) throws IOException {
+    public Resource getResource(String fileName) {
         
         Path filePath = Paths.get(basePath).resolve(fileName).normalize();
         
         if (Files.notExists(filePath)) {
-            throw new FileNotFoundException("Файл з URL " + fileName + " не знайдено.");
+            throw new NotFoundException("Файл з URL " + fileName + " не знайдено.");
         }
         
         return new FileSystemResource(filePath);
@@ -79,7 +79,7 @@ public class LocalStorageService implements StorageService {
     public void deleteByUrl(String fileUrl) throws IOException {
         
         if (!fileUrl.contains(LocalStorageController.API_PATH)) {
-            throw new InvalidArgumentException(fileUrl + " -URL не відповідає шаблону для зображення");
+            throw new InvalidArgumentException(String.format(StorageResponseMessage.INVALID_ARGUMENT, fileUrl));
         }
         
         String filePathStr = fileUrl.split(LocalStorageController.API_PATH + "/")[1];
@@ -87,7 +87,7 @@ public class LocalStorageService implements StorageService {
         Path filePath = Paths.get(basePath).resolve(filePathStr);
         
         if (Files.notExists(filePath)) {
-            throw new FileNotFoundException("Файл з іменем " + filePath + " не знайдено.");
+            throw new NotFoundException(String.format(StorageResponseMessage.FILE_NOT_FOUND, filePathStr));
         }
         Files.delete(filePath);
     }

@@ -19,44 +19,8 @@ public class FileExceptionHandler {
     public Object handleIOException(IOException ex, HttpServletRequest request) {
         log.error("Failed to upload file: ", ex);
         return GlobalErrorResponse.builder()
-                .status(HttpStatus.LOCKED.value())
-                .error(HttpStatus.LOCKED.getReasonPhrase())
-                .message(ex.getMessage())
-                .path(request.getRequestURI())
-                .build();
-    }
-    
-    @ExceptionHandler(FileNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public Object handleFileNotFoundException(FileNotFoundException ex, HttpServletRequest request) {
-        log.error("File not found: ", ex);
-        return GlobalErrorResponse.builder()
-                .status(HttpStatus.LOCKED.value())
-                .error(HttpStatus.LOCKED.getReasonPhrase())
-                .message(ex.getMessage())
-                .path(request.getRequestURI())
-                .build();
-    }
-    
-    @ExceptionHandler(InvalidFileFormatException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Object handleInvalidFileFormatException(InvalidFileFormatException ex, HttpServletRequest request) {
-        log.error("Invalid file format: ", ex);
-        return GlobalErrorResponse.builder()
-                .status(HttpStatus.LOCKED.value())
-                .error(HttpStatus.LOCKED.getReasonPhrase())
-                .message(ex.getMessage())
-                .path(request.getRequestURI())
-                .build();
-    }
-    
-    @ExceptionHandler(InvalidArgumentException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Object handleURISyntaxException(InvalidArgumentException ex, HttpServletRequest request) {
-        log.error("Invalid URL syntax: ", ex);
-        return GlobalErrorResponse.builder()
-                .status(HttpStatus.LOCKED.value())
-                .error(HttpStatus.LOCKED.getReasonPhrase())
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
                 .message(ex.getMessage())
                 .path(request.getRequestURI())
                 .build();
