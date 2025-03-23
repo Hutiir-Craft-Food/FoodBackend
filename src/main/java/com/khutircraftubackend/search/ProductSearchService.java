@@ -6,6 +6,7 @@ import com.khutircraftubackend.category.CategoryService;
 import com.khutircraftubackend.product.ProductRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ProductSearchService {
     private final ProductRepository productRepository;
     private final CategoryService categoryService;
@@ -23,13 +25,18 @@ public class ProductSearchService {
     
     public List<ProductSearchResult> searchProductsByQuery(String query) {
         
-        if (query == null || query.isBlank()) {
+        if (query == null || query.length() < 2) {
+            log.warn("Blocked suspicious query: '{}'", query);
             return List.of();
         }
         
-        String processedQuery = query.trim().toLowerCase();
+        try {
+            return productRepository.searchProducts(query);
+        } catch (Exception e) {
+            log.error("Unexpected error: {}", e.getMessage());
+            return productRepository.searchProductsWithLike(query);
+        }
         
-        return productRepository.searchProducts(processedQuery);
     }
     
     @Transactional

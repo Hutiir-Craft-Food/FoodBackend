@@ -47,3 +47,7 @@ logging:
 storage:
   local:
     base-path: ${LOCAL_STORAGE_BASEPATH:./uploads}
+
+server:
+  tomcat:
+    relaxed-query-chars: \, |, {, }, [, ], `, ^

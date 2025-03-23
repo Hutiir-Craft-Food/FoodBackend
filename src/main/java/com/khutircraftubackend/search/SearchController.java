@@ -10,14 +10,14 @@ import java.util.List;
 @RequestMapping("/v1/search")
 @RequiredArgsConstructor
 public class SearchController {
-	private final ProductSearchService productSearchService;
-	
-	@GetMapping
-	@ResponseStatus(HttpStatus.OK)
-	public List<ProductSearchResult> getProducts(
-			@RequestParam String query) {
-		
-		return productSearchService.searchProductsByQuery(query);
-	}
-	
+    private final ProductSearchService productSearchService;
+    
+    @GetMapping
+    @ResponseStatus(HttpStatus.OK)
+    public List<ProductSearchResult> getProducts(
+            @RequestParam String query) {
+        
+        return productSearchService.searchProductsByQuery(query);
+    }
+    
 }
