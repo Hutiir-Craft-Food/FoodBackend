@@ -1,5 +1,6 @@
 package com.khutircraftubackend.search;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -15,9 +16,8 @@ public class SearchController {
 	@GetMapping
 	@ResponseStatus(HttpStatus.OK)
 	public List<ProductSearchResult> getProducts(
-			@RequestParam String query) {
+			@Valid @ModelAttribute ProductSearchQuery query) {
 		
-		return productSearchService.searchProductsByQuery(query);
+			return productSearchService.searchProductsByQuery(query);
 	}
-	
 }
