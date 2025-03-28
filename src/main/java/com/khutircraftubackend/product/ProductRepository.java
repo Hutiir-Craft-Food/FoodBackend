@@ -42,11 +42,11 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
         select
             distinct p.id, p.name,
             to_tsvector('simple', concat(p.name, ' ', coalesce(c."text", ''))) as "tsvector",
-            CASE
-                WHEN length(trim(regexp_replace(:query, '[^a-zA-Zа-яА-ЯїЇєЄґҐ\\d\\s]', '', 'g'))) = 0
-                    THEN NULL
-                ELSE to_tsquery('simple', regexp_replace(regexp_replace(:query, '[^a-zA-Zа-яА-ЯїЇєЄґҐ\\d\\s]', '', 'g'),'\\s+', ':* & ', 'g') || ':*')
-            END as "tsquery",
+            case
+                when length(:query) < 3
+                    then to_tsquery('simple', :query || ':*')
+                else to_tsquery('simple', regexp_replace(:query, '\\s+', ':* & ', 'g') || ':*')
+            end as "tsquery",
             similarity(p.name, :query) as "similarity"
         from products p
         inner join catalogue c on c.id = p.category_id
@@ -63,5 +63,17 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
     """, nativeQuery = true)
     List<ProductSearchResult> searchProducts(@Param("query") String query);
     
+    @Query(value = """
+    select p.id, p.name
+        from products p
+        inner join categories c on p.category_id = c.id
+        where p.available = true
+            and (p.name ilike concat('%', :query, '%')
+             or c.name ilike concat('%', :query, '%')
+             or c.keywords ilike concat('%', :query, '%'))
+        order by p.name
+        limit 50
+        """, nativeQuery = true)
+    List<ProductSearchResult> searchProductsWithLike(@Param("query") String query);
 }
 
