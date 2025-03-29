@@ -1,5 +1,6 @@
 package com.khutircraftubackend.auth.request;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.khutircraftubackend.user.Role;
 import com.khutircraftubackend.seller.SellerDTO;
 import jakarta.validation.Valid;
@@ -21,6 +22,7 @@ public record RegisterRequest(
         @NotNull(message = "Роль не може бути порожньою.")
         Role role,
 
+        @JsonProperty("marketingConsent")
         @NotNull (message = "Розсилка не може бути порожньою.")
         Boolean isReceiveAdvertising,
 

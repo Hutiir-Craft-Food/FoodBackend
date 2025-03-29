@@ -72,9 +72,9 @@ class ProductServiceTest {
 	void setUp() {
 		
 		seller = new SellerEntity();
-		seller.setCompanyName("Test company");
 		seller.setId(1L);
-		
+		seller.setSellerName("Test company");
+
 		product = new ProductEntity();
 		product.setId(1L);
 		product.setName("Test product");
@@ -92,7 +92,7 @@ class ProductServiceTest {
 		
 		SellerEntity sellerEntity = SellerEntity.builder()
 				.id(1L)
-				.companyName("Test company")
+				.sellerName("Test")
 				.build();
 		
 		ProductEntity productEntity = ProductEntity.builder()
@@ -119,7 +119,7 @@ class ProductServiceTest {
 		ProductResponse response = products.iterator().next();
 		assertEquals("Test Product", response.name());
 		assertNotNull(response.seller());
-		assertEquals("Test company", response.seller().companyName());
+		assertEquals("Test", response.seller().sellerName());
 	}
 	
 	@Nested
@@ -141,8 +141,8 @@ class ProductServiceTest {
 			
 			SellerEntity otherSeller = new SellerEntity();
 			otherSeller.setId(2L);
-			otherSeller.setCompanyName("Company B");
-			
+			otherSeller.setSellerName("test");
+
 			when(sellerService.getCurrentSeller()).thenReturn(otherSeller);
 			when(productRepository.findProductById(1L)).thenReturn(Optional.of(product));
 			
@@ -177,7 +177,7 @@ class ProductServiceTest {
 		void createProduct_Success() throws IOException, URISyntaxException {
 			
 			SellerEntity currentSeller = SellerEntity.builder()
-					.companyName("CompanyA")
+					.sellerName("Test c")
 					.build();
 			
 			Long categoryId = 2L;
