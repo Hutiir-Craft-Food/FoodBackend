@@ -57,7 +57,10 @@ jwt:
 
 logging:
   level:
-    root: WARN
+#    root: WARN
+    org.springframework.web.servlet.mvc.method.annotation: ERROR
+    org.springframework.boot.autoconfigure.web.servlet.error: ERROR
+    org.springframework.web.filter: ERROR
     com:
       khutircraftubackend: INFO
   file:
