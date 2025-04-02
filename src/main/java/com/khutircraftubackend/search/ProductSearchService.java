@@ -28,7 +28,7 @@ public class ProductSearchService {
         }
         
         String processedQuery = query.trim().toLowerCase();
-        
+
         return productRepository.searchProducts(processedQuery);
     }
     
