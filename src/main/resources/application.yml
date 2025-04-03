@@ -84,3 +84,6 @@ server:
     include-binding-errors: ON_PARAM
     whitelabel:
       enabled: true
+
+springdoc:
+  override-with-generic-response: false
