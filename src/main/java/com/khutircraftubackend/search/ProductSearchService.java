@@ -4,8 +4,11 @@ import com.khutircraftubackend.category.CategoryEntity;
 import com.khutircraftubackend.category.CategoryRepository;
 import com.khutircraftubackend.category.CategoryService;
 import com.khutircraftubackend.product.ProductRepository;
+import com.khutircraftubackend.search.exception.GeneralSearchException;
+import com.khutircraftubackend.search.exception.InvalidSearchQueryException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -16,20 +19,28 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ProductSearchService {
     private final ProductRepository productRepository;
     private final CategoryService categoryService;
     private final CategoryRepository categoryRepository;
     
-    public List<ProductSearchResult> searchProductsByQuery(String query) {
+    public List<ProductSearchResult> searchProductsByQuery(ProductSearchQuery productSearchQuery) {
         
-        if (query == null || query.isBlank()) {
-            return List.of();
+        String query = productSearchQuery
+                .query()
+                .toLowerCase();
+        
+        if(query.isBlank()) {
+            throw new InvalidSearchQueryException(SearchResponseMessage.EMPTY_QUERY_ERROR);
         }
         
-        String processedQuery = query.trim().toLowerCase();
-        
-        return productRepository.searchProducts(processedQuery);
+        try {
+            return productRepository.searchProducts(query);
+        } catch (Exception e) {
+            log.error("Critical search error: {}", e.getMessage());
+            throw new GeneralSearchException(SearchResponseMessage.SEARCH_SERVICE_ERROR);
+        }
     }
     
     @Transactional
@@ -38,8 +49,19 @@ public class ProductSearchService {
         CategoryEntity category = categoryService.findCategoryById(categoryId);
         
         if (keywords == null || keywords.isEmpty()) {
-            throw new IllegalArgumentException("Keywords cannot be empty");
+            throw new InvalidSearchQueryException(SearchResponseMessage.EMPTY_KEYWORDS_ERROR);
         }
+    
+        Set<String> validKeywords = keywords.stream()
+                .map(String::trim)
+                .map(String::toLowerCase)
+                .filter(s -> {
+                    if (!s.matches("^[\\p{L}\\d\\s_-]+$")) {
+                        throw new InvalidSearchQueryException(SearchResponseMessage.NOT_VALID_SYMBOL);
+                    }
+                    return !s.isBlank();
+                })
+                .collect(Collectors.toCollection(LinkedHashSet::new));
         
         Set<String> keywordsSet = new LinkedHashSet<>();
         
@@ -50,14 +72,9 @@ public class ProductSearchService {
                     .collect(Collectors.toSet()));
         }
         
-        keywordsSet.addAll(keywords.stream()
-                .filter(s -> !s.isBlank())
-                .map(s -> s.toLowerCase().trim())
-                .collect(Collectors.toCollection(LinkedHashSet::new)));
+        keywordsSet.addAll(validKeywords);
         
-        String updatedKeywords = String.join(",", keywordsSet);
-        
-        category.setKeywords(updatedKeywords);
+        category.setKeywords(String.join(",", keywordsSet));
         
         categoryRepository.save(category);
         

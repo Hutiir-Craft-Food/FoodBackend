@@ -69,7 +69,7 @@ public class LocalStorageService implements StorageService {
         Path filePath = Paths.get(basePath).resolve(fileName).normalize();
         
         if (Files.notExists(filePath)) {
-            throw new NotFoundException("Файл з URL " + fileName + " не знайдено.");
+            throw new NotFoundException(String.format(StorageResponseMessage.FILE_NOT_FOUND, filePath));
         }
         
         return new FileSystemResource(filePath);
