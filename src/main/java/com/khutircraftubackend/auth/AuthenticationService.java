@@ -87,7 +87,7 @@ public class AuthenticationService {
         confirmationService.sendVerificationEmail(user, false);
         marketingCampaignService.createReceiveAdvertising(request, user);
 
-        if (request.role().equals(Role.SELLER)) {
+        if (userService.isSeller(user)) {
             sellerService.createSeller(request, user);
         }
 

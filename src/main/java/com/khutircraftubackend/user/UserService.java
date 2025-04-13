@@ -59,4 +59,15 @@ public class UserService {
         UserEntity user = findByPrincipal(principal);
         return user.isConfirmed();
     }
+
+    /**
+     * Checks if the given user has the SELLER role.
+     * This implementation is null-safe - won't throw NPE if user or role is null.
+     * Перевіряє, чи має користувач роль SELLER.
+     * @param user the user entity to check (maybe null)
+     * @return true if user exists and has SELLER role, false otherwise
+     */
+    public boolean isSeller(UserEntity user){
+        return Role.SELLER.equals(user.getRole());
+    }
 }
