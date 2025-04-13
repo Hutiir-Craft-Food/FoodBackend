@@ -5,11 +5,14 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.annotation.Nullable;
 import lombok.Builder;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @Builder
 public record GlobalErrorResponse (
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd\'T\'HH:mm:ss.SSSX")
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd\'T\'HH:mm:ss.SSSXXX")
         Date timestamp,
         int status,
         String error,
@@ -22,5 +25,20 @@ public record GlobalErrorResponse (
 ) {
     public GlobalErrorResponse {
         timestamp = new Date();
+    }
+
+    public Map<String, Object> toMap() {
+        Map<String, Object> map =  new HashMap<>();
+        map.put("timestamp", new SimpleDateFormat("yyyy-MM-dd\'T\'HH:mm:ss.SSSXXX").format(timestamp));
+        map.put("status", status);
+        map.put("error", error);
+        map.put("message", message);
+        map.put("path", path);
+
+        if (data != null) {
+            map.put("data", data);
+        }
+
+        return map;
     }
 }

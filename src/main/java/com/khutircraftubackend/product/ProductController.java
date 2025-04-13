@@ -89,5 +89,11 @@ public class ProductController {
 		
 		return productService.getProducts(offset, limit);
 	}
-	
+
+	@GetMapping("/test-exception")
+	@ResponseStatus(HttpStatus.OK)
+	public Object testException() throws Exception {
+		throw new Exception("oh fuck! This is a Fucking Exception here!!!!");
+	}
+
 }
