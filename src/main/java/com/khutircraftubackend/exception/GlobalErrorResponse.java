@@ -7,7 +7,7 @@ import lombok.Builder;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Builder
@@ -28,7 +28,7 @@ public record GlobalErrorResponse (
     }
 
     public Map<String, Object> toMap() {
-        Map<String, Object> map =  new HashMap<>();
+        Map<String, Object> map =  new LinkedHashMap<>();
         map.put("timestamp", new SimpleDateFormat("yyyy-MM-dd\'T\'HH:mm:ss.SSSXXX").format(timestamp));
         map.put("status", status);
         map.put("error", error);
