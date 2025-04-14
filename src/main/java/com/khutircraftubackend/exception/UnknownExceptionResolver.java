@@ -26,11 +26,13 @@ public class UnknownExceptionResolver implements HandlerExceptionResolver {
                 .path(request.getRequestURI())
                 .build();
 
-        ModelAndView mv = new ModelAndView();
-        mv.setView(new MappingJackson2JsonView());
+        MappingJackson2JsonView view = new MappingJackson2JsonView();
+        view.setExtractValueFromSingleKeyModel(true);
+
+        ModelAndView mv = new ModelAndView(view);
+        mv.addObject(errorResponse);
         mv.setStatus(HttpStatus.I_AM_A_TEAPOT);
 
-        mv.addAllObjects(errorResponse.toMap());
         return mv;
     }
 }
