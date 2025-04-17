@@ -9,7 +9,7 @@ import lombok.Builder;
 @Builder
 public record ProductRequest(
         @NotBlank(message = "Product name cannot be blank")
-        @Pattern(regexp = "^[\\p{L}\\d\\s_-]+$", message = SearchResponseMessage.NOT_VALID_SYMBOL)
+        @Pattern(regexp = "^[\\p{L}\\d\\s_ʼ'.,\\-]+$", message = SearchResponseMessage.NOT_VALID_SYMBOL)
         String name,
         @NotNull(message = "Availability must be specified")
         Boolean available,
