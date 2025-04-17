@@ -45,7 +45,7 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
             case
                 when length(:query) < 3
                     then to_tsquery('simple', :query || ':*')
-                else to_tsquery('simple', regexp_replace(:query, '\\s+', ':* & ', 'g') || ':*')
+                else to_tsquery('simple', regexp_replace(:query, '[^[:alnum:]_-]+', '', 'g') || ':*')
             end as "tsquery",
             similarity(p.name, :query) as "similarity"
         from products p

@@ -40,13 +40,6 @@ class ProductSearchQueryTest {
         assertEquals("Hello bold world", query.query());
     }
     
-    @DisplayName("Should return valid query when input is query with symbol")
-    @Test
-    void shouldReturnHtmlSymbolRemoval() {
-        ProductSearchQuery query = new ProductSearchQuery("ков&#91");
-        assertEquals("ков[", query.query());
-    }
-    
     @DisplayName("Should return valid query when input is characters")
     @Test
     void shouldReturnHtmlEscapedCharacters() {

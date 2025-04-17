@@ -56,7 +56,7 @@ public class ProductSearchService {
                 .map(String::trim)
                 .map(String::toLowerCase)
                 .filter(s -> {
-                    if (!s.matches("^[\\p{L}\\d\\s_-]+$")) {
+                    if (!s.matches("^[\\p{L}\\d\\s_'ʼ.,\\-]+$")) {
                         throw new InvalidSearchQueryException(SearchResponseMessage.NOT_VALID_SYMBOL);
                     }
                     return !s.isBlank();

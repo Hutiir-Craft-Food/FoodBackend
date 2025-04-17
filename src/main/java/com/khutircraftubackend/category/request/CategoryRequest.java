@@ -8,7 +8,7 @@ import lombok.Builder;
 @Builder
 public record CategoryRequest(
 		@NotBlank(message = "Category name cannot be blank")
-		@Pattern(regexp = "^[\\p{L}\\d\\s_-]+$", message = SearchResponseMessage.NOT_VALID_SYMBOL)
+		@Pattern(regexp = "^[\\p{L}\\d\\s_'ʼ.,\\-]+$", message = SearchResponseMessage.NOT_VALID_SYMBOL)
 		String name,
 		@NotBlank(message = "Description cannot be blank")
         String description,
