@@ -37,7 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = {"spring.main.allow-bean-definition-overriding=true"})
 @Import(JwtTestConfig.class)
-class AuthenticationControllerTest {
+class AuthenticationControllerImplTest {
     
     private final ObjectMapper objectMapper = new ObjectMapper();
     @LocalServerPort

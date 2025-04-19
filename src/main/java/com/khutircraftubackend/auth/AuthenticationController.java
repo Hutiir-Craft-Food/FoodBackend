@@ -10,22 +10,17 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
  * Клас AuthenticationController обробляє запити, пов'язані з реєстрацією та авторизацією.
  */
-@RestController
-@RequestMapping("/v1/auth")
-@RequiredArgsConstructor
-@Slf4j
-public class AuthenticationController {
 
-    private final AuthenticationService authenticationService;
+public interface AuthenticationController {
 
     @Operation(summary = "Authenticate user",
             description = "Authenticate user with email and password.",
@@ -33,22 +28,20 @@ public class AuthenticationController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User authenticated successfully"),
             @ApiResponse(responseCode = "400", description = "Bad Request - Validation error",
-                    content = @Content( schema = @Schema(ref = "#/components/schemas/ErrorResponse400"))),
+                    content = @Content(schema = @Schema(ref = "#/components/schemas/ErrorResponse400"))),
             @ApiResponse(responseCode = "401", description =
                     "Unauthorized - Помилка аутентифікації. Користувач з таким email заблокований",
-                    content = @Content( schema = @Schema(ref = "#/components/schemas/ErrorResponseGeneric"))),
+                    content = @Content(schema = @Schema(ref = "#/components/schemas/ErrorResponseGeneric"))),
             @ApiResponse(responseCode = "403", description = "Forbidden - Access Denied",
-                    content = @Content( schema = @Schema(ref = "#/components/schemas/ErrorResponseGeneric")))
+                    content = @Content(schema = @Schema(ref = "#/components/schemas/ErrorResponseGeneric")))
     })
     @PostMapping(value = "/login",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    public AuthResponse authenticateUser(@io.swagger.v3.oas.annotations.parameters.RequestBody(
+    AuthResponse authenticateUser(@io.swagger.v3.oas.annotations.parameters.RequestBody(
             description = "Login request containing email and password")
-            @Valid @RequestBody LoginRequest loginRequest) {
-        return authenticationService.authenticate(loginRequest);
-    }
+                                  @Valid @RequestBody LoginRequest loginRequest);
 
     @Operation(
             summary = "Register a new user",
@@ -57,15 +50,15 @@ public class AuthenticationController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "User registered successfully"),
             @ApiResponse(responseCode = "400", description = "Bad Request - Validation error",
-                    content = @Content( schema = @Schema(ref = "#/components/schemas/ErrorResponse400"))),
+                    content = @Content(schema = @Schema(ref = "#/components/schemas/ErrorResponse400"))),
             @ApiResponse(responseCode = "401", description = "Unauthorized - Помилка аутентифікації. Перевірте облікові данні",
-                    content = @Content( schema = @Schema(ref = "#/components/schemas/ErrorResponseGeneric")))
+                    content = @Content(schema = @Schema(ref = "#/components/schemas/ErrorResponseGeneric")))
     })
     @PostMapping(value = "/register",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    public AuthResponse register(@io.swagger.v3.oas.annotations.parameters.RequestBody(
+    AuthResponse register(@io.swagger.v3.oas.annotations.parameters.RequestBody(
             description = "User registration data",
             required = true,
             content = @Content(
@@ -74,30 +67,27 @@ public class AuthenticationController {
                             @ExampleObject(
                                     name = "Registration examples SELLER",
                                     value = """
-                    {
-                        "email": "seller@example.com",
-                        "password": "Password123!",
-                        "role": "SELLER",
-                        "details": { "sellerName": "My Shop" },
-                        "marketingConsent" : true
-                    }
-                    """
-                            ),@ExampleObject(
-                                    name = "Registration examples BUYER",
-                                    value = """
-                    {
-                        "email": "buyer@example.com",
-                        "password": "Password123!",
-                        "role": "BUYER",
-                        "marketingConsent" : true
-                    }
-                            """)
+                                            {
+                                                "email": "seller@example.com",
+                                                "password": "Password123!",
+                                                "role": "SELLER",
+                                                "details": { "sellerName": "My Shop" },
+                                                "marketingConsent" : true
+                                            }
+                                            """
+                            ), @ExampleObject(
+                            name = "Registration examples BUYER",
+                            value = """
+                                    {
+                                        "email": "buyer@example.com",
+                                        "password": "Password123!",
+                                        "role": "BUYER",
+                                        "marketingConsent" : true
+                                    }
+                                            """)
                     }
             )
-    )
-           @Valid @RequestBody RegisterRequest registerRequest) {
-        return authenticationService.registerNewUser(registerRequest);
-    }
+    ) @Valid @RequestBody RegisterRequest registerRequest);
 
     //TODO Need to update logic after design
     @Operation(summary = "Recover password",
@@ -105,7 +95,5 @@ public class AuthenticationController {
             hidden = true,
             tags = {"Authentication"})
     @PostMapping("/recovery")
-    public AuthResponse recoveryPassword() {
-        return null;
-    }
+    AuthResponse recoveryPassword();
 }
