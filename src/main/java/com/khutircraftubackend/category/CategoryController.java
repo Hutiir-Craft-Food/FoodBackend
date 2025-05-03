@@ -2,7 +2,7 @@ package com.khutircraftubackend.category;
 
 import com.khutircraftubackend.category.request.CategoryRequest;
 import com.khutircraftubackend.category.response.CategoryResponse;
-import com.khutircraftubackend.search.ProductSearchService;
+import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,8 +15,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/v1/categories")
@@ -26,7 +26,6 @@ public class CategoryController {
 	
 	private final CategoryService categoryService;
 	private final CategoryMapper categoryMapper;
-	private final ProductSearchService productSearchService;
 	
 	@GetMapping
 	public Collection<CategoryResponse> getAllRootCategories() {
@@ -57,6 +56,15 @@ public class CategoryController {
 		return categoryMapper.toCategoryResponse(category);
 	}
 	
+	@GetMapping("/{id}")
+	@ResponseStatus(HttpStatus.OK)
+	public CategoryResponse getCategoryById (@PathVariable Long id) {
+		
+		CategoryEntity category = categoryService.findCategoryById(id);
+		
+		return categoryMapper.toCategoryResponse(category);
+	}
+	
 	@PutMapping(value = "/{id}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
 	@PreAuthorize("hasRole('ADMIN')")
 	@ResponseStatus(HttpStatus.OK)
@@ -80,14 +88,14 @@ public class CategoryController {
 		categoryService.deleteCategory(id, forceDelete);
 	}
 	
-	@PutMapping("/keywords")
+	@PatchMapping ("/{id}/keywords")
 	@ResponseStatus(HttpStatus.OK)
 	@PreAuthorize("hasRole('ADMIN')")
-	public Set<String> updateKeywords(
-			@RequestParam Long categoryId,
-			@RequestParam Set<String> keywords) {
+	public CategoryResponse updateKeywords(
+			@PathVariable Long id,
+			@RequestBody @Nullable LinkedHashSet<String> keywords) {
 		
-		return productSearchService.updateKeywords(categoryId, keywords);
+		CategoryEntity category = categoryService.updateKeywords(id, keywords);
+		return categoryMapper.toCategoryResponse(category);
 	}
-	
 }

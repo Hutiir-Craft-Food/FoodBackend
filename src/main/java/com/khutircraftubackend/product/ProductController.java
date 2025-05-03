@@ -6,7 +6,6 @@ import com.khutircraftubackend.seller.SellerEntity;
 import com.khutircraftubackend.seller.SellerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,7 +18,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/v1/products")
-@Slf4j
 @RequiredArgsConstructor
 public class ProductController {
 	private final ProductService productService;
@@ -84,10 +82,9 @@ public class ProductController {
 	@GetMapping
 	@ResponseStatus(HttpStatus.OK)
 	public Map<String, Object> getAllProducts(
-			@RequestParam(defaultValue = "0") int offset,
+			@RequestParam(defaultValue = "0") int pageNumber,
 			@RequestParam(defaultValue = "4") int limit) {
 		
-		return productService.getProducts(offset, limit);
+		return productService.getProducts(pageNumber, limit);
 	}
-	
 }

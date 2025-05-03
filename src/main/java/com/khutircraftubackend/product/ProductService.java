@@ -10,10 +10,12 @@ import com.khutircraftubackend.seller.SellerService;
 import com.khutircraftubackend.storage.StorageService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.AccessDeniedException;
@@ -38,7 +40,7 @@ public class ProductService {
 				.orElseThrow(() -> new ProductNotFoundException("Product with id " + productId + " not found"));
 	}
 	
-	private String handleIcon(MultipartFile iconFile) throws IOException, URISyntaxException {
+	private String uploadIcon(MultipartFile iconFile) throws IOException, URISyntaxException {
 		
 		if (iconFile == null) {
 			return "";
@@ -67,8 +69,8 @@ public class ProductService {
 		
 		CategoryEntity categoryEntity = categoryService.findCategoryById(request.categoryId());
 		
-		productEntity.setImageUrl(handleIcon(image));
-		productEntity.setThumbnailImageUrl(handleIcon(thumbnailImage));
+		productEntity.setImageUrl(uploadIcon(image));
+		productEntity.setThumbnailImageUrl(uploadIcon(thumbnailImage));
 		
 		productEntity.setCategory(categoryEntity);
 		productEntity.setSeller(currentSeller);
@@ -92,8 +94,8 @@ public class ProductService {
 			existingProduct.setCategory(categoryToUse);
 		}
 		
-		existingProduct.setThumbnailImageUrl(handleIcon(thumbnailImageFile));
-		existingProduct.setImageUrl(handleIcon(imageFile));
+		existingProduct.setThumbnailImageUrl(uploadIcon(thumbnailImageFile));
+		existingProduct.setImageUrl(uploadIcon(imageFile));
 		existingProduct.setUpdatedAt(LocalDateTime.now());
 		
 		return productRepository.save(existingProduct);
@@ -134,19 +136,19 @@ public class ProductService {
 		}
 	}
 	
-	public Map<String, Object> getProducts(int offset, int limit) {
+	public Map<String, Object> getProducts(int pageNumber, int limit) {
 		
-		Pageable pageable = PageRequest.of(offset, limit);
-		Collection<ProductEntity> productEntities = productRepository.findAllBy(pageable);
+		Pageable pageable = PageRequest.of(pageNumber, limit);
+		Page<ProductEntity> page = productRepository.findAllBy(pageable);
 		
-		Collection<ProductResponse> products = productMapper.toProductResponse(productEntities);
+		Collection<ProductResponse> products = productMapper.toProductResponse(page.getContent());
 		
-		long total = productRepository.count();
+		long total = page.getTotalElements();
 		
 		return Map.of(
 				"products", products,
 				"total", total,
-				"offset", offset,
+				"offset", pageNumber * limit,
 				"limit", limit
 		);
 	}

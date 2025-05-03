@@ -3,31 +3,70 @@ package com.khutircraftubackend.category;
 import com.khutircraftubackend.category.request.CategoryRequest;
 import com.khutircraftubackend.category.response.CategoryResponse;
 import com.khutircraftubackend.product.ProductMapper;
+import com.khutircraftubackend.product.search.exception.SearchResponseMessage;
+import com.khutircraftubackend.product.search.exception.InvalidSearchQueryException;
+import org.apache.commons.lang3.StringUtils;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+import org.mapstruct.Named;
 
-import java.util.Collection;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
 import static org.mapstruct.ReportingPolicy.IGNORE;
 
 @Mapper(componentModel = SPRING, unmappedTargetPolicy = IGNORE,
-		uses = {ProductMapper.class})
+		uses = {ProductMapper.class, CategoryRepository.class})
 public interface CategoryMapper {
 	
 	@Mapping(target = "parentCategory.id", source = "request.parentCategoryId")
+	@Mapping(target = "keywords", source = "request.keywords", qualifiedByName = "keywordsToString", resultType = String.class)
 	CategoryEntity toCategoryEntity(CategoryRequest request);
 	
 	@Mapping(target = "parentCategoryId", source = "parentCategory.id")
 	@Mapping(target = "iconUrl", source = "iconUrl")
+	@Mapping(target = "keywords", source = "keywords", qualifiedByName = "parseKeywords")
 	CategoryResponse toCategoryResponse(CategoryEntity categoryEntity);
 	
 	@Mapping(target = "name", source = "request.name")
 	@Mapping(target = "description", source = "request.description")
 	@Mapping(target = "parentCategory.id", source = "request.parentCategoryId")
+	@Mapping(target = "keywords", source = "request.keywords", qualifiedByName = "keywordsToString", resultType = String.class)
 	void updateCategoryEntity(@MappingTarget CategoryEntity category, CategoryRequest request);
 	
 	Collection<CategoryResponse> toCategoryResponse(Collection<CategoryEntity> categoryEntities);
 	
+	@Named("parseKeywords")
+	default Set<String> parseKeywords (String keywords) {
+		if (StringUtils.isBlank(keywords)) {
+			return Collections.emptySet();
+		}
+		return new LinkedHashSet<>(Arrays.stream(keywords.split(",")).toList());
+	}
+	
+	@Named("keywordsToString")
+	default String keywordsToString (Set<String> keywords) {
+		if (keywords == null || keywords.isEmpty()) {
+			
+			return null;
+		}
+		
+		Set<String> validKeywords = keywords.stream()
+				.filter(Objects::nonNull)
+				.map(s -> s.trim()
+						.replace("'", "ʼ")
+						.replaceAll("[^\\p{IsLatin}\\p{IsCyrillic}\\d\\sʼ.,_-]+", "")
+						.replaceAll("\\s{2,}", " ")
+						.toLowerCase())
+				.filter(s -> !s.isBlank())
+				.collect(Collectors.toCollection(LinkedHashSet::new));
+		
+		if (validKeywords.isEmpty()) {
+			throw new InvalidSearchQueryException(SearchResponseMessage.EMPTY_KEYWORDS_ERROR);
+		}
+		
+		return String.join(",", validKeywords);
+	}
 }

@@ -1,4 +1,4 @@
-package com.khutircraftubackend.search;
+package com.khutircraftubackend.product.search.exception;
 
 public class SearchResponseMessage {
     public static final String NOT_VALID_SYMBOL = "Назва містить недопустимі символи.";

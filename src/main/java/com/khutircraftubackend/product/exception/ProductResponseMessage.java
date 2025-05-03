@@ -1,4 +1,4 @@
-package com.khutircraftubackend.product;
+package com.khutircraftubackend.product.exception;
 
 public class ProductResponseMessage {
 
