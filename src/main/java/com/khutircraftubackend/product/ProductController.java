@@ -82,9 +82,9 @@ public class ProductController {
 	@GetMapping
 	@ResponseStatus(HttpStatus.OK)
 	public Map<String, Object> getAllProducts(
-			@RequestParam(defaultValue = "0") int pageNumber,
+			@RequestParam(defaultValue = "0") int offset,
 			@RequestParam(defaultValue = "4") int limit) {
 		
-		return productService.getProducts(pageNumber, limit);
+		return productService.getProducts(offset, limit);
 	}
 }

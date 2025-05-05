@@ -27,129 +27,131 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class ProductService {
-	
-	private final ProductRepository productRepository;
-	private final SellerService sellerService;
-	private final StorageService storageService;
-	private final CategoryService categoryService;
-	private final ProductMapper productMapper;
-	
-	private ProductEntity findProductById(Long productId) {
-		
-		return productRepository.findProductById(productId)
-				.orElseThrow(() -> new ProductNotFoundException("Product with id " + productId + " not found"));
-	}
-	
-	private String uploadIcon(MultipartFile iconFile) throws IOException, URISyntaxException {
-		
-		if (iconFile == null) {
-			return "";
-		}
-		return storageService.upload(iconFile);
-	}
-	
-	public boolean canModifyProduct(Long productId) throws AccessDeniedException {
-		
-		ProductEntity existingProduct = findProductById(productId);
-		SellerEntity currentSeller = sellerService.getCurrentSeller();
-		
-		if (!currentSeller.equals(existingProduct.getSeller())) {
-			throw new AccessDeniedException("You do not have permission to create for this company.");
-		}
-		
-		return true;
-	}
-	
-	@Transactional
-	public ProductEntity createProduct(ProductRequest request, MultipartFile thumbnailImage, MultipartFile image) throws IOException, URISyntaxException {
-		
-		SellerEntity currentSeller = sellerService.getCurrentSeller();
-		
-		ProductEntity productEntity = productMapper.toProductEntity(request);
-		
-		CategoryEntity categoryEntity = categoryService.findCategoryById(request.categoryId());
-		
-		productEntity.setImageUrl(uploadIcon(image));
-		productEntity.setThumbnailImageUrl(uploadIcon(thumbnailImage));
-		
-		productEntity.setCategory(categoryEntity);
-		productEntity.setSeller(currentSeller);
-		productEntity.setCreatedAt(LocalDateTime.now());
-		
-		return productRepository.save(productEntity);
-	}
-	
-	@Transactional
-	public ProductEntity updateProduct(Long productId, ProductRequest request,
-									   MultipartFile thumbnailImageFile, MultipartFile imageFile) throws IOException, URISyntaxException {
-		
-		ProductEntity existingProduct = findProductById(productId);
-		
-		productMapper.updateProductFromRequest(existingProduct, request);
-		
-		CategoryEntity categoryToUse;
-		
-		if (request.categoryId() != null) {
-			categoryToUse = categoryService.findCategoryById(request.categoryId());
-			existingProduct.setCategory(categoryToUse);
-		}
-		
-		existingProduct.setThumbnailImageUrl(uploadIcon(thumbnailImageFile));
-		existingProduct.setImageUrl(uploadIcon(imageFile));
-		existingProduct.setUpdatedAt(LocalDateTime.now());
-		
-		return productRepository.save(existingProduct);
-	}
-	
-	@Transactional
-	public void deleteProduct(Long productId) throws IOException, URISyntaxException {
-		
-		ProductEntity existingProduct = findProductById(productId);
-		
-		deleteProductImages(existingProduct);
-		
-		productRepository.delete(existingProduct);
-	}
-	
-	@Transactional
-	public void deleteAllProductsForSeller(SellerEntity seller) throws IOException, URISyntaxException {
-		
-		List<ProductEntity> products = productRepository.findAllBySeller(seller);
-		
-		if (products != null) {
-			for (ProductEntity product : products) {
-				deleteProductImages(product);
-			}
-		}
-		
-		productRepository.deleteBySeller(seller);
-	}
-	
-	private void deleteProductImages(ProductEntity product) throws IOException, URISyntaxException {
-		
-		if (product.getThumbnailImageUrl() != null) {
-			storageService.deleteByUrl(product.getThumbnailImageUrl());
-		}
-		
-		if (product.getImageUrl() != null) {
-			storageService.deleteByUrl(product.getImageUrl());
-		}
-	}
-	
-	public Map<String, Object> getProducts(int pageNumber, int limit) {
-		
-		Pageable pageable = PageRequest.of(pageNumber, limit);
-		Page<ProductEntity> page = productRepository.findAllBy(pageable);
-		
-		Collection<ProductResponse> products = productMapper.toProductResponse(page.getContent());
-		
-		long total = page.getTotalElements();
-		
-		return Map.of(
-				"products", products,
-				"total", total,
-				"offset", pageNumber * limit,
-				"limit", limit
-		);
-	}
+    
+    private final ProductRepository productRepository;
+    private final SellerService sellerService;
+    private final StorageService storageService;
+    private final CategoryService categoryService;
+    private final ProductMapper productMapper;
+    
+    private ProductEntity findProductById(Long productId) {
+        
+        return productRepository.findProductById(productId)
+                .orElseThrow(() -> new ProductNotFoundException("Product with id " + productId + " not found"));
+    }
+    
+    private String uploadIcon(MultipartFile iconFile) throws IOException, URISyntaxException {
+        
+        if (iconFile == null) {
+            return "";
+        }
+        return storageService.upload(iconFile);
+    }
+    
+    public boolean canModifyProduct(Long productId) throws AccessDeniedException {
+        
+        ProductEntity existingProduct = findProductById(productId);
+        SellerEntity currentSeller = sellerService.getCurrentSeller();
+        
+        if (!currentSeller.equals(existingProduct.getSeller())) {
+            throw new AccessDeniedException("You do not have permission to create for this company.");
+        }
+        
+        return true;
+    }
+    
+    @Transactional
+    public ProductEntity createProduct(ProductRequest request, MultipartFile thumbnailImage, MultipartFile image) throws IOException, URISyntaxException {
+        
+        SellerEntity currentSeller = sellerService.getCurrentSeller();
+        
+        ProductEntity productEntity = productMapper.toProductEntity(request);
+        
+        CategoryEntity categoryEntity = categoryService.findCategoryById(request.categoryId());
+        
+        productEntity.setImageUrl(uploadIcon(image));
+        productEntity.setThumbnailImageUrl(uploadIcon(thumbnailImage));
+        
+        productEntity.setCategory(categoryEntity);
+        productEntity.setSeller(currentSeller);
+        productEntity.setCreatedAt(LocalDateTime.now());
+        
+        return productRepository.save(productEntity);
+    }
+    
+    @Transactional
+    public ProductEntity updateProduct(Long productId, ProductRequest request,
+                                       MultipartFile thumbnailImageFile, MultipartFile imageFile) throws IOException, URISyntaxException {
+        
+        ProductEntity existingProduct = findProductById(productId);
+        
+        productMapper.updateProductFromRequest(existingProduct, request);
+        
+        CategoryEntity categoryToUse;
+        
+        if (request.categoryId() != null) {
+            categoryToUse = categoryService.findCategoryById(request.categoryId());
+            existingProduct.setCategory(categoryToUse);
+        }
+        
+        existingProduct.setThumbnailImageUrl(uploadIcon(thumbnailImageFile));
+        existingProduct.setImageUrl(uploadIcon(imageFile));
+        existingProduct.setUpdatedAt(LocalDateTime.now());
+        
+        return productRepository.save(existingProduct);
+    }
+    
+    @Transactional
+    public void deleteProduct(Long productId) throws IOException, URISyntaxException {
+        
+        ProductEntity existingProduct = findProductById(productId);
+        
+        deleteProductImages(existingProduct);
+        
+        productRepository.delete(existingProduct);
+    }
+    
+    @Transactional
+    public void deleteAllProductsForSeller(SellerEntity seller) throws IOException, URISyntaxException {
+        
+        List<ProductEntity> products = productRepository.findAllBySeller(seller);
+        
+        if (products != null) {
+            for (ProductEntity product : products) {
+                deleteProductImages(product);
+            }
+        }
+        
+        productRepository.deleteBySeller(seller);
+    }
+    
+    private void deleteProductImages(ProductEntity product) throws IOException, URISyntaxException {
+        
+        if (product.getThumbnailImageUrl() != null) {
+            storageService.deleteByUrl(product.getThumbnailImageUrl());
+        }
+        
+        if (product.getImageUrl() != null) {
+            storageService.deleteByUrl(product.getImageUrl());
+        }
+    }
+    
+    public Map<String, Object> getProducts(int offset, int limit) {
+        
+        int pageNumber = offset / limit;
+        
+        Pageable pageable = PageRequest.of(pageNumber, limit);
+        Page<ProductEntity> page = productRepository.findAllBy(pageable);
+        
+        Collection<ProductResponse> products = productMapper.toProductResponse(page.getContent());
+        
+        long total = page.getTotalElements();
+        
+        return Map.of(
+                "products", products,
+                "total", total,
+                "offset", offset,
+                "limit", limit
+        );
+    }
 }

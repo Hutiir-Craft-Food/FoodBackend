@@ -10,7 +10,7 @@ import java.util.Map;
 import static com.khutircraftubackend.product.search.exception.SearchResponseMessage.EMPTY_QUERY_ERROR;
 
 @RestController
-@RequestMapping("/v1/search")
+@RequestMapping("/v1/products/search")
 @RequiredArgsConstructor
 public class SearchController {
     private final ProductSearchService productSearchService;
@@ -20,9 +20,9 @@ public class SearchController {
     public Map<String, Object> getProducts(
             @NotBlank(message = EMPTY_QUERY_ERROR)
             @RequestParam String query,
-            @RequestParam(defaultValue = "0") int pageNumber,
-            @RequestParam(defaultValue = "10") int limit) {
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "4") int limit) {
         
-        return productSearchService.searchProductsByQuery(query, pageNumber, limit);
+        return productSearchService.searchProductsByQuery(query, offset, limit);
     }
 }

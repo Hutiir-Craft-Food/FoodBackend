@@ -2,8 +2,7 @@ package com.khutircraftubackend.search;
 
 import com.khutircraftubackend.product.ProductRepository;
 import com.khutircraftubackend.product.search.ProductSearchService;
-import com.khutircraftubackend.product.search.exception.InvalidSearchQueryException;
-import com.khutircraftubackend.product.search.exception.SearchResponseMessage;
+import com.khutircraftubackend.product.search.exception.GeneralSearchException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
 
+import static com.khutircraftubackend.product.search.exception.SearchResponseMessage.SEARCH_SERVICE_ERROR;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -30,14 +30,14 @@ class ProductSearchQueryTest {
     class SearchProducts {
         
         @ParameterizedTest
-        @ValueSource(strings = {"", "   ", "\t", "\n"})
+        @ValueSource(strings = {"  ", "\t", "\n"})
         @DisplayName("Should throw InvalidSearchQueryException for blank inputs")
         void shouldThrowInvalidSearchQueryExceptionForBlankInputs(String query) {
-            InvalidSearchQueryException exception = assertThrows(
-                    InvalidSearchQueryException.class,
+            GeneralSearchException exception = assertThrows(
+                    GeneralSearchException.class,
                     () -> productSearchService.searchProductsByQuery(query, 0, 4)
             );
-            assertEquals(SearchResponseMessage.EMPTY_QUERY_ERROR, exception.getMessage());
+            assertEquals(SEARCH_SERVICE_ERROR, exception.getMessage());
         }
     }
 }

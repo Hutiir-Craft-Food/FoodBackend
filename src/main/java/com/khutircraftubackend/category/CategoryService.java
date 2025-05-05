@@ -1,7 +1,6 @@
 package com.khutircraftubackend.category;
 
 import com.khutircraftubackend.category.exception.category.CategoryDeletionException;
-import com.khutircraftubackend.category.exception.category.CategoryExceptionMessages;
 import com.khutircraftubackend.category.exception.category.CategoryNotFoundException;
 import com.khutircraftubackend.category.request.CategoryRequest;
 import com.khutircraftubackend.storage.StorageService;
@@ -15,19 +14,21 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Set;
 
+import static com.khutircraftubackend.category.exception.category.CategoryExceptionMessages.CATEGORY_HAS_SUBCATEGORIES_OR_PRODUCTS;
+import static com.khutircraftubackend.category.exception.category.CategoryExceptionMessages.CATEGORY_NOT_FOUND;
+
 @Service
 @RequiredArgsConstructor
 public class CategoryService {
     
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
-    
     private final StorageService storageService;
     
     public CategoryEntity findCategoryById(Long id) {
         
         return categoryRepository.findById(id).orElseThrow(() ->
-                new CategoryNotFoundException(CategoryExceptionMessages.CATEGORY_NOT_FOUND));
+                new CategoryNotFoundException(CATEGORY_NOT_FOUND));
     }
     
     
@@ -95,7 +96,7 @@ public class CategoryService {
             }
             categoryRepository.deleteById(id);
         } else {
-            throw new CategoryDeletionException(CategoryExceptionMessages.CATEGORY_HAS_SUBCATEGORIES_OR_PRODUCTS);
+            throw new CategoryDeletionException(CATEGORY_HAS_SUBCATEGORIES_OR_PRODUCTS);
         }
     }
     
@@ -103,7 +104,6 @@ public class CategoryService {
     public CategoryEntity updateKeywords(Long id, Set<String> keywords) {
         
         CategoryEntity existingCategory = findCategoryById(id);
-        
         String keywordsStr = categoryMapper.keywordsToString(keywords);
         existingCategory.setKeywords(keywordsStr);
         
@@ -111,6 +111,7 @@ public class CategoryService {
     }
     
     private void setParentCategory(CategoryEntity category, Long parentCategoryId) {
+        
         CategoryEntity parentCategory = null;
         if (parentCategoryId != null) {
             parentCategory = findCategoryById(parentCategoryId);

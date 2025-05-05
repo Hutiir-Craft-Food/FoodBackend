@@ -17,11 +17,10 @@ import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
-
+@Slf4j
 @RestController
 @RequestMapping("/v1/categories")
 @RequiredArgsConstructor
-@Slf4j
 public class CategoryController {
 	
 	private final CategoryService categoryService;
