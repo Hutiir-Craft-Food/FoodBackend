@@ -2,7 +2,6 @@ package com.khutircraftubackend.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.InvalidDataAccessResourceUsageException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -11,7 +10,6 @@ import org.springframework.lang.NonNull;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.ServletWebRequest;
@@ -67,24 +65,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .path(determineRequestPath(request))
                 .build();
         return new ResponseEntity<>(errorResponse, headers, status);
-    }
-
-    /**
-     * Метод обрабатывает 500 ошибки
-     */
-    @ExceptionHandler(InvalidDataAccessResourceUsageException.class)
-    public ResponseEntity<Object> handleInternalServerError(InvalidDataAccessResourceUsageException ex, HttpServletRequest request ){
-
-        log.error("Internal Server Error: {}", ex.getMessage());
-        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
-
-        GlobalErrorResponse errorResponse = GlobalErrorResponse.builder()
-                .status(status.value())
-                .error(( status).getReasonPhrase())
-                .message("Тимчасова помилка сервера, зверніться до адміністрації сайту")
-                .path(request.getRequestURI())
-                .build();
-        return new ResponseEntity<>(errorResponse, status);
     }
 
     private String determineRequestPath (WebRequest request){
