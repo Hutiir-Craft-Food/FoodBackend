@@ -32,4 +32,7 @@ public interface ProductMapper {
     
     ProductSearchItemResponse toSearchItemResponse(ProductSearchResult result);
     
+    Collection<ProductSearchItemResponse> toSearchResponse(Collection<ProductSearchResult> results);
+    
+    
 }

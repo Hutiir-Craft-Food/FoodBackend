@@ -1,4 +1,3 @@
-drop function if exists clean(varchar);
 create or replace function clean(str varchar) returns varchar as
 $$
 declare cleaned_str varchar;
