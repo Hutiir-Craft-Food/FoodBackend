@@ -5,7 +5,7 @@ import lombok.Builder;
 import java.util.Set;
 
 @Builder
-public record CategoryResponse(
+public record CategoryResponse (
 		Long id,
 		String name,
 		String description,

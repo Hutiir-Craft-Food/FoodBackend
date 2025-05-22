@@ -8,11 +8,13 @@ import lombok.Builder;
 public record ProductRequest(
         @NotBlank(message = "Product name cannot be blank")
         String name,
+
         @NotNull(message = "Availability must be specified")
         Boolean available,
+
         @NotBlank(message = "Description cannot be blank")
         String description,
+
         @NotNull(message = "Category ID cannot be null")
         Long categoryId
-) {
-}
+) { }

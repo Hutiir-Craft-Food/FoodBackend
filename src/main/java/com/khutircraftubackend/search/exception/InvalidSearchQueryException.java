@@ -1,4 +1,4 @@
-package com.khutircraftubackend.product.search.exception;
+package com.khutircraftubackend.search.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;

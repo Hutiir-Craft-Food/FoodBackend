@@ -13,10 +13,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
+
 @Slf4j
 @RestController
 @RequestMapping("/v1/categories")
@@ -48,53 +48,56 @@ public class CategoryController {
 	@ResponseStatus(HttpStatus.OK)
 	public CategoryResponse createCategory(
 			@Valid @ModelAttribute CategoryRequest request,
-			@RequestPart(value = "iconFile", required = false) MultipartFile iconFile) throws IOException, URISyntaxException {
-		
+			@RequestPart(value = "iconFile", required = false) MultipartFile iconFile
+	) throws IOException {
 		CategoryEntity category = categoryService.createCategory(request, iconFile);
-		
+
 		return categoryMapper.toCategoryResponse(category);
 	}
-	
+
 	@GetMapping("/{id}")
 	@ResponseStatus(HttpStatus.OK)
-	public CategoryResponse getCategoryById (@PathVariable Long id) {
-		
+	public CategoryResponse getCategoryById (
+			@PathVariable Long id
+	) {
+
 		CategoryEntity category = categoryService.findCategoryById(id);
-		
+
 		return categoryMapper.toCategoryResponse(category);
 	}
-	
+
 	@PutMapping(value = "/{id}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
 	@PreAuthorize("hasRole('ADMIN')")
 	@ResponseStatus(HttpStatus.OK)
-	public CategoryResponse updateCategory(
+	public CategoryResponse updateCategory (
 			@PathVariable Long id,
 			@Valid @ModelAttribute CategoryRequest request,
-			@RequestPart(value = "iconFile", required = false) MultipartFile iconFile) throws IOException, URISyntaxException {
-		
+			@RequestPart(value = "iconFile", required = false) MultipartFile iconFile
+	) throws IOException {
 		CategoryEntity updateCategory = categoryService.updateCategory(id, request, iconFile);
-		
+
 		return categoryMapper.toCategoryResponse(updateCategory);
 	}
-	
+
 	@DeleteMapping("/{id}")
 	@PreAuthorize("hasRole('ADMIN')")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void deleteCategory(
+	public void deleteCategory (
 			@PathVariable Long id,
-			@RequestParam(required = false) boolean forceDelete) {
-		
+			@RequestParam(required = false) boolean forceDelete
+	) {
 		categoryService.deleteCategory(id, forceDelete);
 	}
-	
-	@PatchMapping ("/{id}/keywords")
+
+	@PatchMapping("/{id}/keywords")
 	@ResponseStatus(HttpStatus.OK)
 	@PreAuthorize("hasRole('ADMIN')")
-	public CategoryResponse updateKeywords(
+	public CategoryResponse updateKeywords (
 			@PathVariable Long id,
-			@RequestBody @Nullable LinkedHashSet<String> keywords) {
-		
+			@RequestBody @Nullable LinkedHashSet<String> keywords
+	) {
 		CategoryEntity category = categoryService.updateKeywords(id, keywords);
+		
 		return categoryMapper.toCategoryResponse(category);
 	}
 }

@@ -3,17 +3,21 @@ package com.khutircraftubackend.category;
 import com.khutircraftubackend.category.request.CategoryRequest;
 import com.khutircraftubackend.category.response.CategoryResponse;
 import com.khutircraftubackend.product.ProductMapper;
-import com.khutircraftubackend.product.search.exception.InvalidSearchQueryException;
+import com.khutircraftubackend.search.exception.InvalidSearchQueryException;
 import org.apache.commons.lang3.StringUtils;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.khutircraftubackend.product.search.exception.SearchResponseMessage.EMPTY_KEYWORDS_ERROR;
+import static com.khutircraftubackend.search.exception.SearchResponseMessage.EMPTY_KEYWORDS_ERROR;
 import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
 import static org.mapstruct.ReportingPolicy.IGNORE;
 
@@ -37,7 +41,7 @@ public interface CategoryMapper {
 	void updateCategoryEntity(@MappingTarget CategoryEntity category, CategoryRequest request);
 	
 	Collection<CategoryResponse> toCategoryResponse(Collection<CategoryEntity> categoryEntities);
-	
+
 	@Named("parseKeywords")
 	default Set<String> parseKeywords (String keywords) {
 		if (StringUtils.isEmpty(keywords)) {
@@ -45,26 +49,25 @@ public interface CategoryMapper {
 		}
 		return new LinkedHashSet<>(Arrays.stream(keywords.split(",")).toList());
 	}
-	
+
 	@Named("keywordsToString")
 	default String keywordsToString (Set<String> keywords) {
 		if (keywords == null || keywords.isEmpty()) {
 			return null;
 		}
-		
+
 		Set<String> validKeywords = keywords.stream()
-				.filter(Objects::nonNull)
 				.map(s -> s.trim()
-						.replaceAll("[^\\p{L}\\d\\s_-]+", "")
+						.replaceAll("[^[\\p{L}\\d\\s_-]]+", "")
 						.replaceAll("\\s{2,}", " ")
 						.toLowerCase())
 				.filter(s -> !s.isBlank())
 				.collect(Collectors.toCollection(LinkedHashSet::new));
-		
+
 		if (validKeywords.isEmpty()) {
 			throw new InvalidSearchQueryException(EMPTY_KEYWORDS_ERROR);
 		}
-		
+
 		return String.join(",", validKeywords);
 	}
 }

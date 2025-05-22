@@ -12,4 +12,8 @@ CREATE INDEX idx_categories_parent_id
     ON categories (parent_id);
 
 CREATE INDEX idx_categories_keywords_tsvector
-    ON categories USING GIN (to_tsvector('simple', keywords));
+    ON categories
+        USING gin(to_tsvector('simple', coalesce(keywords, '')));
+
+
+

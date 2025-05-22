@@ -1,4 +1,4 @@
-package com.khutircraftubackend.category.exception.category;
+package com.khutircraftubackend.category.exception;
 
 public class CategoryNotFoundException extends RuntimeException{
     public CategoryNotFoundException(String message) {
