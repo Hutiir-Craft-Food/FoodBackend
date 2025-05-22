@@ -11,15 +11,14 @@ import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
 
 @Slf4j
 @Component
-@SuppressWarnings("NullableProblems")
 public class UnknownExceptionResolver implements HandlerExceptionResolver {
 
-    private final MappingJackson2JsonView jsonView;
+    private static final MappingJackson2JsonView jsonView;
     private static final HttpStatus STATUS = HttpStatus.INTERNAL_SERVER_ERROR;
 
-    public UnknownExceptionResolver() {
-        this.jsonView = new MappingJackson2JsonView();
-        this.jsonView.setExtractValueFromSingleKeyModel(true);
+   static {
+        jsonView = new MappingJackson2JsonView();
+        jsonView.setExtractValueFromSingleKeyModel(true);
     }
     /**
      * Метод обробки непередбачених помилок. (Повертає 500 помилку)
@@ -48,7 +47,7 @@ public class UnknownExceptionResolver implements HandlerExceptionResolver {
                 .path(request.getRequestURI())
                 .build();
 
-        ModelAndView mv = new ModelAndView(this.jsonView);
+        ModelAndView mv = new ModelAndView(jsonView);
         mv.addObject("error", errorResponse);
         mv.setStatus(STATUS);
 
