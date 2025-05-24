@@ -3,18 +3,18 @@ package com.khutircraftubackend.exception;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
+
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
 @Slf4j
 @Component
 public class UnknownExceptionResolver implements HandlerExceptionResolver {
 
     private static final MappingJackson2JsonView jsonView;
-    private static final HttpStatus STATUS = HttpStatus.INTERNAL_SERVER_ERROR;
 
    static {
         jsonView = new MappingJackson2JsonView();
@@ -41,15 +41,15 @@ public class UnknownExceptionResolver implements HandlerExceptionResolver {
         log.error(ex.getMessage());
 
         GlobalErrorResponse errorResponse = GlobalErrorResponse.builder()
-                .status(STATUS.value())
-                .error(STATUS.getReasonPhrase())
+                .status(INTERNAL_SERVER_ERROR.value())
+                .error(INTERNAL_SERVER_ERROR.getReasonPhrase())
                 .message("Тимчасова помилка сервера, зверніться до адміністрації сайту")
                 .path(request.getRequestURI())
                 .build();
 
         ModelAndView mv = new ModelAndView(jsonView);
         mv.addObject("error", errorResponse);
-        mv.setStatus(STATUS);
+        mv.setStatus(INTERNAL_SERVER_ERROR);
 
         return mv;
     }

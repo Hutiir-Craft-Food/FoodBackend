@@ -1,8 +1,7 @@
 logging:
   level:
     root: INFO
-    com:
-      khutircraftubackend: DEBUG
+    com.khutircraftubackend: DEBUG
 
 management:
   endpoint:
