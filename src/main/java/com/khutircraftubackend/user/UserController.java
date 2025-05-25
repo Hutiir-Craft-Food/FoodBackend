@@ -8,12 +8,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.security.Principal;
 
@@ -31,11 +25,7 @@ public interface UserController {
                     content = @Content(schema = @Schema(ref = "#/components/schemas/ErrorResponseGeneric")))
     })
     @SecurityRequirement(name = "BearerAuth")
-    @PostMapping(value = "/confirm",
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseStatus(HttpStatus.OK)
-    ConfirmationResponse confirmUser(@Valid @RequestBody ConfirmationRequest request, Principal principal);
+    ConfirmationResponse confirmUser(ConfirmationRequest request, Principal principal);
 
     @Operation(
             summary = "Re-confirm email token",
@@ -49,8 +39,6 @@ public interface UserController {
                     content = @Content(schema = @Schema(ref = "#/components/schemas/ErrorResponseGeneric")))
     })
     @SecurityRequirement(name = "BearerAuth")
-    @PostMapping("/re-confirm")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     void reConfirmToken(Principal principal);
 
     //TODO Need update after design
@@ -58,7 +46,5 @@ public interface UserController {
             description = "Not implemented.!!!",
             hidden = true,
             tags = {"Authentication"})
-    @PostMapping("/password")
-    @ResponseStatus(HttpStatus.OK)
     void updatePassword(Principal principal);
 }
