@@ -39,8 +39,7 @@ jwt:
 logging:
   level:
     root: INFO
-    com:
-      khutircraftubackend: DEBUG
+    com.khutircraftubackend: DEBUG
   file:
     name: logs/latest.log
 

@@ -5,7 +5,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.khutircraftubackend.auth.request.LoginRequest;
 import com.khutircraftubackend.exception.GlobalErrorResponse;
-import config.JwtTestConfig;
+import com.khutircraftubackend.config.JwtTestConfig;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

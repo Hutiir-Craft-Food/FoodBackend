@@ -1,4 +1,4 @@
-package config;
+package com.khutircraftubackend.config;
 
 import com.auth0.jwt.algorithms.Algorithm;
 import org.springframework.boot.test.context.TestConfiguration;
