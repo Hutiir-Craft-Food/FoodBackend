@@ -14,7 +14,7 @@ public interface SearchRepository extends JpaRepository<ProductEntity, Long> {
     @Query(value = """
         --- search results:
         with query as (
-            select :query::varchar as text
+            select :query as text
         ), catalogue as (
             select
                 c.category_id,

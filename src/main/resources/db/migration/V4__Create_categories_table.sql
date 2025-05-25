@@ -15,5 +15,3 @@ CREATE INDEX idx_categories_keywords_tsvector
     ON categories
         USING gin(to_tsvector('simple', coalesce(keywords, '')));
 
-
-
