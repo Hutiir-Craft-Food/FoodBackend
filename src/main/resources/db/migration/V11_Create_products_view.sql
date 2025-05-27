@@ -17,3 +17,9 @@ create or replace view v_products as
   -- where p.available = true -- TODO: confirm if we really need this filer
 
 drop view if exists v_products;
+
+select * from v_products;
+
+SELECT relname, relkind
+FROM pg_class
+WHERE relname = 'v_products';

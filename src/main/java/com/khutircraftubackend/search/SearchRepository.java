@@ -45,6 +45,6 @@ public interface SearchRepository extends JpaRepository<ProductEntity, Long> {
         and s."similarity" > 0
         order by rank desc, s.similarity desc
         limit 50
-    """, nativeQuery = true)
+        """, nativeQuery = true)
     List<ProductSearchView> searchProducts(@Param("query") String query);
 }
