@@ -1,8 +1,6 @@
-package com.khutircraftubackend.auth;
+package com.khutircraftubackend.user;
 
 
-import com.khutircraftubackend.user.UserRepository;
-import com.khutircraftubackend.user.UserService;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;

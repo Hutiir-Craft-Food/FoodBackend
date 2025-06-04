@@ -1,4 +1,4 @@
-create or replace function clean(str varchar) returns varchar as
+create or replace function clean(str text) returns text as
 $$
 declare cleaned_str varchar;
 begin

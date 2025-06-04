@@ -58,10 +58,14 @@ public interface CategoryMapper {
 
 		Set<String> validKeywords = keywords.stream()
 				.map(s -> s.trim()
-						.replaceAll("[^[\\p{L}\\d\\s_-]]+", "")
-						.replaceAll("\\s{2,}", " ")
-						.toLowerCase())
-				.filter(s -> !s.isBlank())
+						
+						.replaceAll("[^[\\p{L}\\d\\-]]+", "")
+						
+						.replaceAll("[\\u0027\\u02B9\\u02BB\\u02BC\\u02BE\\u02C8\\u02EE\\u0301\\u0313\\u0315\\u055A\\u05F3\\u07F4\\u07F5\\u1FBF\\u2018\\u2019\\u2032\\uA78C\\uFF07]", "")
+						
+						.toLowerCase()
+						
+						).filter(s -> !s.isBlank())
 				.collect(Collectors.toCollection(LinkedHashSet::new));
 
 		if (validKeywords.isEmpty()) {

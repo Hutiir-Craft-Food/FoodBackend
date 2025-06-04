@@ -20,7 +20,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -104,7 +103,7 @@ class CategoryServiceTest {
 	class CreateCategory {
 
 		@Test
-		void createCategory_ShouldUploadFile() throws IOException, URISyntaxException {
+		void createCategory_ShouldUploadFile() throws IOException {
 			
 			CategoryRequest request = CategoryRequest.builder()
 					.name("TestName")
@@ -129,7 +128,7 @@ class CategoryServiceTest {
 		}
 		
 		@Test
-		void createCategory_ShouldSetParentCategory() throws IOException, URISyntaxException {
+		void createCategory_ShouldSetParentCategory() throws IOException {
 			Long parentCategoryId = 1L;
 			CategoryRequest request = CategoryRequest.builder()
 					.name("TestName")
@@ -182,7 +181,7 @@ class CategoryServiceTest {
 	class UpdateCategory {
 
 		@Test
-		void updateCategory_ShouldUpdateIconWithCloudinary() throws IOException, URISyntaxException {
+		void updateCategory_ShouldUpdateIconWithCloudinary() throws IOException {
 			Long categoryId = 1L;
 			CategoryRequest request = CategoryRequest.builder()
 					.name("UpdatedName")
@@ -207,7 +206,7 @@ class CategoryServiceTest {
 		
 		
 		@Test
-		void updateCategory_ShouldUpdateIconWithLocalStorage() throws IOException, URISyntaxException {
+		void updateCategory_ShouldUpdateIconWithLocalStorage() throws IOException {
 			Long categoryId = 1L;
 			CategoryRequest request = CategoryRequest.builder()
 					.name("UpdatedName")
@@ -230,7 +229,7 @@ class CategoryServiceTest {
 		}
 		
 		@Test
-		void updateCategory_WithInvalidFileFormat_ShouldThrowException() throws IOException, URISyntaxException {
+		void updateCategory_WithInvalidFileFormat_ShouldThrowException() throws IOException {
 			Long categoryId = 1L;
 			
 			CategoryRequest request = CategoryRequest.builder()
@@ -253,7 +252,7 @@ class CategoryServiceTest {
 		}
 		
 		@Test
-		void updateCategory_WithCorruptedFile_ShouldThrowIOException() throws IOException, URISyntaxException {
+		void updateCategory_WithCorruptedFile_ShouldThrowIOException() throws IOException {
 			Long categoryId = 1L;
 			
 			CategoryRequest categoryRequest = CategoryRequest.builder()

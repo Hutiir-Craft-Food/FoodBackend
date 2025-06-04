@@ -1,13 +1,14 @@
 package com.khutircraftubackend.search;
 
 import com.khutircraftubackend.search.response.ProductSearchView;
-import com.khutircraftubackend.search.exception.SearchResponseMessage;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+import static com.khutircraftubackend.search.exception.SearchResponseMessage.EMPTY_QUERY_ERROR;
 
 @RestController
 @RequestMapping("/v1/products/search")
@@ -18,7 +19,7 @@ public class SearchController {
 	@GetMapping
 	@ResponseStatus(HttpStatus.OK)
 	public List<ProductSearchView> getProducts (
-			@NotBlank(message = SearchResponseMessage.EMPTY_QUERY_ERROR)
+			@NotBlank(message = EMPTY_QUERY_ERROR)
 			@RequestParam String query
 	) {
 			return searchService.searchProductsByQuery(query);

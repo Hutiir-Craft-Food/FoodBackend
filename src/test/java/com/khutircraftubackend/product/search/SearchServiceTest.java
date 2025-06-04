@@ -1,7 +1,6 @@
-package com.khutircraftubackend.product.search;
+package com.khutircraftubackend.search;
 
 import com.khutircraftubackend.product.ProductRepository;
-import com.khutircraftubackend.search.SearchService;
 import com.khutircraftubackend.search.exception.SearchResponseMessage;
 import com.khutircraftubackend.search.exception.InvalidSearchQueryException;
 import org.junit.jupiter.api.DisplayName;

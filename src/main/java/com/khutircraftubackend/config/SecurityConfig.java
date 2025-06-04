@@ -53,7 +53,11 @@ public class SecurityConfig {
                 .cors(c -> corsConfigurationSource())
                 .authorizeHttpRequests(auth -> auth
                         .dispatcherTypeMatchers(FORWARD, ERROR).permitAll()
-                        .requestMatchers("/swagger-ui/index.html", "/swagger-ui/**", "/v3/api-docs/**", "/actuator/**").permitAll()
+                        .requestMatchers(
+                                "/swagger-ui/index.html",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/actuator/**").permitAll()
                         .requestMatchers("/v1/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET,
                                 "/v1/products/**",

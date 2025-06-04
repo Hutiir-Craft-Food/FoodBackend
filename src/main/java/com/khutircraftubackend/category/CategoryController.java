@@ -57,9 +57,7 @@ public class CategoryController {
 
 	@GetMapping("/{id}")
 	@ResponseStatus(HttpStatus.OK)
-	public CategoryResponse getCategoryById (
-			@PathVariable Long id
-	) {
+	public CategoryResponse getCategoryById (@PathVariable Long id) {
 
 		CategoryEntity category = categoryService.findCategoryById(id);
 
@@ -97,7 +95,7 @@ public class CategoryController {
 			@RequestBody @Nullable LinkedHashSet<String> keywords
 	) {
 		CategoryEntity category = categoryService.updateKeywords(id, keywords);
-		
+
 		return categoryMapper.toCategoryResponse(category);
 	}
 }

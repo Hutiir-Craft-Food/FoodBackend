@@ -7,7 +7,7 @@ import lombok.Builder;
 
 import java.util.LinkedHashSet;
 
-import static com.khutircraftubackend.search.exception.SearchResponseMessage.NOT_VALID_SYMBOL;
+import static com.khutircraftubackend.category.CategoryResponseMessage.NOT_VALID_SYMBOL;
 
 @Builder
 public record CategoryRequest (

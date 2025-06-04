@@ -16,7 +16,6 @@ CREATE TABLE IF NOT EXISTS products (
 CREATE INDEX idx_product_name_tsvector ON products
     USING GIN (to_tsvector('simple', name));
 
-CREATE INDEX idx_products_category_id ON products (category_id);
 
 CREATE INDEX products_name_trgm_idx ON products USING GIN (name public.gin_trgm_ops);
 

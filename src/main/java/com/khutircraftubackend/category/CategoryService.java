@@ -74,6 +74,7 @@ public class CategoryService {
 		CategoryEntity existingCategory = findCategoryById(id);
         String iconFileUrl = uploadIcon(iconFile);
         existingCategory.setIconUrl(iconFileUrl);
+
 		
 		setParentCategory(existingCategory, request.parentCategoryId());
 
@@ -104,7 +105,7 @@ public class CategoryService {
 	public CategoryEntity updateKeywords (Long id, Set<String> keywords) {
 
 		CategoryEntity existingCategory = findCategoryById(id);
-		
+
 		String keywordsStr = categoryMapper.keywordsToString(keywords);
 		existingCategory.setKeywords(keywordsStr);
 
@@ -114,7 +115,7 @@ public class CategoryService {
 	private void setParentCategory(CategoryEntity category, Long parentCategoryId) {
 
 		CategoryEntity parentCategory = null;
-		
+
 		if (parentCategoryId != null) {
 			parentCategory = findCategoryById(parentCategoryId);
 		}

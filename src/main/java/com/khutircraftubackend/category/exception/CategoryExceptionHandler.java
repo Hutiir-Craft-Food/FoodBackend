@@ -10,13 +10,13 @@ public class CategoryExceptionHandler {
 
     @ExceptionHandler(CategoryDeletionException.class)
     public ResponseEntity<String> handleCategoryDeletionException(CategoryDeletionException ex) {
-        
+
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(CategoryNotFoundException.class)
     public ResponseEntity<String> handleCategoryNotFoundException(CategoryNotFoundException ex) {
-        
+
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
 
