@@ -53,9 +53,19 @@ public class SecurityConfig {
                 .cors(c -> corsConfigurationSource())
                 .authorizeHttpRequests(auth -> auth
                         .dispatcherTypeMatchers(FORWARD, ERROR).permitAll()
-                        .requestMatchers("/swagger-ui/index.html", "/swagger-ui/**", "/v3/api-docs/**", "/actuator/**").permitAll()
+                        .requestMatchers(
+                                "/swagger-ui/index.html",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/actuator/**").permitAll()
                         .requestMatchers("/v1/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.GET,"/v1/products/**", "/v1/resources/**", "/v1/blogPosts/**", "/v1/advPosts/**", "/v1/search/**").permitAll()
+                        .requestMatchers(HttpMethod.GET,
+                                "/v1/products/**",
+                                "/v1/categories/**",
+                                "/v1/resources/**",
+                                "/v1/blogPosts/**",
+                                "/v1/advPosts/**",
+                                "/v1/search/**").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

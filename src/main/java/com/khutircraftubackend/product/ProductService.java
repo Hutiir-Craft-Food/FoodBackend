@@ -10,12 +10,13 @@ import com.khutircraftubackend.seller.SellerService;
 import com.khutircraftubackend.storage.StorageService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -38,7 +39,7 @@ public class ProductService {
 				.orElseThrow(() -> new ProductNotFoundException("Product with id " + productId + " not found"));
 	}
 	
-	private String handleIcon(MultipartFile iconFile) throws IOException, URISyntaxException {
+    private String uploadIcon(MultipartFile iconFile) throws IOException {
 		
 		if (iconFile == null) {
 			return "";
@@ -59,7 +60,7 @@ public class ProductService {
 	}
 	
 	@Transactional
-	public ProductEntity createProduct(ProductRequest request, MultipartFile thumbnailImage, MultipartFile image) throws IOException, URISyntaxException {
+	public ProductEntity createProduct(ProductRequest request, MultipartFile thumbnailImage, MultipartFile image) throws IOException {
 		
 		SellerEntity currentSeller = sellerService.getCurrentSeller();
 		
@@ -67,8 +68,8 @@ public class ProductService {
 		
 		CategoryEntity categoryEntity = categoryService.findCategoryById(request.categoryId());
 		
-		productEntity.setImageUrl(handleIcon(image));
-		productEntity.setThumbnailImageUrl(handleIcon(thumbnailImage));
+		productEntity.setImageUrl(uploadIcon(image));
+		productEntity.setThumbnailImageUrl(uploadIcon(thumbnailImage));
 		
 		productEntity.setCategory(categoryEntity);
 		productEntity.setSeller(currentSeller);
@@ -79,7 +80,7 @@ public class ProductService {
 	
 	@Transactional
 	public ProductEntity updateProduct(Long productId, ProductRequest request,
-									   MultipartFile thumbnailImageFile, MultipartFile imageFile) throws IOException, URISyntaxException {
+									   MultipartFile thumbnailImageFile, MultipartFile imageFile) throws IOException {
 		
 		ProductEntity existingProduct = findProductById(productId);
 		
@@ -92,15 +93,15 @@ public class ProductService {
 			existingProduct.setCategory(categoryToUse);
 		}
 		
-		existingProduct.setThumbnailImageUrl(handleIcon(thumbnailImageFile));
-		existingProduct.setImageUrl(handleIcon(imageFile));
+		existingProduct.setThumbnailImageUrl(uploadIcon(thumbnailImageFile));
+		existingProduct.setImageUrl(uploadIcon(imageFile));
 		existingProduct.setUpdatedAt(LocalDateTime.now());
 		
 		return productRepository.save(existingProduct);
 	}
 	
 	@Transactional
-	public void deleteProduct(Long productId) throws IOException, URISyntaxException {
+	public void deleteProduct(Long productId) throws IOException {
 		
 		ProductEntity existingProduct = findProductById(productId);
 		
@@ -110,7 +111,7 @@ public class ProductService {
 	}
 	
 	@Transactional
-	public void deleteAllProductsForSeller(SellerEntity seller) throws IOException, URISyntaxException {
+	public void deleteAllProductsForSeller(SellerEntity seller) throws IOException {
 		
 		List<ProductEntity> products = productRepository.findAllBySeller(seller);
 		
@@ -123,7 +124,7 @@ public class ProductService {
 		productRepository.deleteBySeller(seller);
 	}
 	
-	private void deleteProductImages(ProductEntity product) throws IOException, URISyntaxException {
+	private void deleteProductImages(ProductEntity product) throws IOException {
 		
 		if (product.getThumbnailImageUrl() != null) {
 			storageService.deleteByUrl(product.getThumbnailImageUrl());
@@ -135,13 +136,16 @@ public class ProductService {
 	}
 	
 	public Map<String, Object> getProducts(int offset, int limit) {
+
+		// TODO: there is a pootential bug here
+		int pageNumber = offset / limit;
+
+		Pageable pageable = PageRequest.of(pageNumber, limit);
+		Page<ProductEntity> page = productRepository.findAllBy(pageable);
 		
-		Pageable pageable = PageRequest.of(offset, limit);
-		Collection<ProductEntity> productEntities = productRepository.findAllBy(pageable);
+		Collection<ProductResponse> products = productMapper.toProductResponse(page.getContent());
 		
-		Collection<ProductResponse> products = productMapper.toProductResponse(productEntities);
-		
-		long total = productRepository.count();
+		long total = page.getTotalElements();
 		
 		return Map.of(
 				"products", products,

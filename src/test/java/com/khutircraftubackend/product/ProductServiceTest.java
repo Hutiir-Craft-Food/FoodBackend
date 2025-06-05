@@ -3,7 +3,7 @@ package com.khutircraftubackend.product;
 import com.khutircraftubackend.category.CategoryEntity;
 import com.khutircraftubackend.category.CategoryMapper;
 import com.khutircraftubackend.category.CategoryService;
-import com.khutircraftubackend.category.exception.category.CategoryNotFoundException;
+import com.khutircraftubackend.category.exception.CategoryNotFoundException;
 import com.khutircraftubackend.product.exception.ProductNotFoundException;
 import com.khutircraftubackend.product.request.ProductRequest;
 import com.khutircraftubackend.product.response.ProductResponse;
@@ -21,13 +21,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.AccessDeniedException;
 import java.util.Collection;
 import java.util.List;
@@ -43,10 +43,13 @@ class ProductServiceTest {
 	
 	@Mock
 	private ProductRepository productRepository;
+
 	@Mock
 	private SellerService sellerService;
+
 	@Mock
 	private StorageService storageService;
+
 	@Mock
 	private CategoryService categoryService;
 	
@@ -59,6 +62,7 @@ class ProductServiceTest {
 	@Spy
 	@InjectMocks
 	private ProductMapper productMapper = Mappers.getMapper(ProductMapper.class);
+
 	@InjectMocks
 	private ProductService productService;
 	
@@ -100,9 +104,9 @@ class ProductServiceTest {
 				.name("Test Product")
 				.seller(sellerEntity)
 				.build();
-		
-		when(productRepository.findAllBy(pageable)).thenReturn(List.of(productEntity));
-		when(productRepository.count()).thenReturn(1L);
+
+		lenient().when(productRepository.findAllBy(pageable)).thenReturn(new PageImpl<>(List.of(productEntity), pageable, 1));
+		lenient().when(productRepository.count()).thenReturn(1L);
 		
 		Map<String, Object> result = productService.getProducts(0, 10);
 		
@@ -174,7 +178,7 @@ class ProductServiceTest {
 	@DisplayName("Tests for creation Product")
 	class CreateProduct {
 		@Test
-		void createProduct_Success() throws IOException, URISyntaxException {
+		void createProduct_Success() throws IOException {
 			
 			SellerEntity currentSeller = SellerEntity.builder()
 					.sellerName("Test c")
@@ -230,7 +234,7 @@ class ProductServiceTest {
 		}
 		
 		@Test
-		void testUpdateProduct_Success() throws IOException, URISyntaxException {
+		void testUpdateProduct_Success() throws IOException {
 			
 			ProductEntity existingProduct = ProductEntity.builder()
 					.id(1L)
@@ -273,7 +277,7 @@ class ProductServiceTest {
 	@DisplayName("Tests for update Product")
 	class UpdateProduct {
 		@Test
-		void updateProduct_WithNullImages() throws IOException, URISyntaxException {
+		void updateProduct_WithNullImages() throws IOException {
 			
 			ProductEntity existingProduct = ProductEntity.builder()
 					.id(1L)
@@ -338,7 +342,7 @@ class ProductServiceTest {
 		}
 		
 		@Test
-		void deleteProduct_Success() throws IOException, URISyntaxException {
+		void deleteProduct_Success() throws IOException {
 			
 			
 			ProductEntity product = new ProductEntity();
@@ -351,7 +355,7 @@ class ProductServiceTest {
 		}
 		
 		@Test
-		void deleteAllProductsForSeller_ShouldDeleteAllProductsAndImagesForSeller() throws IOException, URISyntaxException {
+		void deleteAllProductsForSeller_ShouldDeleteAllProductsAndImagesForSeller() throws IOException {
 			
 			SellerEntity seller = new SellerEntity();
 			

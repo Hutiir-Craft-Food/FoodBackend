@@ -1,10 +1,13 @@
 package com.khutircraftubackend.category;
 
-import com.khutircraftubackend.category.exception.category.CategoryDeletionException;
-import com.khutircraftubackend.category.exception.category.CategoryNotFoundException;
+import com.khutircraftubackend.category.exception.CategoryDeletionException;
+import com.khutircraftubackend.category.exception.CategoryNotFoundException;
 import com.khutircraftubackend.category.request.CategoryRequest;
+import com.khutircraftubackend.search.exception.SearchResponseMessage;
+import com.khutircraftubackend.search.exception.InvalidSearchQueryException;
 import com.khutircraftubackend.storage.StorageService;
 import com.khutircraftubackend.storage.exception.InvalidFileFormatException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -14,35 +17,41 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@ActiveProfiles("local")
 class CategoryServiceTest {
+
 	@Mock
 	private CategoryRepository categoryRepository;
+
 	@Mock
 	private MultipartFile multipartFile;
+
 	@Mock
 	private StorageService storageService;
+
 	@Spy
 	private CategoryMapper categoryMapper = Mappers.getMapper(CategoryMapper.class);
+
 	@InjectMocks
 	private CategoryService categoryService;
 	
 	@Nested
 	@DisplayName("Tests for all Category")
 	class AllCategory {
+
 		@Test
 		void getAllRootCategories() {
 			CategoryEntity rootCategory = new CategoryEntity();
@@ -92,8 +101,9 @@ class CategoryServiceTest {
 	@Nested
 	@DisplayName("Tests for Category creation")
 	class CreateCategory {
+
 		@Test
-		void createCategory_ShouldUploadFile() throws IOException, URISyntaxException {
+		void createCategory_ShouldUploadFile() throws IOException {
 			
 			CategoryRequest request = CategoryRequest.builder()
 					.name("TestName")
@@ -118,7 +128,7 @@ class CategoryServiceTest {
 		}
 		
 		@Test
-		void createCategory_ShouldSetParentCategory() throws IOException, URISyntaxException {
+		void createCategory_ShouldSetParentCategory() throws IOException {
 			Long parentCategoryId = 1L;
 			CategoryRequest request = CategoryRequest.builder()
 					.name("TestName")
@@ -169,8 +179,9 @@ class CategoryServiceTest {
 	@Nested
 	@DisplayName("Tests for Category update")
 	class UpdateCategory {
+
 		@Test
-		void updateCategory_ShouldUpdateIconWithCloudinary() throws IOException, URISyntaxException {
+		void updateCategory_ShouldUpdateIconWithCloudinary() throws IOException {
 			Long categoryId = 1L;
 			CategoryRequest request = CategoryRequest.builder()
 					.name("UpdatedName")
@@ -195,7 +206,7 @@ class CategoryServiceTest {
 		
 		
 		@Test
-		void updateCategory_ShouldUpdateIconWithLocalStorage() throws IOException, URISyntaxException {
+		void updateCategory_ShouldUpdateIconWithLocalStorage() throws IOException {
 			Long categoryId = 1L;
 			CategoryRequest request = CategoryRequest.builder()
 					.name("UpdatedName")
@@ -218,7 +229,7 @@ class CategoryServiceTest {
 		}
 		
 		@Test
-		void updateCategory_WithInvalidFileFormat_ShouldThrowException() throws IOException, URISyntaxException {
+		void updateCategory_WithInvalidFileFormat_ShouldThrowException() throws IOException {
 			Long categoryId = 1L;
 			
 			CategoryRequest request = CategoryRequest.builder()
@@ -241,7 +252,7 @@ class CategoryServiceTest {
 		}
 		
 		@Test
-		void updateCategory_WithCorruptedFile_ShouldThrowIOException() throws IOException, URISyntaxException {
+		void updateCategory_WithCorruptedFile_ShouldThrowIOException() throws IOException {
 			Long categoryId = 1L;
 			
 			CategoryRequest categoryRequest = CategoryRequest.builder()
@@ -320,6 +331,7 @@ class CategoryServiceTest {
 	@Nested
 	@DisplayName("Tests for Category delete")
 	class DeleteCategory {
+
 		@Test
 		void deleteCategory_Success() {
 			boolean forceDelete = true;
@@ -356,5 +368,65 @@ class CategoryServiceTest {
 		}
 		
 	}
-	
+
+	@Nested()
+	@DisplayName("Keyword Operations")
+	class Keywords {
+
+		private CategoryEntity category;
+
+		@BeforeEach
+		void setUp() {
+			category = new CategoryEntity();
+			category.setId(8L);
+			category.setKeywords("вода,напій");
+			lenient().when(categoryRepository.findById(8L)).thenReturn(Optional.of(category));
+		}
+
+		@Test
+		void shouldAddNewKeywordsInTheSameOrder () {
+			Set<String> newKeywords = new LinkedHashSet<>();
+			newKeywords.add("сік");
+			newKeywords.add("вода");
+			newKeywords.add("чай");
+
+			categoryService.updateKeywords(8L, newKeywords);
+
+			assertEquals("сік,вода,чай", category.getKeywords());
+			verify(categoryRepository).save(category);
+		}
+
+		@Test
+		void shouldHandleEmptyKeywords() {
+			category.setKeywords(null);
+
+			categoryService.updateKeywords(8L, Collections.emptySet());
+
+			assertNull(category.getKeywords());
+			verify(categoryRepository).save(category);
+		}
+
+		@Test
+		void shouldIgnoreRedundantWhiteSpaces() {
+			Set<String> newKeywords = new LinkedHashSet<>();
+			newKeywords.add("  лимон   ");
+			newKeywords.add("апельсин");
+			newKeywords.add("   банан  ");
+
+			categoryService.updateKeywords(8L, newKeywords);
+
+			assertEquals("лимон,апельсин,банан", category.getKeywords());
+			verify(categoryRepository).save(category);
+		}
+
+		@Test
+		void shouldThrowExceptionWhenKeywordsAreNull() {
+			// TODO: should we test it at CategoryMapper level instead ?
+			Set<String> invalidKeywords = Set.of("", "   ", "\t", "\n");
+
+			assertThatThrownBy(() -> categoryService.updateKeywords(8L, invalidKeywords))
+					.isInstanceOf(InvalidSearchQueryException.class)
+					.hasMessage(SearchResponseMessage.EMPTY_KEYWORDS_ERROR);
+		}
+	}
 }
