@@ -3,11 +3,11 @@ package com.khutircraftubackend.blogadvertising;
 import jakarta.validation.constraints.NotBlank;
 
 public record BlogRequest(
-
-        @NotBlank(message = "Image URL is mandatory")
+        
+        @NotBlank(message = "Посилання на зображення є обов'язковим")
         String image,
-
-        @NotBlank(message = "Name is mandatory")
+        
+        @NotBlank(message = "Назва блогу є обов'язковою")
         String name
 ) {
 }
