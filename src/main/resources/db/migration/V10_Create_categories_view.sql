@@ -30,3 +30,9 @@ create or replace recursive view v_categories (
   from v_categories v
   inner join categories c
     on c.parent_id = v.id;
+
+drop view if exists v_categories;
+
+update categories
+set keywords = clean(name)
+where keywords is null or keywords = '';
