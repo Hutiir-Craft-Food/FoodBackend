@@ -1,6 +1,6 @@
 package com.khutircraftubackend.storage;
 
-import com.khutircraftubackend.exception.NotFoundException;
+import com.khutircraftubackend.exception.httpstatus.NotFoundException;
 import com.khutircraftubackend.storage.exception.InvalidArgumentException;
 import com.khutircraftubackend.storage.exception.InvalidFileFormatException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -82,7 +82,7 @@ public class LocalStorageService implements StorageService {
             throw new InvalidArgumentException(String.format(StorageResponseMessage.INVALID_ARGUMENT, fileUrl));
         }
         
-        String filePathStr = fileUrl.split(LocalStorageController.API_PATH + "/")[1];
+        String filePathStr = fileUrl.split(LocalStorageController.API_PATH + "/")[1]; //TODO magic number
         
         Path filePath = Paths.get(basePath).resolve(filePathStr);
         
