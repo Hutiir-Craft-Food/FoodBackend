@@ -1,4 +1,4 @@
-package com.khutircraftubackend.exception;
+package com.khutircraftubackend.exception.httpstatus;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;

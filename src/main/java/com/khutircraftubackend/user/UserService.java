@@ -1,7 +1,7 @@
 package com.khutircraftubackend.user;
 
 import com.khutircraftubackend.auth.request.RegisterRequest;
-import com.khutircraftubackend.exception.NotFoundException;
+import com.khutircraftubackend.exception.httpstatus.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
