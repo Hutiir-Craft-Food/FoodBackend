@@ -15,6 +15,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
@@ -30,29 +31,12 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     
     private static final String ERROR_BAD_REQUEST = "Bad Request";
+    private static final String ERROR_METHOD_NOT_ALLOWED = "Method Not Allowed";
     private static final String ERROR_VALIDATION = "Validation error";
-    
-    private ResponseEntity<Object> buildErrorResponse(
-            HttpStatus status,
-            String error,
-            String message,
-            String path,
-            Object data) {
-        
-        GlobalErrorResponse errorResponse = GlobalErrorResponse.builder()
-                .status(status.value())
-                .error(error)
-                .message(message)
-                .path(path)
-                .data(data)
-                .build();
-        
-        return new ResponseEntity<>(errorResponse, status);
-    }
     
     private String determineRequestPath(WebRequest request) {
         
-        return Optional.ofNullable(((ServletWebRequest) request).getNativeRequest(HttpServletRequest.class))
+        return Optional.ofNullable(((NativeWebRequest) request).getNativeRequest(HttpServletRequest.class))
                 .map(HttpServletRequest::getRequestURI)
                 .orElse("Unknown Path");
     }
@@ -81,13 +65,16 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                         LinkedHashMap::new,
                         Collectors.mapping(FieldError::getDefaultMessage, Collectors.toList())
                 ));
-        
-        return buildErrorResponse(
-                (HttpStatus) status,
-                ERROR_BAD_REQUEST,
-                ERROR_VALIDATION,
-                determineRequestPath(request),
-                errors);
+
+        GlobalErrorResponse errorResponse = GlobalErrorResponse.builder()
+                .status(status.value())
+                .error(ERROR_BAD_REQUEST)
+                .message(ERROR_VALIDATION)
+                .path(determineRequestPath(request))
+                .data(errors)
+                .build();
+
+        return new ResponseEntity<>(errorResponse, status);
     }
     
     /**
@@ -99,13 +86,15 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             @NonNull HttpHeaders headers,
             @NonNull HttpStatusCode status,
             @NonNull WebRequest request) {
-        
-        return buildErrorResponse(
-                (HttpStatus) status,
-                "Method Not Allowed",
-                ex.getMessage(),
-                determineRequestPath(request),
-                null);
+
+        GlobalErrorResponse errorResponse = GlobalErrorResponse.builder()
+                .status(status.value())
+                .error(ERROR_METHOD_NOT_ALLOWED)
+                .message(ex.getMessage())
+                .path(determineRequestPath(request))
+                .build();
+
+        return new ResponseEntity<>(errorResponse, status);
     }
     
     // Відсутній параметр запиту query
@@ -118,18 +107,20 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     
         String message = "Параметр '" + ex.getParameterName() +
                 "' є обовʼязковим";
-        
-        return buildErrorResponse(
-                (HttpStatus) status,
-                ERROR_BAD_REQUEST,
-                message,
-                determineRequestPath(request),
-                null);
+
+        GlobalErrorResponse errorResponse = GlobalErrorResponse.builder()
+                .status(status.value())
+                .error(ERROR_BAD_REQUEST)
+                .message(message)
+                .path(determineRequestPath(request))
+                .build();
+
+        return new ResponseEntity<>(errorResponse, status);
     }
     
     // Порожній query
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<Object> handleConstraintViolationException(
+    public GlobalErrorResponse handleConstraintViolationException (
             ConstraintViolationException ex,
             HttpServletRequest request) {
         
@@ -141,11 +132,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                         Collectors.mapping(ConstraintViolation::getMessage, Collectors.toList())
                 ));
         
-        return buildErrorResponse(
-                HttpStatus.BAD_REQUEST,
-                ERROR_BAD_REQUEST,
-                ERROR_VALIDATION,
-                determineRequestPath(request),
-                errors);
+        return GlobalErrorResponse.builder()
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(ERROR_BAD_REQUEST)
+                .message(ERROR_VALIDATION)
+                .path(determineRequestPath(request))
+                .data(errors)
+                .build();
     }
 }
