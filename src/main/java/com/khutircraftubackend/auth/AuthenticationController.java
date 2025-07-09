@@ -9,17 +9,11 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 
 /**
- * Клас AuthenticationController обробляє запити, пов'язані з реєстрацією та авторизацією.
+ * AuthenticationController обробляє запити, пов'язані з реєстрацією та авторизацією.
  */
-
 public interface AuthenticationController {
 
     @Operation(summary = "Authenticate user",
@@ -34,14 +28,8 @@ public interface AuthenticationController {
                     content = @Content(schema = @Schema(ref = "#/components/schemas/ErrorResponseGeneric"))),
             @ApiResponse(responseCode = "403", description = "Forbidden - Access Denied",
                     content = @Content(schema = @Schema(ref = "#/components/schemas/ErrorResponseGeneric")))
-    })
-    @PostMapping(value = "/login",
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseStatus(HttpStatus.OK)
-    AuthResponse authenticateUser(@io.swagger.v3.oas.annotations.parameters.RequestBody(
-            description = "Login request containing email and password")
-                                  @Valid @RequestBody LoginRequest loginRequest);
+    }) AuthResponse authenticateUser(@RequestBody(
+            description = "Login request containing email and password") LoginRequest loginRequest);
 
     @Operation(
             summary = "Register a new user",
@@ -54,11 +42,7 @@ public interface AuthenticationController {
             @ApiResponse(responseCode = "401", description = "Unauthorized - Помилка аутентифікації. Перевірте облікові данні",
                     content = @Content(schema = @Schema(ref = "#/components/schemas/ErrorResponseGeneric")))
     })
-    @PostMapping(value = "/register",
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseStatus(HttpStatus.CREATED)
-    AuthResponse register(@io.swagger.v3.oas.annotations.parameters.RequestBody(
+    AuthResponse register(@RequestBody(
             description = "User registration data",
             required = true,
             content = @Content(
@@ -74,26 +58,25 @@ public interface AuthenticationController {
                                                 "details": { "sellerName": "My Shop" },
                                                 "marketingConsent" : true
                                             }
-                                            """
-                            ), @ExampleObject(
-                            name = "Registration examples BUYER",
-                            value = """
-                                    {
-                                        "email": "buyer@example.com",
-                                        "password": "Password123!",
-                                        "role": "BUYER",
-                                        "marketingConsent" : true
-                                    }
+                                            """),
+                            @ExampleObject(
+                                    name = "Registration examples BUYER",
+                                    value = """
+                                            {
+                                                "email": "buyer@example.com",
+                                                "password": "Password123!",
+                                                "role": "BUYER",
+                                                "marketingConsent" : true
+                                            }
                                             """)
                     }
             )
-    ) @Valid @RequestBody RegisterRequest registerRequest);
+    ) RegisterRequest registerRequest);
 
-    //TODO Need to update logic after design
+    // TODO Need to update logic after design
     @Operation(summary = "Recover password",
             description = "Not implemented.!!!",
             hidden = true,
             tags = {"Authentication"})
-    @PostMapping("/recovery")
-    AuthResponse recoveryPassword();
+    AuthResponse recoverPassword();
 }
