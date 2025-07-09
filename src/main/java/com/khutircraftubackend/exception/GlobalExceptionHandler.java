@@ -45,7 +45,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         GlobalErrorResponse errorResponse = GlobalErrorResponse.builder()
                 .status(status.value())
                 .error(((HttpStatus) status).getReasonPhrase())
-                .message("Validation error")
+                .message("Помилка перевірки")
                 .path(determineRequestPath(request))
                 .data(errors)
                 .build();
@@ -70,6 +70,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     private String determineRequestPath (WebRequest request){
         return Optional.ofNullable(((ServletWebRequest) request).getNativeRequest(HttpServletRequest.class))
                 .map(HttpServletRequest::getRequestURI)
-                .orElse("Unknown Path");
+                .orElse("Невідомий шлях");
     }
 }
