@@ -16,7 +16,6 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.NativeWebRequest;
-import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
@@ -32,7 +31,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     
     private static final String ERROR_BAD_REQUEST = "Bad Request";
     private static final String ERROR_METHOD_NOT_ALLOWED = "Method Not Allowed";
-    private static final String ERROR_VALIDATION = "Validation error";
+    private static final String ERROR_VALIDATION = "Помилка валідації";
     
     private String determineRequestPath(WebRequest request) {
         
@@ -97,7 +96,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(errorResponse, status);
     }
     
-    // Відсутній параметр запиту query
+    /**
+     * Відсутній параметр запиту query
+     */
     @Override
     protected ResponseEntity<Object> handleMissingServletRequestParameter(
             MissingServletRequestParameterException ex,
@@ -118,7 +119,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(errorResponse, status);
     }
     
-    // Порожній query
+    /**
+     * Порожній query
+     */
     @ExceptionHandler(ConstraintViolationException.class)
     public GlobalErrorResponse handleConstraintViolationException (
             ConstraintViolationException ex,
