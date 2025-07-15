@@ -25,7 +25,7 @@ public interface SearchRepository extends JpaRepository<ProductEntity, Long> {
               c.path,
               c.keywords,
               to_tsvector(p.name) || to_tsvector(c.keywords) as tsvector,
-              to_tsquery('simple', replace(clean(q.query), ' ', '|')) as tsquery,
+              to_tsquery('simple', replace(clean(q.query) || ':*', ' ', '|')) as tsquery,
               similarity(clean(q.query), concat(clean(p.name), '/', c.keywords)) as similarity,
               word_similarity(clean(q.query), concat(clean(p.name), '/', c.keywords)) as word_similarity,
               clean(q.query) <<-> concat(clean(p.name), '/', c.keywords) as distance
@@ -40,10 +40,10 @@ public interface SearchRepository extends JpaRepository<ProductEntity, Long> {
           ts_rank(s.tsvector, s.tsquery) as rank,
           s.tsvector @@ s.tsquery as is_matching
       from s
-      where s.tsvector @@ s.tsquery and (
-          s.similarity > 0.2
-          and word_similarity >= 0.5
-          and distance < 0.5
+      where s.tsvector @@ s.tsquery or (
+          s.similarity > 0.1
+          and word_similarity >= 0.3
+          and distance < 0.7
       )
       order by rank desc, s.similarity desc, s.product_name
       limit 50;

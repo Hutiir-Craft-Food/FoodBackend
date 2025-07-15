@@ -1,3 +1,5 @@
+drop view if exists v_categories;
+
 create or replace recursive view v_categories (
     parent_id,
     id,
