@@ -34,7 +34,7 @@ class UnknownExceptionResolverTest {
     @DisplayName("Returns valid response in case of internal server error")
     void test_valid_response_with_unknown_internal_exception() {
         String fakeEmail = "fake@email.com";
-        String fakePassword = "fakePassword123";
+        String fakePassword = "fakePassword123!";
 
         GlobalErrorResponse errorResponse = restTemplate.postForObject(
                 "http://localhost:{port}/v1/auth/login",
