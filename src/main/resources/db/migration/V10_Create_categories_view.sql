@@ -1,6 +1,6 @@
 drop view if exists v_categories;
 
-create or replace recursive view v_categories (
+create recursive view v_categories (
     parent_id,
     id,
     name,
