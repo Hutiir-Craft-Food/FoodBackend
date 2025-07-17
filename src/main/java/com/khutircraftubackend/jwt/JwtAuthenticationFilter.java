@@ -28,6 +28,7 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	private final JWTVerifier jwtVerifier;
 	private final UserDetailsConfig userDetailsConfig;
+	private static final String ERROR_AUTH_TOKEN = "Недійсний токен автентифікації";
 
 	@Override
 	protected void doFilterInternal(@NonNull HttpServletRequest request,
@@ -55,7 +56,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 				//  and add it to the error log below ?
 				logger.error(ex.getMessage());
 				response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-				response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ex.getMessage());
+				response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ERROR_AUTH_TOKEN);
 				return;
 			}
 		}

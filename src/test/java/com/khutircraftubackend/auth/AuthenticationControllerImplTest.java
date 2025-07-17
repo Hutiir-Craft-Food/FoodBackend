@@ -77,7 +77,7 @@ class AuthenticationControllerImplTest {
     
             assertNotNull(errorResponse, "Expected an error response but got null");
             assertEquals(401, errorResponse.status());
-            assertTrue(errorResponse.message().startsWith("The Token has expired"));
+            assertTrue(errorResponse.message().startsWith("Недійсний токен автентифікації"));
             assertEquals("/v1/products", errorResponse.path());
         }
         
@@ -110,7 +110,7 @@ class AuthenticationControllerImplTest {
             
             assertNotNull(errorResponse, "Expected an error response but got null");
             assertEquals(401, errorResponse.status());
-            assertTrue(errorResponse.message().startsWith("The Token's Signature resulted invalid"));
+            assertTrue(errorResponse.message().startsWith("Недійсний токен автентифікації"));
             assertEquals("/v1/products", errorResponse.path());
         }
         
