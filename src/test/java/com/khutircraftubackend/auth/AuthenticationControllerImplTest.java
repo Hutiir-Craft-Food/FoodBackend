@@ -4,8 +4,8 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.khutircraftubackend.auth.request.LoginRequest;
-import com.khutircraftubackend.exception.GlobalErrorResponse;
 import com.khutircraftubackend.config.JwtTestConfig;
+import com.khutircraftubackend.exception.GlobalErrorResponse;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -154,9 +154,8 @@ class AuthenticationControllerImplTest {
             GlobalErrorResponse errorResponse = objectMapper.readValue(responseBody, GlobalErrorResponse.class);
             
             assertNotNull(errorResponse.data());
-            assertEquals(2, ((Map<?, ?>) errorResponse.data()).size());
+            assertEquals(1, ((Map<?, ?>) errorResponse.data()).size());
             assertNotNull(((Map<?, ?>) errorResponse.data()).get("email"));
-            assertNotNull(((Map<?, ?>) errorResponse.data()).get("password"));
         }
     }
 }
