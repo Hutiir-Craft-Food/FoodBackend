@@ -237,7 +237,7 @@ public class ProductImagesService {
         try {
             String publicId = entity.getLink();
             storageService.deleteByUrl(publicId);
-        } catch (IOException | URISyntaxException e) {
+        } catch (IOException e) {
             throw new RuntimeException(entity.getLink(), e); //TODO Need global CloudStorageException
         }
     }

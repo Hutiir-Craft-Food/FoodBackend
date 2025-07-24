@@ -2,15 +2,14 @@ package com.khutircraftubackend.product;
 
 import com.khutircraftubackend.category.CategoryEntity;
 import com.khutircraftubackend.category.CategoryService;
-import com.khutircraftubackend.exception.httpstatus.BadRequestException;
 import com.khutircraftubackend.exception.httpstatus.NotFoundException;
-import com.khutircraftubackend.product.exception.ProductNotFoundException;
 import com.khutircraftubackend.product.request.ProductRequest;
 import com.khutircraftubackend.product.response.ProductResponse;
 import com.khutircraftubackend.seller.SellerEntity;
 import com.khutircraftubackend.seller.SellerService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -85,7 +84,7 @@ public class ProductService {
 	public Map<String, Object> getProducts(int offset, int limit) {
 		
 		Pageable pageable = PageRequest.of(offset, limit);
-		Collection<ProductEntity> productEntities = productRepository.findAllBy(pageable);
+		Page<ProductEntity> productEntities = productRepository.findAllBy(pageable);
 		
 		Collection<ProductResponse> products = productMapper.toProductResponse(productEntities);
 		
