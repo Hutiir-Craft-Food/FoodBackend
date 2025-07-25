@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,6 +30,7 @@ public class ProductImagesControllerImp implements ProductImagesController {
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('SELLER') and @productService.canModifyProduct(#productId))")
     @ResponseStatus(HttpStatus.CREATED)
     public ProductImagesResponse uploadProductImages (
             @PathVariable Long productId,
@@ -42,6 +44,7 @@ public class ProductImagesControllerImp implements ProductImagesController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('SELLER') and @productService.canModifyProduct(#productId))")
     @ResponseStatus(HttpStatus.OK)
     public ProductImagesResponse changesProductImages(@PathVariable Long productId,
                                                       @RequestBody ProductImagesUploadAndChanges request) {
@@ -49,6 +52,7 @@ public class ProductImagesControllerImp implements ProductImagesController {
     }
 
     @DeleteMapping()
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('SELLER') and @productService.canModifyProduct(#productId))")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteProductImagesByPositions(@PathVariable Long productId,
                 @RequestParam(value = "position", required = false) List<Integer> positionIds) {
