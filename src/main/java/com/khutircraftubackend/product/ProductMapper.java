@@ -7,6 +7,7 @@ import com.khutircraftubackend.seller.SellerMapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+import org.springframework.data.domain.Page;
 
 import java.util.Collection;
 
@@ -26,6 +27,6 @@ public interface ProductMapper {
 	
 	ProductResponse toProductResponse(ProductEntity productEntity);
 	
-	Collection<ProductResponse> toProductResponse(Collection<ProductEntity> productEntities);
+	Collection<ProductResponse> toProductResponse(Page<ProductEntity> productEntities);
 	
 }

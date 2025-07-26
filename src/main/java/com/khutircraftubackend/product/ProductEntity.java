@@ -15,7 +15,11 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Table(name = "products")
+@Table(name = "products",
+        indexes = {
+        @Index(name = "idx_product_name", columnList = "name"),
+        @Index(name = "idx_product_description", columnList = "description")
+})
 public class ProductEntity {
 
     @Id
@@ -24,12 +28,6 @@ public class ProductEntity {
 
     @Column(name = "name")
     private String name;
-
-    @Column(name = "thumbnail_image")
-    private String thumbnailImageUrl;
-
-    @Column(name = "image")
-    private String imageUrl;
 
     @Column(name = "available")
     private boolean available;
@@ -45,12 +43,11 @@ public class ProductEntity {
     @JoinColumn(name = "category_id")
     private CategoryEntity category;
 
-    @Column(name = "created_at")
+    @Column (name = "created_at", updatable = false)
     @CreationTimestamp
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
+    @Column(name = "updated_at", insertable = false)
     @UpdateTimestamp
     private LocalDateTime updatedAt;
-    
 }
