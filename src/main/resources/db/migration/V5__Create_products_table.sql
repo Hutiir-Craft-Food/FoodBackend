@@ -3,8 +3,6 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm;
 CREATE TABLE IF NOT EXISTS products (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    thumbnail_image VARCHAR(255),
-    image VARCHAR(255),
     available BOOLEAN DEFAULT FALSE,
     description TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT now(),
