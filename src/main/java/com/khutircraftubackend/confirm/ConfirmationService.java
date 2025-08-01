@@ -78,16 +78,16 @@ public class ConfirmationService {
     }
 
     @Transactional
-    public ConfirmationResponse confirmToken(Principal principal, ConfirmationRequest request) {
-        UserEntity user = userService.findByPrincipal(principal);
-        if (user.isConfirmed()) {
-            throw new ConfirmationException(ConfirmationResponseMessages.EMAIL_ALREADY_CONFIRMED);
-        }
-        ConfirmationEntity confirmedByUser = findConfirmByUser(user);
-        validateConfirmationToken(request.confirmationToken(), confirmedByUser);
-        user.setConfirmed(true);
-        confirmRepository.delete(confirmedByUser);
-        userService.updateUser(user);
+    public ConfirmationResponse confirmToken(ConfirmationRequest request) {
+//        UserEntity user = userService.findByPrincipal(principal);
+//        if (user.isConfirmed()) {
+//            throw new ConfirmationException(ConfirmationResponseMessages.EMAIL_ALREADY_CONFIRMED);
+//        }
+//        ConfirmationEntity confirmedByUser = findConfirmByUser(user);
+//        validateConfirmationToken(request.confirmationToken(), confirmedByUser);
+//        user.setConfirmed(true);
+//        confirmRepository.delete(confirmedByUser);
+//        userService.updateUser(user);
         return ConfirmationResponse.builder()
                 .confirmed(true)
                 .message(ConfirmationResponseMessages.EMAIL_CONFIRMED)
