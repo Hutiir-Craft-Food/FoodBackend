@@ -1,6 +1,7 @@
 package com.khutircraftubackend.auth;
 
 import com.khutircraftubackend.auth.exception.AuthenticationException;
+import com.khutircraftubackend.ratelimit.RateLimitSecurityService;
 import com.khutircraftubackend.mail.EmailSender;
 import com.khutircraftubackend.confirm.ConfirmationService;
 import com.khutircraftubackend.auth.request.LoginRequest;
@@ -9,7 +10,6 @@ import com.khutircraftubackend.auth.response.AuthResponse;
 import com.khutircraftubackend.jwt.JwtUtils;
 import com.khutircraftubackend.marketing.MarketingCampaignService;
 import com.khutircraftubackend.seller.SellerService;
-import com.khutircraftubackend.user.Role;
 import com.khutircraftubackend.user.UserEntity;
 import com.khutircraftubackend.user.UserRepository;
 import com.khutircraftubackend.user.UserService;
@@ -40,6 +40,7 @@ public class AuthenticationService {
     private final ConfirmationService confirmationService;
     private final SellerService sellerService;
     private final EmailSender emailSender;
+    private final RateLimitSecurityService rateLimitSecurityService;
 
     /**
      * Аутентифікує користувача за вказаними email та паролем.
@@ -51,13 +52,16 @@ public class AuthenticationService {
     @Transactional
     public AuthResponse authenticate(LoginRequest request) {
 
+        rateLimitSecurityService.checkBruteforceAttempt(request.email());
         UserEntity user = userService.findByEmail(request.email());
+
         if (Boolean.FALSE.equals(user.isEnabled())) {
             log.info(String.format(AuthResponseMessages.USER_BLOCKED, user.getEmail()));
             throw new AuthenticationException(String.format(AuthResponseMessages.USER_BLOCKED, user.getEmail()));
         }
 
         authenticateUser(request.email(), request.password());
+        rateLimitSecurityService.resetBruteforceAttempts(request.email());
 
         return AuthResponse.builder()
                 .jwt(jwtUtils.generateJwtToken(user.getEmail()))

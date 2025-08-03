@@ -68,8 +68,8 @@ class AuthenticationServiceTest {
 //        AuthResponse result = authenticationService.authenticate(request);
 //
 //        assertEquals("mocked-jwt-token", result.jwt());
-//        assertEquals(request.email(), result.email());
-//        assertEquals(AuthResponseMessages.USER_ENABLED, result.message());
+////        assertEquals(request.email(), result.email());
+////        assertEquals(AuthResponseMessages.USER_ENABLED, result.message());
 //
 //        verify(userService).findByEmail(request.email());
 //        verify(jwtUtils).generateJwtToken(expectedUser.getEmail());
@@ -106,8 +106,8 @@ class AuthenticationServiceTest {
 //        AuthResponse result = authenticationService.authenticate(request);
 //        boolean isResult = expectedUser.isEnabled();
 //
-//        assertEquals(result.message(),
-//                String.format(AuthResponseMessages.USER_BLOCKED, request.email()));
+////        assertEquals(result.message(),
+////                String.format(AuthResponseMessages.USER_BLOCKED, request.email()));
 //        assertEquals(isResult, expectedUser.isEnabled());
 //        assertNull(null, result.jwt());
 //

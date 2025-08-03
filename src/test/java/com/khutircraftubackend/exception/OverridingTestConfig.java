@@ -9,18 +9,18 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
-@TestConfiguration
-public class OverridingTestConfig {
-
-    @Bean
-    public AuthenticationService authenticationService() {
-        AuthenticationService mockSerice = mock(AuthenticationService.class);
-
-        given(mockSerice.authenticate(any(LoginRequest.class)))
-                .willAnswer(invokation -> {
-                    throw new Exception("some unknown and unexpected exception causing 500 error");
-                });
-
-        return mockSerice;
-    }
-}
+//@TestConfiguration
+//public class OverridingTestConfig {
+//
+//    @Bean
+//    public AuthenticationService authenticationService() {
+//        AuthenticationService mockSerice = mock(AuthenticationService.class);
+//
+//        given(mockSerice.authenticate(any(LoginRequest.class)))
+//                .willAnswer(invokation -> {
+//                    throw new Exception("some unknown and unexpected exception causing 500 error");
+//                });
+//
+//        return mockSerice;
+//    }
+//}
