@@ -42,8 +42,23 @@ services:
       - "8025:8025"
       - "1025:1025"
 
+  redis:
+    container_name: "khutir_redis"
+    image: redis:8-alpine
+    restart: always
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis-data:/data
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+
 volumes:
   khutir-db-data:
     name: "khutir-db-data"
     labels:
       - "com.khutir-craft.db"
+  redis-data:
+    name: "khutir-redis-data"
+    labels:
+      - "com.khutir-craft.redis"

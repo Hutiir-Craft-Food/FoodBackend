@@ -1,6 +1,9 @@
 package com.khutircraftubackend.config;
 
+import com.khutircraftubackend.exception.GlobalErrorResponseWriter;
 import com.khutircraftubackend.jwt.JwtAuthenticationFilter;
+import com.khutircraftubackend.ratelimit.RateLimitFilter;
+import com.khutircraftubackend.ratelimit.SecurityService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,6 +38,8 @@ import static jakarta.servlet.DispatcherType.FORWARD;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final SecurityService securityService;
+    private final GlobalErrorResponseWriter errorWriter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -67,14 +72,14 @@ public class SecurityConfig {
                                 "/v1/advPosts/**",
                                 "/v1/search/**").permitAll()
                         .anyRequest().authenticated())
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new RateLimitFilter(securityService, errorWriter), JwtAuthenticationFilter.class);
         return http.build();
     }
 
-    private CorsConfigurationSource corsConfigurationSource() {
-
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration().applyPermitDefaultValues();
-
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConfiguration);
         return source;
