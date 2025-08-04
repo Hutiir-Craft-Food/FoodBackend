@@ -21,9 +21,6 @@ public class GlobalErrorResponseWriter {
     public void write(HttpServletRequest request, HttpServletResponse response, HttpStatus status,
                       String message, String path) {
         try {
-            log.warn("ToManyRequest по IP. Блокировка IP {}, method: {}, contentType: {}, message: {}",
-                    request.getRemoteAddr(), request.getMethod(), response.getContentType(), message);
-
             response.setCharacterEncoding("UTF-8");
             response.setContentType("application/json;charset=UTF-8");
             response.setStatus(status.value());

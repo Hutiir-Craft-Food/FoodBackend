@@ -3,7 +3,7 @@ package com.khutircraftubackend.config;
 import com.khutircraftubackend.exception.GlobalErrorResponseWriter;
 import com.khutircraftubackend.jwt.JwtAuthenticationFilter;
 import com.khutircraftubackend.ratelimit.RateLimitFilter;
-import com.khutircraftubackend.ratelimit.RateLimitSecurityService;
+import com.khutircraftubackend.ratelimit.SecurityService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,7 +38,7 @@ import static jakarta.servlet.DispatcherType.FORWARD;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final RateLimitSecurityService securityService;
+    private final SecurityService securityService;
     private final GlobalErrorResponseWriter errorWriter;
 
     @Bean

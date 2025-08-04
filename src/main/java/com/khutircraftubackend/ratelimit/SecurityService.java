@@ -1,17 +1,19 @@
 package com.khutircraftubackend.ratelimit;
 
+import com.khutircraftubackend.exception.httpStatus.ForbiddenException;
 import com.khutircraftubackend.exception.httpStatus.ToManyRequestException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @RequiredArgsConstructor
 @Service
 @Slf4j
-public class RateLimitSecurityService {
+public class SecurityService {
 
     private final RedisTemplate<String, String> redisTemplate;
 
@@ -19,6 +21,14 @@ public class RateLimitSecurityService {
     private static final int BLOCK_DURATION_MINUTES = 30;
     private static final int IP_REQUEST_LIMIT = 5;
     private static final int IP_WINDOW_SECONDS = 60;
+    private static final List<String> ALLOWED_USER_AGENTS = List.of(
+            "Mozilla",                  // Chrome, Firefox, Safari, Edge и т.д.
+            "PostmanRuntime",           // Postman
+            "vscode-restclient",        // REST Client extension в VS Code
+            "curl",                     // curl
+            "Wget",                     // wget
+            "Java-http-client"          // HttpClient Java 11+
+    );
 
     public void checkBruteforceAttempt(String email) {
         String key = "bruteforce:" + email;
@@ -59,5 +69,11 @@ public class RateLimitSecurityService {
     public void resetBruteforceAttempts(String email) {
         String key = "bruteforce:" + email;
         redisTemplate.delete(key);
+    }
+
+    public void validateUserAgentIsAllowed(String userAgent) {
+        if (userAgent == null || ALLOWED_USER_AGENTS.stream().noneMatch(userAgent::contains)) {
+            throw new ForbiddenException("Доступ забороннений");
+        }
     }
 }

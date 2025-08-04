@@ -1,7 +1,7 @@
 package com.khutircraftubackend.auth;
 
 import com.khutircraftubackend.auth.exception.AuthenticationException;
-import com.khutircraftubackend.ratelimit.RateLimitSecurityService;
+import com.khutircraftubackend.ratelimit.SecurityService;
 import com.khutircraftubackend.mail.EmailSender;
 import com.khutircraftubackend.confirm.ConfirmationService;
 import com.khutircraftubackend.auth.request.LoginRequest;
@@ -40,7 +40,7 @@ public class AuthenticationService {
     private final ConfirmationService confirmationService;
     private final SellerService sellerService;
     private final EmailSender emailSender;
-    private final RateLimitSecurityService rateLimitSecurityService;
+    private final SecurityService securityService;
 
     /**
      * Аутентифікує користувача за вказаними email та паролем.
@@ -52,7 +52,7 @@ public class AuthenticationService {
     @Transactional
     public AuthResponse authenticate(LoginRequest request) {
 
-        rateLimitSecurityService.checkBruteforceAttempt(request.email());
+        securityService.checkBruteforceAttempt(request.email());
         UserEntity user = userService.findByEmail(request.email());
 
         if (Boolean.FALSE.equals(user.isEnabled())) {
@@ -61,7 +61,7 @@ public class AuthenticationService {
         }
 
         authenticateUser(request.email(), request.password());
-        rateLimitSecurityService.resetBruteforceAttempts(request.email());
+        securityService.resetBruteforceAttempts(request.email());
 
         return AuthResponse.builder()
                 .jwt(jwtUtils.generateJwtToken(user.getEmail()))
