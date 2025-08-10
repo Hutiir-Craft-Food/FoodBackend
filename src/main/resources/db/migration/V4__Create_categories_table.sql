@@ -1,9 +1,9 @@
 CREATE TABLE IF NOT EXISTS categories (
-    id SERIAL PRIMARY KEY,
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     name VARCHAR(255) NOT NULL UNIQUE,
     description TEXT,
     icon_url VARCHAR(255),
-    keywords TEXT,
+    keywords VARCHAR(255),
     parent_id BIGINT REFERENCES categories(id)
         ON DELETE RESTRICT
 );

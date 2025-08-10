@@ -30,7 +30,7 @@ public class CategoryEntity {
 	@JoinColumn(name = "parent_id")
 	private CategoryEntity parentCategory;
 	
-	@Column(name = "keywords", columnDefinition = "TEXT")
+	@Column(name = "keywords")
 	@JsonIgnore
 	private String keywords;
 }

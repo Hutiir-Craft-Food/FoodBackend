@@ -14,13 +14,13 @@ spring:
       # ACHTUNG!!! keep `ddl-auto: update` for local profile.
       # we don't want spring to re-create tables from scratch
       # every time we start it: https://stackoverflow.com/a/75228882
-      ddl-auto: update
+      ddl-auto: validate
     properties:
       hibernate:
         show-sql: true
         format_sql: true
   flyway:
-    enabled: false
+    enabled: true
 
   mail:
     host: localhost
