@@ -1,5 +1,5 @@
 CREATE TABLE sellers (
-    id SERIAL PRIMARY KEY,
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     seller_name VARCHAR(100),
     user_id BIGINT,
     FOREIGN KEY (user_id) REFERENCES users(id),

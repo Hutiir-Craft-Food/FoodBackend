@@ -1,8 +1,8 @@
 drop view if exists v_categories;
 
 create recursive view v_categories (
-    parent_id,
     id,
+    parent_id,
     name,
     path,
     icon_url,
@@ -10,8 +10,8 @@ create recursive view v_categories (
 ) as
   -- root categories:
   select
-    c.parent_id,
     c.id,
+    c.parent_id,
     c.name,
     concat('/', c.name) as path,
     c.icon_url,
@@ -23,12 +23,12 @@ create recursive view v_categories (
 
   -- sub categories:
   select
-    c.parent_id,
     c.id,
+    c.parent_id,
     c.name,
     concat(v.path, '/', c.name) as path,
     c.icon_url,
     concat_ws(',', v.keywords, coalesce(c.keywords, clean(c.name))) as keywords
   from v_categories v
-  inner join categories c
+  left join categories c
     on c.parent_id = v.id;

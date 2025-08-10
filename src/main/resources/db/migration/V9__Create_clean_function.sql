@@ -1,6 +1,6 @@
 create or replace function clean(str text) returns text as
 $$
-declare cleaned_str varchar;
+declare cleaned_str text;
 begin
     -- trim and sanitize:
     cleaned_str := regexp_replace(trim(str), '[^[:alnum:]\s_\-]+', '', 'g');
