@@ -1,19 +1,19 @@
 package com.khutircraftubackend.product.image;
 
+import com.khutircraftubackend.product.image.response.ProductImageResponse;
 import org.mapstruct.Mapper;
 
 import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
-import static com.khutircraftubackend.product.image.ProductImagesResponse.ImageResponse;
 
 import java.util.List;
 
 @Mapper(componentModel = SPRING)
-public interface ProductImagesMapper {
+public interface ProductImageMapper {
 
-    ImageResponse toDto(ProductImagesEntity entity);
+    ProductImageResponse.Image toDto(ProductImageEntity entity);
 
-    default ProductImagesResponse toResponseDto(List<ProductImagesEntity> entities) {
-        return new ProductImagesResponse(
+    default ProductImageResponse toResponseDto(List<ProductImageEntity> entities) {
+        return new ProductImageResponse(
                 entities.stream()
                         .map(this::toDto)
                         .toList()

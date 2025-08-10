@@ -4,7 +4,9 @@ import com.khutircraftubackend.exception.httpstatus.BadRequestException;
 import com.khutircraftubackend.exception.httpstatus.NotFoundException;
 import com.khutircraftubackend.product.ProductEntity;
 import com.khutircraftubackend.product.ProductService;
-import com.khutircraftubackend.product.image.request.ProductImagesUploadAndChanges;
+import com.khutircraftubackend.product.image.request.ProductImageUploadRequest;
+import com.khutircraftubackend.product.image.response.ProductImageResponse;
+import com.khutircraftubackend.product.image.response.ProductImageResponseMessages;
 import com.khutircraftubackend.storage.StorageService;
 import com.khutircraftubackend.validated.ImageMimeValidator;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,15 +36,15 @@ class ProductImagesServiceTest {
     @InjectMocks
     private ProductImagesService imagesService;
     @Mock
-    private ProductImagesMapper imageMapper;
+    private ProductImageMapper imageMapper;
     @Mock
-    private ProductImagesResponse responseDto;
+    private ProductImageResponse responseDto;
     @Mock
     private StorageService storageService;
     @Mock
     private ImageMimeValidator mimeValidator;
     private ProductEntity product;
-    private List<ProductImagesEntity> imagesList;
+    private List<ProductImageEntity> imagesList;
     private static final Long MAX_COUNT_FILES = 5L;
 
 
@@ -53,7 +55,7 @@ class ProductImagesServiceTest {
                 .name("Test Product")
                 .build();
 
-        ProductImagesEntity image1 = ProductImagesEntity.builder()
+        ProductImageEntity image1 = ProductImageEntity.builder()
                 .id(1L)
                 .link("test link 1")
                 .position(0)
@@ -62,7 +64,7 @@ class ProductImagesServiceTest {
                 .product(product)
                 .build();
 
-        ProductImagesEntity image2 = ProductImagesEntity.builder()
+        ProductImageEntity image2 = ProductImageEntity.builder()
                 .id(2L)
                 .link("test link 2")
                 .position(1)
@@ -84,7 +86,7 @@ class ProductImagesServiceTest {
             when(imageRepository.findByProductId(1L)).thenReturn(imagesList);
             when(imageMapper.toResponseDto(imagesList)).thenReturn(responseDto);
 
-            ProductImagesResponse actual = imagesService.getProductImages(1L);
+            ProductImageResponse actual = imagesService.getProductImages(1L);
 
             assertEquals(responseDto, actual);
             verify(productService).findProductById(1L);
@@ -110,15 +112,15 @@ class ProductImagesServiceTest {
         @Test
         void uploadImagesSuccess() {
             doNothing().when(mimeValidator).validateMimeTypes(anyList(), anyString());
-            ProductImagesUploadAndChanges jsonImages = new ProductImagesUploadAndChanges(
-                    List.of(new ProductImagesUploadAndChanges.ImagesUploadAndChanges("pic2.jpeg", 2))
+            ProductImageUploadRequest jsonImages = new ProductImageUploadRequest(
+                    List.of(new ProductImageUploadRequest.Image("pic2.jpeg", 2))
             );
 
             MultipartFile files = mock(MultipartFile.class);
             when(files.getOriginalFilename()).thenReturn("pic2.jpeg");
             List<MultipartFile> fileImages = List.of(files);
 
-            ProductImagesEntity savedEntity = ProductImagesEntity.builder()
+            ProductImageEntity savedEntity = ProductImageEntity.builder()
                     .id(3L)
                     .uid("pic2.jpeg")
                     .position(2)
@@ -126,11 +128,11 @@ class ProductImagesServiceTest {
                     .link("test-link 3")
                     .build();
 
-            List<ProductImagesEntity> savedEntities = new ArrayList<>(imagesList);
+            List<ProductImageEntity> savedEntities = new ArrayList<>(imagesList);
             savedEntities.add(savedEntity);
 
-            ProductImagesResponse expected = new ProductImagesResponse(
-                    savedEntities.stream().map(img -> new ProductImagesResponse.ImageResponse(
+            ProductImageResponse expected = new ProductImageResponse(
+                    savedEntities.stream().map(img -> new ProductImageResponse.Image(
                             img.getUid(), img.getLink(), img.getTsSize(), img.getPosition()
                     )).toList()
             );
@@ -139,7 +141,7 @@ class ProductImagesServiceTest {
             when(imageRepository.saveAll(anyList())).thenReturn(savedEntities);
             when(imageMapper.toResponseDto(savedEntities)).thenReturn(expected);
 
-            ProductImagesResponse actual = imagesService.uploadImages(1L, jsonImages, fileImages);
+            ProductImageResponse actual = imagesService.uploadImages(1L, jsonImages, fileImages);
 
             assertEquals(expected, actual);
             verify(productService).findProductById(1L);
@@ -150,8 +152,8 @@ class ProductImagesServiceTest {
         @Test
         void upload_WhenFilesExceedMaxCount_ThrowsBadRequestException() {
             doNothing().when(mimeValidator).validateMimeTypes(anyList(), anyString());
-            ProductImagesUploadAndChanges jsonImages = new ProductImagesUploadAndChanges(
-                    List.of(new ProductImagesUploadAndChanges.ImagesUploadAndChanges("pic2.jpeg", 2))
+            ProductImageUploadRequest jsonImages = new ProductImageUploadRequest(
+                    List.of(new ProductImageUploadRequest.Image("pic2.jpeg", 2))
             );
 
             List<MultipartFile> fileImages = new ArrayList<>();
@@ -164,14 +166,14 @@ class ProductImagesServiceTest {
                     imagesService.uploadImages(1L, jsonImages, fileImages));
 
             assertEquals(String.format(
-                    ProductImagesResponseMessages.ERROR_TOO_MANY_IMAGES, MAX_COUNT_FILES), ex.getMessage());
+                    ProductImageResponseMessages.ERROR_TOO_MANY_IMAGES, MAX_COUNT_FILES), ex.getMessage());
         }
 
         @Test
         void validateNoDuplicates_WhenPositionAlreadyExistsInRequest_ThrowsException() {
             doNothing().when(mimeValidator).validateMimeTypes(anyList(), anyString());
-            ProductImagesUploadAndChanges jsonImages = new ProductImagesUploadAndChanges(
-                    List.of(new ProductImagesUploadAndChanges.ImagesUploadAndChanges("pic2.jpeg", 1)));
+            ProductImageUploadRequest jsonImages = new ProductImageUploadRequest(
+                    List.of(new ProductImageUploadRequest.Image("pic2.jpeg", 1)));
 
             MultipartFile files = mock(MultipartFile.class);
             List<MultipartFile> fileImages = List.of(files);
@@ -181,14 +183,14 @@ class ProductImagesServiceTest {
             BadRequestException ex = assertThrows(BadRequestException.class, () ->
                     imagesService.uploadImages(1L, jsonImages, fileImages));
 
-            assertEquals(ProductImagesResponseMessages.ERROR_POSITION_EXIST, ex.getMessage());
+            assertEquals(ProductImageResponseMessages.ERROR_POSITION_EXIST, ex.getMessage());
         }
 
         @Test
         void validateNoDuplicates_WhenUidAlreadyExists_ThrowsException() {
             doNothing().when(mimeValidator).validateMimeTypes(anyList(), anyString());
-            ProductImagesUploadAndChanges jsonImages = new ProductImagesUploadAndChanges(
-                    List.of(new ProductImagesUploadAndChanges.ImagesUploadAndChanges("pic1.jpeg", 2)));
+            ProductImageUploadRequest jsonImages = new ProductImageUploadRequest(
+                    List.of(new ProductImageUploadRequest.Image("pic1.jpeg", 2)));
 
             MultipartFile files = mock(MultipartFile.class);
             List<MultipartFile> fileImages = List.of(files);
@@ -198,14 +200,14 @@ class ProductImagesServiceTest {
             BadRequestException ex = assertThrows(BadRequestException.class, () ->
                     imagesService.uploadImages(1L, jsonImages, fileImages));
 
-            assertEquals(ProductImagesResponseMessages.ERROR_UID_EXIST, ex.getMessage());
+            assertEquals(ProductImageResponseMessages.ERROR_UID_EXIST, ex.getMessage());
         }
 
         @Test
         void uploadImages_WhenFileUidNotFoundInRequest_ThrowsException() {
             doNothing().when(mimeValidator).validateMimeTypes(anyList(), anyString());
-            ProductImagesUploadAndChanges jsonImages = new ProductImagesUploadAndChanges(
-                    List.of(new ProductImagesUploadAndChanges.ImagesUploadAndChanges("pic2.jpeg", 2))
+            ProductImageUploadRequest jsonImages = new ProductImageUploadRequest(
+                    List.of(new ProductImageUploadRequest.Image("pic2.jpeg", 2))
             );
 
             MultipartFile files = mock(MultipartFile.class);
@@ -214,7 +216,7 @@ class ProductImagesServiceTest {
             BadRequestException ex = assertThrows(BadRequestException.class, () ->
                     imagesService.uploadImages(1L, jsonImages, fileImages));
 
-            assertEquals(String.format(ProductImagesResponseMessages.ERROR_NAME_NOT_FOUND,
+            assertEquals(String.format(ProductImageResponseMessages.ERROR_NAME_NOT_FOUND,
                     jsonImages.images().get(0).uid()), ex.getMessage());
         }
     }
@@ -225,25 +227,25 @@ class ProductImagesServiceTest {
 
         @Test
         void changesImagesSuccess() {
-            ProductImagesUploadAndChanges jsonImages = new ProductImagesUploadAndChanges(
-                    List.of(new ProductImagesUploadAndChanges.ImagesUploadAndChanges("pic0", 1),
-                            new ProductImagesUploadAndChanges.ImagesUploadAndChanges("pic1", 0))
+            ProductImageUploadRequest jsonImages = new ProductImageUploadRequest(
+                    List.of(new ProductImageUploadRequest.Image("pic0", 1),
+                            new ProductImageUploadRequest.Image("pic1", 0))
             );
 
-            List<ProductImagesEntity> allImages = List.of(
-                ProductImagesEntity.builder().uid("pic0").tsSize(ImageSizes.LARGE).position(0).link("link0_s").build(),
-                ProductImagesEntity.builder().uid("pic0").tsSize(ImageSizes.SMALL).position(0).link("link0_s").build(),
-                ProductImagesEntity.builder().uid("pic0").tsSize(ImageSizes.MEDIUM).position(0).link("link0_m").build(),
-                ProductImagesEntity.builder().uid("pic0").tsSize(ImageSizes.THUMBNAIL).position(0).link("link0_t").build(),
+            List<ProductImageEntity> allImages = List.of(
+                ProductImageEntity.builder().uid("pic0").tsSize(ImageSizes.LARGE).position(0).link("link0_s").build(),
+                ProductImageEntity.builder().uid("pic0").tsSize(ImageSizes.SMALL).position(0).link("link0_s").build(),
+                ProductImageEntity.builder().uid("pic0").tsSize(ImageSizes.MEDIUM).position(0).link("link0_m").build(),
+                ProductImageEntity.builder().uid("pic0").tsSize(ImageSizes.THUMBNAIL).position(0).link("link0_t").build(),
 
-                ProductImagesEntity.builder().uid("pic1").tsSize(ImageSizes.LARGE).position(1).link("link1_s").build(),
-                ProductImagesEntity.builder().uid("pic1").tsSize(ImageSizes.SMALL).position(1).link("link1_s").build(),
-                ProductImagesEntity.builder().uid("pic1").tsSize(ImageSizes.MEDIUM).position(1).link("link1_m").build(),
-                ProductImagesEntity.builder().uid("pic1").tsSize(ImageSizes.THUMBNAIL).position(1).link("link1_t").build()
+                ProductImageEntity.builder().uid("pic1").tsSize(ImageSizes.LARGE).position(1).link("link1_s").build(),
+                ProductImageEntity.builder().uid("pic1").tsSize(ImageSizes.SMALL).position(1).link("link1_s").build(),
+                ProductImageEntity.builder().uid("pic1").tsSize(ImageSizes.MEDIUM).position(1).link("link1_m").build(),
+                ProductImageEntity.builder().uid("pic1").tsSize(ImageSizes.THUMBNAIL).position(1).link("link1_t").build()
             );
 
-            ProductImagesResponse expected = new ProductImagesResponse(
-                    allImages.stream().map(img -> new ProductImagesResponse.ImageResponse(
+            ProductImageResponse expected = new ProductImageResponse(
+                    allImages.stream().map(img -> new ProductImageResponse.Image(
                             img.getUid(), img.getLink(), img.getTsSize(), img.getPosition()
                     )).toList()
             );
@@ -251,7 +253,7 @@ class ProductImagesServiceTest {
             when(imageRepository.findByProductId(1L)).thenReturn(allImages);
             when(imageMapper.toResponseDto(any())).thenReturn(expected);
 
-            ProductImagesResponse actual = imagesService.changesPosition(1L, jsonImages);
+            ProductImageResponse actual = imagesService.changesPosition(1L, jsonImages);
 
             assertEquals(expected, actual);
             verify(imageRepository).findByProductId(1L);
@@ -260,32 +262,32 @@ class ProductImagesServiceTest {
 
         @Test
         void validateImageCount_WhenSizeInvalid_ThrowsException() {
-            ProductImagesUploadAndChanges jsonImages = new ProductImagesUploadAndChanges(
-                    List.of(new ProductImagesUploadAndChanges.ImagesUploadAndChanges("pic0", 2)));
+            ProductImageUploadRequest jsonImages = new ProductImageUploadRequest(
+                    List.of(new ProductImageUploadRequest.Image("pic0", 2)));
 
             BadRequestException ex = assertThrows(BadRequestException.class, () ->
                     imagesService.changesPosition(1L, jsonImages));
 
-            assertEquals(ProductImagesResponseMessages.ERROR_SIZE, ex.getMessage());
+            assertEquals(ProductImageResponseMessages.ERROR_SIZE, ex.getMessage());
         }
 
         @Test
         void notFoundNameUidInDataBase_ThrowsException() {
-            ProductImagesUploadAndChanges jsonImages = new ProductImagesUploadAndChanges(
-                    List.of(new ProductImagesUploadAndChanges.ImagesUploadAndChanges("missingUid", 1),
-                            new ProductImagesUploadAndChanges.ImagesUploadAndChanges("pic1", 0))
+            ProductImageUploadRequest jsonImages = new ProductImageUploadRequest(
+                    List.of(new ProductImageUploadRequest.Image("missingUid", 1),
+                            new ProductImageUploadRequest.Image("pic1", 0))
             );
 
-            List<ProductImagesEntity> allImages = List.of(
-                ProductImagesEntity.builder().uid("pic0").tsSize(ImageSizes.LARGE).position(0).link("link0_s").build(),
-                ProductImagesEntity.builder().uid("pic0").tsSize(ImageSizes.SMALL).position(0).link("link0_s").build(),
-                ProductImagesEntity.builder().uid("pic0").tsSize(ImageSizes.MEDIUM).position(0).link("link0_m").build(),
-                ProductImagesEntity.builder().uid("pic0").tsSize(ImageSizes.THUMBNAIL).position(0).link("link0_t").build(),
+            List<ProductImageEntity> allImages = List.of(
+                ProductImageEntity.builder().uid("pic0").tsSize(ImageSizes.LARGE).position(0).link("link0_s").build(),
+                ProductImageEntity.builder().uid("pic0").tsSize(ImageSizes.SMALL).position(0).link("link0_s").build(),
+                ProductImageEntity.builder().uid("pic0").tsSize(ImageSizes.MEDIUM).position(0).link("link0_m").build(),
+                ProductImageEntity.builder().uid("pic0").tsSize(ImageSizes.THUMBNAIL).position(0).link("link0_t").build(),
 
-                ProductImagesEntity.builder().uid("pic1").tsSize(ImageSizes.LARGE).position(1).link("link1_s").build(),
-                ProductImagesEntity.builder().uid("pic1").tsSize(ImageSizes.SMALL).position(1).link("link1_s").build(),
-                ProductImagesEntity.builder().uid("pic1").tsSize(ImageSizes.MEDIUM).position(1).link("link1_m").build(),
-                ProductImagesEntity.builder().uid("pic1").tsSize(ImageSizes.THUMBNAIL).position(1).link("link1_t").build()
+                ProductImageEntity.builder().uid("pic1").tsSize(ImageSizes.LARGE).position(1).link("link1_s").build(),
+                ProductImageEntity.builder().uid("pic1").tsSize(ImageSizes.SMALL).position(1).link("link1_s").build(),
+                ProductImageEntity.builder().uid("pic1").tsSize(ImageSizes.MEDIUM).position(1).link("link1_m").build(),
+                ProductImageEntity.builder().uid("pic1").tsSize(ImageSizes.THUMBNAIL).position(1).link("link1_t").build()
             );
 
             when(imageRepository.findByProductId(1L)).thenReturn(allImages);
@@ -294,7 +296,7 @@ class ProductImagesServiceTest {
                     imagesService.changesPosition(1L, jsonImages));
 
             assertEquals(String.format(
-                    ProductImagesResponseMessages.ERROR_MISSING_UID,
+                    ProductImageResponseMessages.ERROR_MISSING_UID,
                     List.of(jsonImages.images().get(0).uid())
             ), ex.getMessage());
         }

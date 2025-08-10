@@ -1,4 +1,4 @@
-package com.khutircraftubackend.product.image.validated;
+package com.khutircraftubackend.product.image.validation;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;

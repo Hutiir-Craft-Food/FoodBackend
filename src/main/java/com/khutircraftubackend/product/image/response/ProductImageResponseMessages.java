@@ -1,9 +1,9 @@
-package com.khutircraftubackend.product.image;
+package com.khutircraftubackend.product.image.response;
 
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
-public final class ProductImagesResponseMessages {
+public final class ProductImageResponseMessages {
 
     public static final String ERROR_TOO_MANY_IMAGES =
             "Підвищена кількість файлів. Максимальна кількість - %d файлів.";

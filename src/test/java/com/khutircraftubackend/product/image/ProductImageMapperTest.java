@@ -1,5 +1,6 @@
 package com.khutircraftubackend.product.image;
 
+import com.khutircraftubackend.product.image.response.ProductImageResponse;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 
@@ -7,20 +8,20 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class ProductImagesMapperTest {
+class ProductImageMapperTest {
 
-    private final ProductImagesMapper mapper = Mappers.getMapper(ProductImagesMapper.class);
+    private final ProductImageMapper mapper = Mappers.getMapper(ProductImageMapper.class);
 
     @Test
     void toDto_shouldMapEntityToDtoCorrectly() {
-        ProductImagesEntity entity = ProductImagesEntity.builder()
+        ProductImageEntity entity = ProductImageEntity.builder()
                 .uid("uid123")
                 .link("link.jpg")
                 .tsSize(ImageSizes.LARGE)
                 .position(1)
                 .build();
 
-        ProductImagesResponse.ImageResponse dto = mapper.toDto(entity);
+        ProductImageResponse.Image dto = mapper.toDto(entity);
 
         assertEquals("uid123", dto.uid());
         assertEquals("link.jpg", dto.link());
@@ -30,12 +31,12 @@ class ProductImagesMapperTest {
 
     @Test
     void toResponseDto_shouldMapListCorrectly() {
-        List<ProductImagesEntity> entities = List.of(
-                ProductImagesEntity.builder().uid("uid1").link("link1").tsSize(ImageSizes.LARGE).position(0).build(),
-                ProductImagesEntity.builder().uid("uid2").link("link2").tsSize(ImageSizes.SMALL).position(1).build()
+        List<ProductImageEntity> entities = List.of(
+                ProductImageEntity.builder().uid("uid1").link("link1").tsSize(ImageSizes.LARGE).position(0).build(),
+                ProductImageEntity.builder().uid("uid2").link("link2").tsSize(ImageSizes.SMALL).position(1).build()
         );
 
-        ProductImagesResponse response = mapper.toResponseDto(entities);
+        ProductImageResponse response = mapper.toResponseDto(entities);
 
         assertEquals(2, response.images().size());
 

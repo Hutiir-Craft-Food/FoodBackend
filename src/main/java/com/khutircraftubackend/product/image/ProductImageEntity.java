@@ -16,18 +16,18 @@ import java.time.LocalDateTime;
 @Builder
 @Table(name = "product_images",
         indexes = {
-        @Index(name = "idx_product_images_product_id", columnList = "product_id"),
-        @Index(name = "idx_product_images_uid", columnList = "product_id, uid"),
-        @Index(name = "idx_product_images_position", columnList = "product_id, position"),
-})
-public class ProductImagesEntity {
+                @Index(name = "idx_product_images_product_id", columnList = "product_id"),
+                @Index(name = "idx_product_images_uid", columnList = "product_id, uid"),
+                @Index(name = "idx_product_images_position", columnList = "product_id, position"),
+        })
+public class ProductImageEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE,
-    generator = "product_images_seq")
-    @SequenceGenerator( name = "product_images_seq",
-    sequenceName = "product_images_seq",
-    allocationSize = 20)
+            generator = "product_images_seq")
+    @SequenceGenerator(name = "product_images_seq",
+            sequenceName = "product_images_seq",
+            allocationSize = 20)
     private Long id;
 
     @ManyToOne
@@ -46,7 +46,7 @@ public class ProductImagesEntity {
     @Column(name = "position")
     private int position;
 
-    @Column (name = "created_at", updatable = false)
+    @Column(name = "created_at", updatable = false)
     @CreationTimestamp
     private LocalDateTime createdAt;
 

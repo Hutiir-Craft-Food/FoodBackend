@@ -1,19 +1,19 @@
 package com.khutircraftubackend.product.image.request;
 
-import com.khutircraftubackend.product.image.validated.UniqueUidAndPositionInList;
+import com.khutircraftubackend.product.image.validation.UniqueUidAndPositionInList;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 
 import java.util.List;
 
 @UniqueUidAndPositionInList
-public record ProductImagesUploadAndChanges(
+public record ProductImageUploadRequest(
         @NotNull(message = "Список зображень не може бути null")
         @NotEmpty(message = "Список зображень не може бути порожнім")
         @Valid
-        List<ImagesUploadAndChanges> images
+        List<Image> images
 ) {
-    public record ImagesUploadAndChanges(
+    public record Image(
             @NotNull(message = "UID не може бути null")
             @NotEmpty(message = "UID файлу не може бути порожнім")
             String uid,
