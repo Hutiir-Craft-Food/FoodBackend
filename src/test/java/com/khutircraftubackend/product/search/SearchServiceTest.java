@@ -1,8 +1,9 @@
-package com.khutircraftubackend.search;
+package com.khutircraftubackend.product.search;
 
 import com.khutircraftubackend.product.ProductRepository;
-import com.khutircraftubackend.search.exception.SearchResponseMessage;
+import com.khutircraftubackend.search.SearchService;
 import com.khutircraftubackend.search.exception.InvalidSearchQueryException;
+import com.khutircraftubackend.search.exception.SearchResponseMessage;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,9 +24,7 @@ class SearchServiceTest {
 
     @InjectMocks
     private SearchService searchService;
-
-    // TODO: add positive tests
-
+    
     @Nested
     @DisplayName("Search Product Operations")
     class SearchProducts {

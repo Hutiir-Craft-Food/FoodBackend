@@ -9,11 +9,11 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ControllerAdvice
 public class ProductExceptionHandler {
-
+    
     @ExceptionHandler(ProductNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Object handleProductNotFoundException(ProductNotFoundException ex, HttpServletRequest request) {
-
+        
         return GlobalErrorResponse.builder()
                 .status(HttpStatus.NOT_FOUND.value())
                 .error(HttpStatus.NOT_FOUND.getReasonPhrase())
@@ -21,5 +21,5 @@ public class ProductExceptionHandler {
                 .path(request.getRequestURI())
                 .build();
     }
-
+    
 }

@@ -1,7 +1,9 @@
-package com.khutircraftubackend.search;
+package com.khutircraftubackend.product.search;
 
 import com.khutircraftubackend.category.CategoryEntity;
 import com.khutircraftubackend.category.CategoryService;
+import com.khutircraftubackend.search.SearchQueryUtil;
+import com.khutircraftubackend.search.SearchService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
