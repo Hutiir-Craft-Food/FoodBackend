@@ -19,6 +19,6 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
     void deleteBySeller(SellerEntity seller);
     
     List<ProductEntity> findAllBySeller(SellerEntity currentSeller);
-
+    
 }
 

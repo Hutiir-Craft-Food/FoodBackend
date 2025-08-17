@@ -4,7 +4,9 @@ import com.khutircraftubackend.category.CategoryEntity;
 import com.khutircraftubackend.category.CategoryMapper;
 import com.khutircraftubackend.category.CategoryService;
 import com.khutircraftubackend.category.exception.CategoryNotFoundException;
+import com.khutircraftubackend.product.exception.ProductAccessException;
 import com.khutircraftubackend.product.exception.ProductNotFoundException;
+import com.khutircraftubackend.product.price.mapper.ProductPriceMapper;
 import com.khutircraftubackend.product.request.ProductRequest;
 import com.khutircraftubackend.product.response.ProductResponse;
 import com.khutircraftubackend.seller.SellerEntity;
@@ -58,6 +60,9 @@ class ProductServiceTest {
 	
 	@Spy
 	private CategoryMapper categoryMapper = Mappers.getMapper(CategoryMapper.class);
+	
+	@Spy
+	private ProductPriceMapper productPriceMapper = Mappers.getMapper(ProductPriceMapper.class);
 	
 	@Spy
 	@InjectMocks
@@ -150,7 +155,7 @@ class ProductServiceTest {
 			when(sellerService.getCurrentSeller()).thenReturn(otherSeller);
 			when(productRepository.findProductById(1L)).thenReturn(Optional.of(product));
 			
-			assertThrows(AccessDeniedException.class, () -> productService.canModifyProduct(1L));
+			assertThrows(ProductAccessException.class, () -> productService.canModifyProduct(1L));
 		}
 		
 		@Test

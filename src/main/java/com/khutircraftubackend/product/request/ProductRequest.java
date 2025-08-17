@@ -6,15 +6,16 @@ import lombok.Builder;
 
 @Builder
 public record ProductRequest(
-        @NotBlank(message = "Product name cannot be blank")
+        @NotBlank(message = "Назва продукта не може бути порожньою")
         String name,
-
-        @NotNull(message = "Availability must be specified")
+        
+        @NotNull(message = "Наявність повинна бути вказана")
         Boolean available,
-
-        @NotBlank(message = "Description cannot be blank")
+        
+        @NotBlank(message = "Опис продукта не може бути порожнім")
         String description,
-
-        @NotNull(message = "Category ID cannot be null")
+        
+        @NotNull(message = "Ідентифікатор категорії не може бути порожнім")
         Long categoryId
-) { }
+) {
+}
