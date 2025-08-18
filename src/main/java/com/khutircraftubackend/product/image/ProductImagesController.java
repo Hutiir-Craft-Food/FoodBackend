@@ -1,6 +1,8 @@
 package com.khutircraftubackend.product.image;
 
-import com.khutircraftubackend.product.image.request.ProductImagesUploadAndChanges;
+import com.khutircraftubackend.product.image.request.ProductImagesResponse;
+import com.khutircraftubackend.product.image.request.ProductImagesChanges;
+import com.khutircraftubackend.product.image.request.ProductImagesUpload;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -62,9 +64,9 @@ public interface ProductImagesController {
              @Parameter(
                      description = "JSON metadata for image processing",
                      required = true,
-                     schema = @Schema(implementation = ProductImagesUploadAndChanges.class)
+                     schema = @Schema(implementation = ProductImagesUpload.class)
              )
-             @RequestPart("metadata") ProductImagesUploadAndChanges json,
+             @RequestPart("metadata") ProductImagesUpload json,
              @Parameter(
                      description = "List of image files (PNG, JPEG, etc.)")
              @RequestPart("files") List<MultipartFile> files);
@@ -97,7 +99,7 @@ public interface ProductImagesController {
     @SecurityRequirement(name = "BearerAuth")
     ProductImagesResponse changesProductImages
             (@Parameter(description = "The ID of the product in which the images need to be changed") Long productId,
-             @RequestBody(description = "Number images") ProductImagesUploadAndChanges request);
+             @RequestBody(description = "Number images") ProductImagesChanges request);
 
     @Operation(
             summary = "Delete product images by positions",

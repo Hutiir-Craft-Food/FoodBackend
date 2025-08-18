@@ -7,28 +7,30 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 @Component
 public class ImageMimeValidator {
 
-    private static final Tika tika = new Tika();
+    private static final Tika TIKA = new Tika();
     private static final String ERROR_MIME_TYPE = "Неприпустимий MIME-тип файлу: %s (тип: %s)";
 
     // TODO Need implement test
-    public void validateMimeTypes(List<MultipartFile> files, String allowedMimeType) {
+    public void validateMimeTypes(List<MultipartFile> files, Set<String> allowedMimeType) {
 
         for (MultipartFile file : files) {
             String fileName = file.getOriginalFilename();
+            String contentType = file.getContentType();
 
-            if(!file.getContentType().startsWith(allowedMimeType)){
+            if(!allowedMimeType.contains(contentType)){
                 throw new BadRequestException(String.format(
                         ERROR_MIME_TYPE, file.getOriginalFilename(), file.getContentType()));
             }
 
             try {
-                String detectedMimeType = tika.detect(file.getInputStream());
+                String detectedMimeType = TIKA.detect(file.getInputStream());
 
-                if (detectedMimeType == null || !detectedMimeType.startsWith(allowedMimeType)) {
+                if (detectedMimeType == null || !allowedMimeType.contains(detectedMimeType)) {
                     throw new BadRequestException(String.format(
                             ERROR_MIME_TYPE, file.getOriginalFilename(), detectedMimeType));
                     // TODO SCRUM-207 Need to send a notification to the administration. Do it via the method or via
@@ -37,7 +39,8 @@ public class ImageMimeValidator {
                     // You can insert the team lead's resolution here
                 }
             } catch (IOException e) {
-                throw new BadRequestException("Не вдалося визначити MIME-тип файлу " + fileName);
+                throw new BadRequestException(
+                        String.format("Не вдалося визначити MIME-тип файлу: %s", fileName));
             }
         }
     }

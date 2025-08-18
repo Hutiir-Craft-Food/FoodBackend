@@ -1,11 +1,13 @@
 package com.khutircraftubackend.product.image;
 
-import static com.khutircraftubackend.product.image.request.ProductImagesUploadAndChanges.ImagesUploadAndChanges;
+import static com.khutircraftubackend.product.image.request.ProductImagesChanges.Images;
 
 import com.khutircraftubackend.product.ProductEntity;
 import com.khutircraftubackend.product.ProductService;
 import com.khutircraftubackend.exception.httpstatus.BadRequestException;
-import com.khutircraftubackend.product.image.request.ProductImagesUploadAndChanges;
+import com.khutircraftubackend.product.image.request.ProductImagesResponse;
+import com.khutircraftubackend.product.image.request.ProductImagesChanges;
+import com.khutircraftubackend.product.image.request.ProductImagesUpload;
 import com.khutircraftubackend.storage.StorageService;
 import com.khutircraftubackend.validated.ImageMimeValidator;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +20,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-
 @Service
 @RequiredArgsConstructor
 public class ProductImagesService {
@@ -30,12 +31,17 @@ public class ProductImagesService {
     private final ImageMimeValidator mimeValidator;
     private static final Long MAX_COUNT_FILES = 5L;
     private static final int TEMP_OFFSET = 100;
-    private static final String ALLOWED_MIME_TYPE = "image/"; //TODO what images do we allow?? Because of this,
-                                                              // maybe we need to change the checking logic
-
+    //TODO Может стоит вынести в апликейшен??
+    //@Value("${allowed.mime.types}")
+    private static final Set<String> ALLOWED_MIME_TYPE = Set.of(
+            "image/jpeg",
+            "image/jpg",
+            "image/png",
+            "image/webp"); //TODO what images do we allow?? Because of this,
+                           // maybe we need to change the checking logic
 
     @Transactional
-    public ProductImagesResponse uploadImages(Long productId, ProductImagesUploadAndChanges json,
+    public ProductImagesResponse uploadImages(Long productId, ProductImagesUpload json,
                                               List<MultipartFile> files) {
         ProductEntity product = getValidProductOrThrow(productId);
         mimeValidator.validateMimeTypes(files, ALLOWED_MIME_TYPE);
@@ -45,10 +51,12 @@ public class ProductImagesService {
                     (String.format(ProductImagesResponseMessages.ERROR_TOO_MANY_IMAGES, MAX_COUNT_FILES));
         }
 
-        validateNoDuplicates(productId, json);
+        if (hasAnyDuplicatePosition(productId, json)) {
+            throw new BadRequestException(ProductImagesResponseMessages.ERROR_POSITION_ALREADY_EXISTS);
+        }
 
         List<ProductImagesEntity> savedImages = IntStream.range(0, files.size())
-                .mapToObj(i -> mapToEntities(product, json.images().get(i), files))
+                .mapToObj(i -> mapToEntities(product, json.images().get(i), files.get(i)))
                 .flatMap(List::stream)
                 .toList();
 
@@ -57,68 +65,43 @@ public class ProductImagesService {
         return imageMapper.toResponseDto(entities);
     }
 
-    private void validateNoDuplicates(Long productId, ProductImagesUploadAndChanges jsonImage) {
-
-        if (hasAnyDuplicatePosition(productId, jsonImage)) {
-            throw new BadRequestException(ProductImagesResponseMessages.ERROR_POSITION_EXIST);
-        }
-
-        if (hasExistingUid(productId, jsonImage)) {
-            throw new BadRequestException(ProductImagesResponseMessages.ERROR_UID_EXIST);
-        }
-    }
-
-    private boolean hasAnyDuplicatePosition(Long productId, ProductImagesUploadAndChanges jsonImage) {
+    private boolean hasAnyDuplicatePosition(Long productId, ProductImagesUpload jsonImage) {
         Set<Integer> existingPositions = imageRepository.findByProductId(productId).stream()
                 .map(ProductImagesEntity::getPosition)
                 .collect(Collectors.toSet());
 
         return jsonImage.images().stream()
-                .map(ImagesUploadAndChanges::position)
+                .map(ProductImagesUpload.Images::position)
                 .anyMatch(existingPositions::contains);
     }
 
-    private boolean hasExistingUid(Long productId, ProductImagesUploadAndChanges jsonImage) {
-        Set<String> existingUid = imageRepository.findByProductId(productId).stream()
-                .map(ProductImagesEntity::getUid)
-                .collect(Collectors.toSet());
-
-        return jsonImage.images().stream()
-                .map(ImagesUploadAndChanges::uid)
-                .anyMatch(existingUid::contains);
-    }
-
-    private List<ProductImagesEntity> mapToEntities(ProductEntity product, ImagesUploadAndChanges jsonImage,
-                                                    List<MultipartFile> fileImage) {
+    private List<ProductImagesEntity> mapToEntities(ProductEntity product, ProductImagesUpload.Images jsonImage,
+                                                    MultipartFile fileImage) {
         List<ImageSizes> sizes = List.of(ImageSizes.THUMBNAIL, ImageSizes.SMALL, ImageSizes.MEDIUM, ImageSizes.LARGE);
-
+        String uid = UUID.randomUUID().toString();
         return sizes.stream()
                 .map(size -> ProductImagesEntity.builder()
-                        .uid(jsonImage.uid())
+                        .uid(uid)
                         .product(product)
-                        .link(getLink(findFileByUid(fileImage, jsonImage.uid()), size))
+                        .link(getLink(fileImage, size))
                         .tsSize(size)
                         .position(jsonImage.position())
                         .build())
                 .toList();
     }
 
-    private MultipartFile findFileByUid(List<MultipartFile> files, String uid) {
-        return files.stream()
-                .filter(file -> Objects.equals(file.getOriginalFilename(), uid))
-                .findFirst()
-                .orElseThrow(() ->
-                        new BadRequestException(String.format(ProductImagesResponseMessages.ERROR_NAME_NOT_FOUND, uid)));
-    }
-
     @Transactional
-    public ProductImagesResponse changesPosition(Long productId, ProductImagesUploadAndChanges request) {
+    public ProductImagesResponse changesPosition(Long productId, ProductImagesChanges request) {
         getValidProductOrThrow(productId);
-        List<ImagesUploadAndChanges> requestImages = request.images();
+        List<Images> requestImages = request.images();
         List<ProductImagesEntity> allImages = imageRepository.findByProductId(productId);
+        int totalCountImages = requestImages.size() * ImageSizes.values().length;
 
-        if (allImages.size() != requestImages.size() * ImageSizes.values().length){
-            throw new BadRequestException(ProductImagesResponseMessages.ERROR_SIZE);
+        if (allImages.size() != totalCountImages) {
+            throw new BadRequestException(
+                    String.format(ProductImagesResponseMessages.ERROR_IMAGES_COUNT_MISMATCH,
+                            totalCountImages / ImageSizes.values().length,
+                            allImages.size() / ImageSizes.values().length));
         }
 
         validateAllImagesExistByUid(requestImages, allImages);
@@ -136,16 +119,16 @@ public class ProductImagesService {
         resolvePositionConflicts(requestImages, imagesByUid, currentPositions, toSave);
         assignNewPositions(requestImages, imagesByUid, currentPositions, toSave);
 
-        List<ProductImagesEntity> updatedImages  = imageRepository.saveAll(toSave);
+        List<ProductImagesEntity> updatedImages = imageRepository.saveAll(toSave);
 
         return imageMapper.toResponseDto(updatedImages);
     }
 
-    private void resolvePositionConflicts(List<ImagesUploadAndChanges> requestImages,
+    private void resolvePositionConflicts(List<Images> requestImages,
                                           Map<String, List<ProductImagesEntity>> imagesByUid,
                                           Map<Integer, String> currentPositions,
                                           Set<ProductImagesEntity> toSave) {
-        for (ImagesUploadAndChanges requestImage : requestImages) {
+        for (Images requestImage : requestImages) {
             String uid = requestImage.uid();
             int newPosition = requestImage.position();
 
@@ -169,11 +152,11 @@ public class ProductImagesService {
         }
     }
 
-    private void assignNewPositions(List<ImagesUploadAndChanges> requestImages,
+    private void assignNewPositions(List<Images> requestImages,
                                     Map<String, List<ProductImagesEntity>> imagesByUid,
                                     Map<Integer, String> currentPositions,
                                     Set<ProductImagesEntity> toSave) {
-        for (ImagesUploadAndChanges requestImage : requestImages) {
+        for (Images requestImage : requestImages) {
             String uid = requestImage.uid();
             int newPosition = requestImage.position();
 
@@ -190,23 +173,23 @@ public class ProductImagesService {
     }
 
     private void validateAllImagesExistByUid
-            (List<ImagesUploadAndChanges> requestImages, List<ProductImagesEntity> allImages) {
+            (List<Images> requestImages, List<ProductImagesEntity> allImages) {
         Set<String> dbUid = allImages.stream()
                 .map(ProductImagesEntity::getUid)
                 .collect(Collectors.toSet());
 
         Set<String> missingUid = requestImages.stream()
-                .map(ImagesUploadAndChanges::uid)
+                .map(Images::uid)
                 .filter(uid -> !dbUid.contains(uid))
                 .collect(Collectors.toSet());
 
         if (!missingUid.isEmpty()) {
-            throw new BadRequestException(String.format(ProductImagesResponseMessages.ERROR_MISSING_UID, missingUid));
+            throw new BadRequestException(String.format(ProductImagesResponseMessages.ERROR_IMAGE_NOT_FOUND_BY_UID, missingUid));
         }
     }
 
     private String getLink(MultipartFile file, ImageSizes size) {
-        return switch (size) { //TODO need to implement SCRUM-XXX. Stubs for resize
+        return switch (size) { //TODO need to implement SCRUM-210. Stubs for resize
             case LARGE -> String.format("URL - %s", size);
             case SMALL -> String.format("URL - %s", size);
             case MEDIUM -> String.format("URL - %s", size);
@@ -245,10 +228,9 @@ public class ProductImagesService {
             String publicId = entity.getLink();
             storageService.deleteByUrl(publicId);
         } catch (IOException e) {
-            throw new RuntimeException(entity.getLink(), e); //TODO need to implement SCRUM-XXX.
+            throw new RuntimeException(entity.getLink(), e); //TODO need to implement SCRUM-211.
                                                              // Need implement global CloudStorageException??
                                                              // You can insert the team lead's resolution here
-                                                             //
         }
     }
 }

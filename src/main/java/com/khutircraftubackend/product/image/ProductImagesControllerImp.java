@@ -1,6 +1,8 @@
 package com.khutircraftubackend.product.image;
 
-import com.khutircraftubackend.product.image.request.ProductImagesUploadAndChanges;
+import com.khutircraftubackend.product.image.request.ProductImagesResponse;
+import com.khutircraftubackend.product.image.request.ProductImagesChanges;
+import com.khutircraftubackend.product.image.request.ProductImagesUpload;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +36,7 @@ public class ProductImagesControllerImp implements ProductImagesController {
     @ResponseStatus(HttpStatus.CREATED)
     public ProductImagesResponse uploadProductImages (
             @PathVariable Long productId,
-            @Valid @RequestPart(value = "json") ProductImagesUploadAndChanges json,
+            @Valid @RequestPart(value = "json") ProductImagesUpload json,
             @RequestPart(value = "files") List<MultipartFile> files
     ){
         return service.uploadImages(productId, json, files);
@@ -47,7 +49,7 @@ public class ProductImagesControllerImp implements ProductImagesController {
     @PreAuthorize("hasRole('ADMIN') or (hasRole('SELLER') and @productService.canModifyProduct(#productId))")
     @ResponseStatus(HttpStatus.OK)
     public ProductImagesResponse changesProductImages(@PathVariable Long productId,
-                                                      @RequestBody ProductImagesUploadAndChanges request) {
+                                                      @Valid @RequestBody ProductImagesChanges request) {
         return service.changesPosition(productId, request);
     }
 

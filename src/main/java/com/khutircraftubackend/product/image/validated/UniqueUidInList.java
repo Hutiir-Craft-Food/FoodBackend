@@ -11,9 +11,9 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @Target(TYPE)
 @Retention(RUNTIME)
-@Constraint(validatedBy = UniqueUidAndPositionInListValidator.class)
-public @interface UniqueUidAndPositionInList  {
-    String message() default "UID та позиції мають бути унікальними";
+@Constraint(validatedBy = UniqueUidInListValidator.class)
+public @interface UniqueUidInList {
+    String message() default "UID мають бути унікальними.";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }
