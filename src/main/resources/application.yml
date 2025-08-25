@@ -13,7 +13,7 @@ spring:
       enabled: ALWAYS
 
   datasource:
-    driver-class-name: org.postgresql.Driver
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME}
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
@@ -53,7 +53,7 @@ cloudinary:
 
 jwt:
   secret: ${JWT_SECRET}
-  session-timeout: ${JWT_SESSION_TIMEOUT}
+  session-timeout: ${JWT_SESSION_TIMEOUT:600000}
 
 logging:
   level:
