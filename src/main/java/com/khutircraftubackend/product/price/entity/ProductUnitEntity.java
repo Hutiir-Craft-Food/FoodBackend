@@ -19,7 +19,7 @@ public class ProductUnitEntity extends Auditable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @Column(name = "name", nullable = false, unique = true, length = 20)
+    @Column(name = "name", nullable = false, unique = true, length = 10)
     private String name;
     
 }

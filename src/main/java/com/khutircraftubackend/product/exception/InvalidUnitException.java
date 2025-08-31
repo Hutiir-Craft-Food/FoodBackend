@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(HttpStatus.BAD_REQUEST)
 public class InvalidUnitException extends RuntimeException {
     
-    public InvalidUnitException(String message, Long unitId) {
+    public InvalidUnitException(String message) {
         
-        super(String.format(message, unitId));
+        super(message);
     }
 }

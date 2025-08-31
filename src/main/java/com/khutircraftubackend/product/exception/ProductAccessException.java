@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 public class ProductAccessException extends RuntimeException {
     
     public ProductAccessException(String message) {
+        
         super(message);
     }
 }

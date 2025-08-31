@@ -37,7 +37,8 @@ public class ProductService {
     private ProductEntity findProductById(Long productId) {
         
         return productRepository.findProductById(productId)
-                .orElseThrow(() -> new ProductNotFoundException(PRODUCT_NOT_FOUND, productId));
+                .orElseThrow(() -> new ProductNotFoundException(
+                        String.format(PRODUCT_NOT_FOUND, productId)));
     }
     
     private String uploadIcon(MultipartFile iconFile) throws IOException {
@@ -55,7 +56,7 @@ public class ProductService {
         SellerEntity currentSeller = sellerService.getCurrentSeller();
         
         if (!currentSeller.equals(existingProduct.getSeller())) {
-            throw new ProductAccessException(NOT_ACCESS);
+            throw new ProductAccessException(NO_ACCESS);
         }
         return true;
     }

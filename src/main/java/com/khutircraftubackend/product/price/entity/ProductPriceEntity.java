@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 @Entity
 @AllArgsConstructor
@@ -31,4 +32,17 @@ public class ProductPriceEntity extends Auditable {
     private BigDecimal price;
     @Column(name = "qty", nullable = false)
     private int qty;
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ProductPriceEntity that)) return false;
+        return qty == that.qty &&
+                Objects.equals(product, that.product) &&
+                Objects.equals(unit, that.unit);    }
+    
+    @Override
+    public int hashCode() {
+        return Objects.hash(product, unit, qty);
+    }
 }

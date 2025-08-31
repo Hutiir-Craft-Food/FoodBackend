@@ -2,10 +2,7 @@ package com.khutircraftubackend.product.price.service;
 
 import com.khutircraftubackend.product.ProductEntity;
 import com.khutircraftubackend.product.ProductRepository;
-import com.khutircraftubackend.product.exception.DuplicatePriceException;
-import com.khutircraftubackend.product.exception.InvalidUnitException;
-import com.khutircraftubackend.product.exception.PriceNotFoundException;
-import com.khutircraftubackend.product.exception.ProductNotFoundException;
+import com.khutircraftubackend.product.exception.*;
 import com.khutircraftubackend.product.price.entity.ProductPriceEntity;
 import com.khutircraftubackend.product.price.entity.ProductUnitEntity;
 import com.khutircraftubackend.product.price.mapper.ProductPriceMapper;
@@ -14,6 +11,7 @@ import com.khutircraftubackend.product.price.repo.ProductUnitRepository;
 import com.khutircraftubackend.product.price.request.ProductPriceRequest;
 import com.khutircraftubackend.product.price.response.ProductPriceResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +22,7 @@ import static com.khutircraftubackend.product.exception.ProductResponseMessage.*
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ProductPriceService {
     
     private final ProductUnitRepository productUnitRepository;
@@ -64,16 +63,25 @@ public class ProductPriceService {
     
     private ProductEntity getProductEntityById(Long productId) {
         return productRepository.findById(productId)
-                .orElseThrow(() -> new ProductNotFoundException(PRODUCT_NOT_FOUND, productId));
+                .orElseThrow(() -> new ProductNotFoundException(
+                        String.format(PRODUCT_NOT_FOUND, productId)));
     }
     
     private Map<Long, ProductUnitEntity> loadUnits(List<ProductPriceRequest> priceRequests) {
         Set<Long> unitIds = priceRequests.stream()
                 .map(ProductPriceRequest::unitId)
                 .collect(Collectors.toSet());
-        
-        return productUnitRepository.findAllById(unitIds).stream()
+    
+        Map<Long, ProductUnitEntity> units = productUnitRepository.findAllById(unitIds).stream()
                 .collect(Collectors.toMap(ProductUnitEntity::getId, u -> u));
+    
+        if (units.size() != unitIds.size()) {
+            Set<Long> missing = new HashSet<>(unitIds);
+            missing.removeAll(units.keySet());
+            log.warn("Missing units: {}", missing);
+            throw new UnitNotFoundException(UNIT_NOT_FOUND);
+        }
+        return units;
     }
     
     private void validateDuplicate(List<ProductPriceEntity> updatedPrices,
@@ -85,11 +93,13 @@ public class ProductPriceService {
                         && p.getQty() == (priceRequest.qty()));
         
         if (duplicateExists) {
-            throw new DuplicatePriceException(DUPLICATE, priceRequest.unitId(), priceRequest.qty());
+            throw new DuplicatePriceException(
+                    String.format(DUPLICATE, priceRequest.unitId(), priceRequest.qty()));
         }
         
         if (!units.containsKey(priceRequest.unitId())) {
-            throw new InvalidUnitException(INVALID_UNIT, priceRequest.unitId());
+            throw new InvalidUnitException(
+                    String.format(INVALID_UNIT, priceRequest.unitId()));
         }
     }
     
@@ -98,8 +108,10 @@ public class ProductPriceService {
                                      List<ProductPriceEntity> updatedPrices,
                                      Map<Long, ProductUnitEntity> units) {
         ProductPriceEntity existing = existingPrices.remove(priceRequest.id());
+        
         if (existing == null) {
-            throw new PriceNotFoundException(PRICE_NOT_FOUND, priceRequest.id());
+            throw new PriceNotFoundException(
+                    String.format(PRICE_NOT_FOUND, priceRequest.id()));
         }
         
         productPriceMapper.updateProductPriceFromRequest(existing, priceRequest);
@@ -114,7 +126,13 @@ public class ProductPriceService {
                                 Map<Long, ProductUnitEntity> units) {
         ProductPriceEntity newPrice = productPriceMapper.toProductPriceEntity(priceRequest);
         newPrice.setProduct(product);
-        newPrice.setUnit(units.get(priceRequest.unitId()));
+        ProductUnitEntity unit = units.get(priceRequest.unitId());
+        
+        if(unit == null) {
+            throw new InvalidUnitException(
+                    String.format(INVALID_UNIT, priceRequest.unitId()));
+        }
+        newPrice.setUnit(unit);
         
         updatedPrices.add(newPrice);
     }

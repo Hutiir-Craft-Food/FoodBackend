@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(HttpStatus.CONFLICT)
 public class DuplicatePriceException extends RuntimeException {
     
-    public DuplicatePriceException(String message, Long unitId, int qty) {
+    public DuplicatePriceException(String message) {
         
-        super(String.format(message, unitId, qty));
+        super(message);
     }
 }
