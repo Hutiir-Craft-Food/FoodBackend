@@ -2,7 +2,7 @@ package com.khutircraftubackend.product.price.controller;
 
 import com.khutircraftubackend.product.price.request.ProductPriceRequest;
 import com.khutircraftubackend.product.price.response.ProductPriceResponse;
-import com.khutircraftubackend.product.price.service.ProductPriceService;
+import com.khutircraftubackend.product.price.ProductPriceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

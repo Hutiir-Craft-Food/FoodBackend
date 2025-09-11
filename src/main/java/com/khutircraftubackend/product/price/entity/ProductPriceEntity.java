@@ -19,12 +19,6 @@ import java.util.Objects;
 @Table(name = "product_prices")
 public class ProductPriceEntity extends Auditable {
     
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "product_id", nullable = false)
-    private ProductEntity product;
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
-    @JoinColumn(name = "unit_id", nullable = false)
-    private ProductUnitEntity unit;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -32,6 +26,12 @@ public class ProductPriceEntity extends Auditable {
     private BigDecimal price;
     @Column(name = "qty", nullable = false)
     private int qty;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "product_id", nullable = false)
+    private ProductEntity product;
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(name = "unit_id", nullable = false)
+    private ProductUnitEntity unit;
     
     @Override
     public boolean equals(Object o) {
@@ -39,7 +39,8 @@ public class ProductPriceEntity extends Auditable {
         if (!(o instanceof ProductPriceEntity that)) return false;
         return qty == that.qty &&
                 Objects.equals(product, that.product) &&
-                Objects.equals(unit, that.unit);    }
+                Objects.equals(unit, that.unit);
+    }
     
     @Override
     public int hashCode() {

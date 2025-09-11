@@ -1,4 +1,4 @@
-package com.khutircraftubackend.product.price.service;
+package com.khutircraftubackend.product.price;
 
 import com.khutircraftubackend.product.price.entity.ProductUnitEntity;
 import com.khutircraftubackend.product.price.mapper.ProductUnitMapper;
