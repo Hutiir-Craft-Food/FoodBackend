@@ -1,5 +1,8 @@
 package com.khutircraftubackend.category;
 
+import com.khutircraftubackend.category.breadcrumb.response.BreadcrumbResponse;
+import com.khutircraftubackend.category.breadcrumb.BreadcrumbService;
+import com.khutircraftubackend.category.breadcrumb.response.CatalogResponse;
 import com.khutircraftubackend.category.request.CategoryRequest;
 import com.khutircraftubackend.category.response.CategoryResponse;
 import jakarta.annotation.Nullable;
@@ -24,6 +27,7 @@ import java.util.List;
 public class CategoryController {
 	
 	private final CategoryService categoryService;
+	private final BreadcrumbService breadcrumbService;
 	private final CategoryMapper categoryMapper;
 	
 	@GetMapping
@@ -97,5 +101,19 @@ public class CategoryController {
 		CategoryEntity category = categoryService.updateKeywords(id, keywords);
 
 		return categoryMapper.toCategoryResponse(category);
+	}
+	
+	@GetMapping("/catalog")
+	@ResponseStatus(HttpStatus.OK)
+	public List<CatalogResponse> getCategoryCatalog() {
+		
+		return breadcrumbService.getCatalogTree();
+	}
+	
+	@GetMapping("/catalog/{categoryId}")
+	@ResponseStatus(HttpStatus.OK)
+	public List<BreadcrumbResponse> getCategoryBreadcrumbs(@PathVariable Long categoryId) {
+		
+		return breadcrumbService.getBreadcrumbs(categoryId);
 	}
 }
