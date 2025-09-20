@@ -7,6 +7,7 @@ import com.khutircraftubackend.seller.SellerResponse;
 import java.util.List;
 
 public record ProductResponse(
+        
         Long id,
         String name,
         String thumbnailImageUrl,
