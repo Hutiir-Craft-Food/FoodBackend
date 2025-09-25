@@ -21,6 +21,7 @@ public interface ProductPriceMapper {
     
     @Mapping(target = "unit.id", source = "unitId")
     @Mapping(target = "product", ignore = true)
+    @Mapping(target = "price", source = "price", qualifiedByName = "normalizePrice")
     ProductPriceEntity toProductPriceEntity(ProductPriceRequest request);
     
     ProductPriceResponse toProductPriceResponse(ProductPriceEntity entity);
