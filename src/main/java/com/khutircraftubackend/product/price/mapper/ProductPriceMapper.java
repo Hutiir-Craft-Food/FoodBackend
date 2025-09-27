@@ -4,13 +4,14 @@ import com.khutircraftubackend.product.ProductMapper;
 import com.khutircraftubackend.product.price.entity.ProductPriceEntity;
 import com.khutircraftubackend.product.price.request.ProductPriceRequest;
 import com.khutircraftubackend.product.price.response.ProductPriceResponse;
+import com.khutircraftubackend.product.price.response.ProductUnitResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
 
 import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
 import static org.mapstruct.ReportingPolicy.IGNORE;
@@ -26,11 +27,8 @@ public interface ProductPriceMapper {
     
     ProductPriceResponse toProductPriceResponse(ProductPriceEntity entity);
     
-    @Mapping(target = "qty", source = "qty")
-    @Mapping(target = "unit", ignore = true)
-    @Mapping(target = "price", source = "price", qualifiedByName = "normalizePrice")
-    void updateProductPriceFromRequest(@MappingTarget ProductPriceEntity productPrice,
-                                       ProductPriceRequest request);
+    @Mapping(target = "units", source = "units")
+    ProductPriceResponse toProductPriceResponse(ProductPriceEntity entity, List<ProductUnitResponse> units);
     
     @Named("normalizePrice")
     default BigDecimal normalizePrice(BigDecimal price) {

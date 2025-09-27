@@ -29,16 +29,10 @@ jobs:
           --health-retries 5
 
     env:
-      FLYWAY_EMAIL: ${{ secrets.FLYWAY_EMAIL }}
-      FLYWAY_PASSWORD: ${{ secrets.FLYWAY_PASSWORD }}
-      FLYWAY_ROLE: ${{ secrets.FLYWAY_ROLE }}
-      FLYWAY_ENABLED: ${{ secrets.FLYWAY_ENABLED }}
-      FLYWAY_CONFIRMED: ${{ secrets.FLYWAY_CONFIRMED }}
       JWT_SECRET: dk59GJKDslfl45kkdIUOWNNXVG495fjkdLSLLEWIkvmidorfpwa20658764UEmcskRIIKORcfd
       SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/khutir_craft
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
-      SPRING_PROFILES_ACTIVE: ci
 
     steps:
       - name: Wait for PostgreSQL to be ready

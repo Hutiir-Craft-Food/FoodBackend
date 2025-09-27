@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS products
     available       BOOLEAN               DEFAULT FALSE,
     description     TEXT,
     created_at      TIMESTAMPTZ  NOT NULL DEFAULT now(),
-    updated_at      TIMESTAMPTZ  NOT NULL DEFAULT now(),
+    updated_at      TIMESTAMPTZ,
     category_id     BIGINT       REFERENCES categories (id) ON DELETE SET NULL,
     seller_id       BIGINT REFERENCES sellers (id) ON DELETE CASCADE
 );
