@@ -1,5 +1,6 @@
 package com.khutircraftubackend.exception;
 
+import com.khutircraftubackend.product.exception.ProductResponseMessage;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -9,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -64,7 +66,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                         LinkedHashMap::new,
                         Collectors.mapping(FieldError::getDefaultMessage, Collectors.toList())
                 ));
-
+        
         GlobalErrorResponse errorResponse = GlobalErrorResponse.builder()
                 .status(status.value())
                 .error(ERROR_BAD_REQUEST)
@@ -72,7 +74,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .path(determineRequestPath(request))
                 .data(errors)
                 .build();
-
+        
         return new ResponseEntity<>(errorResponse, status);
     }
     
@@ -85,14 +87,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             @NonNull HttpHeaders headers,
             @NonNull HttpStatusCode status,
             @NonNull WebRequest request) {
-
+        
         GlobalErrorResponse errorResponse = GlobalErrorResponse.builder()
                 .status(status.value())
                 .error(ERROR_METHOD_NOT_ALLOWED)
                 .message(ex.getMessage())
                 .path(determineRequestPath(request))
                 .build();
-
+        
         return new ResponseEntity<>(errorResponse, status);
     }
     
@@ -115,7 +117,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .message(message)
                 .path(determineRequestPath(request))
                 .build();
-
+        
         return new ResponseEntity<>(errorResponse, status);
     }
     
@@ -123,7 +125,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      * Порожній query
      */
     @ExceptionHandler(ConstraintViolationException.class)
-    public GlobalErrorResponse handleConstraintViolationException (
+    public GlobalErrorResponse handleConstraintViolationException(
             ConstraintViolationException ex,
             HttpServletRequest request) {
         
@@ -143,4 +145,21 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .data(errors)
                 .build();
     }
+    
+    /**
+     * Заборонений доступ
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    public GlobalErrorResponse handleAccessDeniedException(
+            AccessDeniedException ex,
+            HttpServletRequest request) {
+        
+        return GlobalErrorResponse.builder()
+                .status(HttpStatus.FORBIDDEN.value())
+                .error(HttpStatus.FORBIDDEN.getReasonPhrase())
+                .message(ProductResponseMessage.NO_ACCESS)
+                .path(determineRequestPath(request))
+                .build();
+    }
+    
 }
