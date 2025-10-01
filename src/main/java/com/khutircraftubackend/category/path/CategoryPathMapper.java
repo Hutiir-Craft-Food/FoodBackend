@@ -1,9 +1,10 @@
-package com.khutircraftubackend.category.breadcrumb;
+package com.khutircraftubackend.category.path;
 
-import com.khutircraftubackend.category.breadcrumb.response.BreadcrumbResponse;
-import com.khutircraftubackend.category.breadcrumb.response.CatalogResponse;
+import com.khutircraftubackend.category.path.response.CategoryPathItem;
+import com.khutircraftubackend.category.path.response.CategoryTreeNode;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,28 +14,24 @@ import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
 import static org.mapstruct.ReportingPolicy.IGNORE;
 
 @Mapper(componentModel = SPRING, unmappedTargetPolicy = IGNORE)
-public interface BreadcrumbMapper {
+public interface CategoryPathMapper {
     
     @Mapping(target = "children", ignore = true)
-    CatalogResponse toCatalogResponse(CategoryViewEntity entity);
+    CategoryTreeNode toCatalogResponse(CategoryViewEntity entity);
     
-    default BreadcrumbResponse toBreadcrumbResponse(Long id, String label) {
+    default CategoryPathItem toCategoryPathItem(Long id, String name) {
         
-        return new BreadcrumbResponse(id, label, "/categories/catalog/" + id);
+        return new CategoryPathItem(id, name);
     }
+
     
-    default BreadcrumbResponse toRootBreadcrumbResponse() {
+    default List<CategoryPathItem> toCategoryPathItem(CategoryViewEntity entity) {
         
-        return new BreadcrumbResponse(0L, "Головна", "/");
-    }
-    
-    default List<BreadcrumbResponse> toBreadcrumbs(CategoryViewEntity entity) {
-        
-        List<BreadcrumbResponse> breadcrumbs = new ArrayList<>();
-        breadcrumbs.add(toRootBreadcrumbResponse());
+        List<CategoryPathItem> categoryPathItems = new ArrayList<>();
+        categoryPathItems.add(new CategoryPathItem(0L, "Головна"));
         
         if (entity == null || entity.getPathIds() == null || entity.getPathNames() == null) {
-            return breadcrumbs;
+            return categoryPathItems;
         }
         
         List<String> idTokens = Arrays.stream(entity.getPathIds().split(","))
@@ -50,11 +47,16 @@ public interface BreadcrumbMapper {
         int size = Math.min(idTokens.size(), nameTokens.size());//запобігаємо IndexOutOfBoundsException
         
         for (int i = 0; i < size; i++) {
-            breadcrumbs.add(toBreadcrumbResponse(
+            categoryPathItems.add(toCategoryPathItem(
                     Long.valueOf(idTokens.get(i)),
                     nameTokens.get(i)
             ));
         }
-        return breadcrumbs;
+        if(idTokens.size() != nameTokens.size()){
+            LoggerFactory.getLogger(CategoryPathMapper.class)
+                    .warn("Mismatched pathIds and pathNames lengths for category id={}", entity.getId());
+        }
+        
+        return categoryPathItems;
     }
 }

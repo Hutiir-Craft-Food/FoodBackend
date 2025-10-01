@@ -1,4 +1,4 @@
-package com.khutircraftubackend.category.breadcrumb.response;
+package com.khutircraftubackend.category.path.response;
 
 import lombok.*;
 
@@ -10,11 +10,11 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CatalogResponse {
+public class CategoryTreeNode {
     
     private Long id;
     private String name;
     
     @Builder.Default
-    private List<CatalogResponse> children = new ArrayList<>();
+    private List<CategoryTreeNode> children = new ArrayList<>();
 }
