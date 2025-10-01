@@ -1,10 +1,10 @@
 package com.khutircraftubackend.category.breadcramb;
 
-import com.khutircraftubackend.category.breadcrumb.BreadcrumbMapper;
-import com.khutircraftubackend.category.breadcrumb.BreadcrumbService;
-import com.khutircraftubackend.category.breadcrumb.CategoryViewEntity;
-import com.khutircraftubackend.category.breadcrumb.CategoryViewRepository;
-import com.khutircraftubackend.category.breadcrumb.response.BreadcrumbResponse;
+import com.khutircraftubackend.category.path.CategoryPathMapper;
+import com.khutircraftubackend.category.path.PathService;
+import com.khutircraftubackend.category.path.CategoryViewEntity;
+import com.khutircraftubackend.category.path.CategoryViewRepository;
+import com.khutircraftubackend.category.path.response.CategoryPathItem;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,16 +22,16 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class BreadcrumbServiceTest {
+class PathServiceTest {
     
     @Mock
     private CategoryViewRepository repo;
     
     @Spy
-    private BreadcrumbMapper mapper = Mappers.getMapper(BreadcrumbMapper.class);
+    private CategoryPathMapper mapper = Mappers.getMapper(CategoryPathMapper.class);
     
     @InjectMocks
-    private BreadcrumbService breadcrumbService;
+    private PathService pathService;
     
     @Test
     @DisplayName("Should return full breadcrumbs when category exists")
@@ -45,12 +45,12 @@ class BreadcrumbServiceTest {
         when(repo.findById(3L)).thenReturn(Optional.of(entity));
         
         //Act
-        List<BreadcrumbResponse> breadcrumbs = breadcrumbService.getBreadcrumbs(3L);
+        List<CategoryPathItem> breadcrumbs = pathService.getCategoryPathItem(3L);
         
         //Assert
         assertEquals(4, breadcrumbs.size());
-        assertEquals("Головна", breadcrumbs.get(0).label());
-        assertEquals("Вино", breadcrumbs.get(3).label());
+        assertEquals("Головна", breadcrumbs.get(0).name());
+        assertEquals("Вино", breadcrumbs.get(3).name());
     }
     
     @Test
@@ -61,10 +61,10 @@ class BreadcrumbServiceTest {
         when(repo.findById(99L)).thenReturn(Optional.empty());
         
         //Act
-        List<BreadcrumbResponse> breadcrumbs = breadcrumbService.getBreadcrumbs(99L);
+        List<CategoryPathItem> breadcrumbs = pathService.getCategoryPathItem(99L);
         
         //Assert
         assertEquals(1, breadcrumbs.size());
-        assertEquals("Головна", breadcrumbs.get(0).label());
+        assertEquals("Головна", breadcrumbs.get(0).name());
     }
 }

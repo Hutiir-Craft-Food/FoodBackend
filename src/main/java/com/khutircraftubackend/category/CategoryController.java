@@ -1,8 +1,8 @@
 package com.khutircraftubackend.category;
 
-import com.khutircraftubackend.category.breadcrumb.response.BreadcrumbResponse;
-import com.khutircraftubackend.category.breadcrumb.BreadcrumbService;
-import com.khutircraftubackend.category.breadcrumb.response.CatalogResponse;
+import com.khutircraftubackend.category.path.response.CategoryPathItem;
+import com.khutircraftubackend.category.path.PathService;
+import com.khutircraftubackend.category.path.response.CategoryTreeNode;
 import com.khutircraftubackend.category.request.CategoryRequest;
 import com.khutircraftubackend.category.response.CategoryResponse;
 import jakarta.annotation.Nullable;
@@ -27,7 +27,7 @@ import java.util.List;
 public class CategoryController {
 	
 	private final CategoryService categoryService;
-	private final BreadcrumbService breadcrumbService;
+	private final PathService pathService;
 	private final CategoryMapper categoryMapper;
 	
 	@GetMapping
@@ -105,15 +105,15 @@ public class CategoryController {
 	
 	@GetMapping("/catalog")
 	@ResponseStatus(HttpStatus.OK)
-	public List<CatalogResponse> getCategoryCatalog() {
+	public List<CategoryTreeNode> getCategoryCatalog() {
 		
-		return breadcrumbService.getCatalogTree();
+		return pathService.getCatalogTree();
 	}
 	
 	@GetMapping("/catalog/{categoryId}")
 	@ResponseStatus(HttpStatus.OK)
-	public List<BreadcrumbResponse> getCategoryBreadcrumbs(@PathVariable Long categoryId) {
+	public List<CategoryPathItem> getCategoryPath(@PathVariable Long categoryId) {
 		
-		return breadcrumbService.getBreadcrumbs(categoryId);
+		return pathService.getCategoryPathItem(categoryId);
 	}
 }

@@ -1,10 +1,10 @@
 package com.khutircraftubackend.category.breadcramb;
 
-import com.khutircraftubackend.category.breadcrumb.BreadcrumbMapper;
-import com.khutircraftubackend.category.breadcrumb.BreadcrumbService;
-import com.khutircraftubackend.category.breadcrumb.CategoryViewEntity;
-import com.khutircraftubackend.category.breadcrumb.CategoryViewRepository;
-import com.khutircraftubackend.category.breadcrumb.response.CatalogResponse;
+import com.khutircraftubackend.category.path.CategoryPathMapper;
+import com.khutircraftubackend.category.path.PathService;
+import com.khutircraftubackend.category.path.CategoryViewEntity;
+import com.khutircraftubackend.category.path.CategoryViewRepository;
+import com.khutircraftubackend.category.path.response.CategoryTreeNode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,11 +14,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -29,10 +31,10 @@ class CatalogTreeTest {
     private CategoryViewRepository repo;
     
     @Spy
-    private BreadcrumbMapper mapper = Mappers.getMapper(BreadcrumbMapper.class);
+    private CategoryPathMapper mapper = Mappers.getMapper(CategoryPathMapper.class);
     
     @InjectMocks
-    private BreadcrumbService service;
+    private PathService service;
     
     private CategoryViewEntity rootEntity;
     
@@ -50,14 +52,14 @@ class CatalogTreeTest {
     void shouldReturnSingleRoot_WhenOneCategory() {
         
         //Arrange
-        when(repo.findAll()).thenReturn(List.of(rootEntity));
+        when(repo.findAll(any(Sort.class))).thenReturn(List.of(rootEntity));
         
         //Act
-        List<CatalogResponse> catalogTree = service.getCatalogTree();
+        List<CategoryTreeNode> catalogTree = service.getCatalogTree();
         
         //Assert
         assertEquals(1, catalogTree.size());
-        CatalogResponse root = catalogTree.get(0);
+        CategoryTreeNode root = catalogTree.get(0);
         assertEquals(1L, root.getId());
         assertEquals("Напої", root.getName());
         assertTrue(root.getChildren().isEmpty());
@@ -73,14 +75,14 @@ class CatalogTreeTest {
         when(childEntity.getName()).thenReturn("Алкогольні");
         when(childEntity.getParentId()).thenReturn(1L);
         
-        when(repo.findAll()).thenReturn(List.of(rootEntity, childEntity));
+        when(repo.findAll(any(Sort.class))).thenReturn(List.of(rootEntity, childEntity));
         
         //Act
-        List<CatalogResponse> catalogTree = service.getCatalogTree();
+        List<CategoryTreeNode> catalogTree = service.getCatalogTree();
         
         //Assert
         assertEquals(1, catalogTree.size());
-        CatalogResponse root = catalogTree.get(0);
+        CategoryTreeNode root = catalogTree.get(0);
         assertEquals("Напої", root.getName());
         assertEquals(1, root.getChildren().size());
         assertEquals("Алкогольні", root.getChildren().get(0).getName());
@@ -101,16 +103,18 @@ class CatalogTreeTest {
         when(childEntity2.getName()).thenReturn("Безалкогольні");
         when(childEntity2.getParentId()).thenReturn(1L);
         
-        when(repo.findAll()).thenReturn(List.of(rootEntity, childEntity1, childEntity2));
+        when(repo.findAll(any(Sort.class))).thenReturn(List.of(rootEntity, childEntity1, childEntity2));
         
         //Act
-        List<CatalogResponse> catalogTree = service.getCatalogTree();
+        List<CategoryTreeNode> catalogTree = service.getCatalogTree();
         
         //Assert
-        CatalogResponse root = catalogTree.get(0);
+        assertEquals(1, catalogTree.size());
+        CategoryTreeNode root = catalogTree.get(0);
+        assertEquals("Напої", root.getName());
         assertEquals(2, root.getChildren().size());
         List<String> childNames = root.getChildren().stream()
-                .map(CatalogResponse::getName)
+                .map(CategoryTreeNode::getName)
                 .toList();
         assertTrue(childNames.contains("Алкогольні"));
         assertTrue(childNames.contains("Безалкогольні"));
@@ -132,15 +136,15 @@ class CatalogTreeTest {
         when(childEntity2.getName()).thenReturn("Вина");
         when(childEntity2.getParentId()).thenReturn(2L);
         
-        when(repo.findAll()).thenReturn(List.of(rootEntity, childEntity1, childEntity2));
+        when(repo.findAll(any(Sort.class))).thenReturn(List.of(rootEntity, childEntity1, childEntity2));
         
         //Act
-        List<CatalogResponse> catalogTree = service.getCatalogTree();
+        List<CategoryTreeNode> catalogTree = service.getCatalogTree();
         
         //Assert
-        CatalogResponse root = catalogTree.get(0);
+        CategoryTreeNode root = catalogTree.get(0);
         assertEquals(1, root.getChildren().size());
-        CatalogResponse child1 = root.getChildren().get(0);
+        CategoryTreeNode child1 = root.getChildren().get(0);
         assertEquals("Алкогольні", child1.getName());
         
         assertEquals(1, child1.getChildren().size());
@@ -157,15 +161,15 @@ class CatalogTreeTest {
         when(rootEntity2.getName()).thenReturn("Мʼясні вироби");
         when(rootEntity2.getParentId()).thenReturn(null);
         
-        when(repo.findAll()).thenReturn(List.of(rootEntity, rootEntity2));
+        when(repo.findAll(any(Sort.class))).thenReturn(List.of(rootEntity, rootEntity2));
         
         //Act
-        List<CatalogResponse> catalogTree = service.getCatalogTree();
+        List<CategoryTreeNode> catalogTree = service.getCatalogTree();
         
         //Assert
         assertEquals(2, catalogTree.size());
         List<String> rootNames = catalogTree.stream()
-                .map(CatalogResponse::getName)
+                .map(CategoryTreeNode::getName)
                 .toList();
         assertTrue(rootNames.contains("Напої"));
         assertTrue(rootNames.contains("Мʼясні вироби"));
@@ -182,14 +186,14 @@ class CatalogTreeTest {
         when(orphanEntity.getName()).thenReturn("Орфан");
         when(orphanEntity.getParentId()).thenReturn(500L);
         
-        when(repo.findAll()).thenReturn(List.of(rootEntity, orphanEntity));
+        when(repo.findAll(any(Sort.class))).thenReturn(List.of(rootEntity, orphanEntity));
         
         //Act
-        List<CatalogResponse> catalogTree = service.getCatalogTree();
+        List<CategoryTreeNode> catalogTree = service.getCatalogTree();
         
         //Assert
         assertEquals(1, catalogTree.size());
-        CatalogResponse root = catalogTree.get(0);
+        CategoryTreeNode root = catalogTree.get(0);
         assertEquals("Напої", root.getName());
         assertTrue(root.getChildren().isEmpty());
     }
