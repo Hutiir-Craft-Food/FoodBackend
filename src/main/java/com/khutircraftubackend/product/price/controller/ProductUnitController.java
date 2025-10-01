@@ -1,7 +1,7 @@
 package com.khutircraftubackend.product.price.controller;
 
+import com.khutircraftubackend.product.price.entity.ProductUnitEntity;
 import com.khutircraftubackend.product.price.request.ProductUnitRequest;
-import com.khutircraftubackend.product.price.response.ProductUnitResponse;
 import com.khutircraftubackend.product.price.service.ProductUnitService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ public class ProductUnitController {
     
     @GetMapping()
     @ResponseStatus(HttpStatus.OK)
-    public List<ProductUnitResponse> getAllUnits() {
+    public List<ProductUnitEntity> getAllUnits() {
         
         return productUnitService.getProductUnits();
     }
@@ -28,7 +28,7 @@ public class ProductUnitController {
     @PostMapping()
     @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
-    public ProductUnitResponse createUnit(@Valid @RequestBody ProductUnitRequest request) {
+    public ProductUnitEntity createUnit(@Valid @RequestBody ProductUnitRequest request) {
         
         return productUnitService.createUnit(request);
     }

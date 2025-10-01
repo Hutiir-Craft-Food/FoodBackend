@@ -10,8 +10,5 @@ create table if not exists product_prices
     unique (product_id, unit_id)
 );
 
-drop table if exists product_prices cascade;
-
 create index idx_product_prices_product_id on product_prices (product_id);
 create unique index uq_product_prices_unique on product_prices (product_id, unit_id);
-create index idx_product_prices_unit_id on product_prices (unit_id);
