@@ -1,11 +1,17 @@
 package com.khutircraftubackend.product.price.response;
 
-import java.math.BigDecimal;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.khutircraftubackend.product.price.entity.ProductUnitEntity;
+import com.khutircraftubackend.product.price.request.ProductPriceDTO;
+import lombok.Builder;
 
+import java.util.List;
+
+@Builder
 public record ProductPriceResponse(
-        Long id,
-        BigDecimal price,
-        int qty,
-        ProductUnitResponse unit
+        
+        List<ProductPriceDTO> prices,
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        List<ProductUnitEntity> units
 ) {
 }

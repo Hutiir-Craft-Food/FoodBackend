@@ -22,13 +22,17 @@ public class ProductPriceEntity extends Auditable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    
     @Column(name = "price", precision = 10, scale = 2, nullable = false)
     private BigDecimal price;
+    
     @Column(name = "qty", nullable = false)
     private int qty;
+    
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "product_id", nullable = false)
     private ProductEntity product;
+    
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "unit_id", nullable = false)
     private ProductUnitEntity unit;
@@ -37,13 +41,12 @@ public class ProductPriceEntity extends Auditable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof ProductPriceEntity that)) return false;
-        return qty == that.qty &&
-                Objects.equals(product, that.product) &&
+        return Objects.equals(product, that.product) &&
                 Objects.equals(unit, that.unit);
     }
     
     @Override
     public int hashCode() {
-        return Objects.hash(product, unit, qty);
+        return Objects.hash(product, unit);
     }
 }

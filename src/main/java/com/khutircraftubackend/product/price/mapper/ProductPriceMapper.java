@@ -2,11 +2,9 @@ package com.khutircraftubackend.product.price.mapper;
 
 import com.khutircraftubackend.product.ProductMapper;
 import com.khutircraftubackend.product.price.entity.ProductPriceEntity;
-import com.khutircraftubackend.product.price.request.ProductPriceRequest;
-import com.khutircraftubackend.product.price.response.ProductPriceResponse;
+import com.khutircraftubackend.product.price.request.ProductPriceDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 
 import java.math.BigDecimal;
@@ -22,15 +20,10 @@ public interface ProductPriceMapper {
     @Mapping(target = "unit.id", source = "unitId")
     @Mapping(target = "product", ignore = true)
     @Mapping(target = "price", source = "price", qualifiedByName = "normalizePrice")
-    ProductPriceEntity toProductPriceEntity(ProductPriceRequest request);
+    ProductPriceEntity toProductPriceEntity(ProductPriceDTO request);
     
-    ProductPriceResponse toProductPriceResponse(ProductPriceEntity entity);
-    
-    @Mapping(target = "qty", source = "qty")
-    @Mapping(target = "unit", ignore = true)
-    @Mapping(target = "price", source = "price", qualifiedByName = "normalizePrice")
-    void updateProductPriceFromRequest(@MappingTarget ProductPriceEntity productPrice,
-                                       ProductPriceRequest request);
+    @Mapping(target = "unitId", source = "unit.id")
+    ProductPriceDTO toProductPriceDTO(ProductPriceEntity entity);
     
     @Named("normalizePrice")
     default BigDecimal normalizePrice(BigDecimal price) {
