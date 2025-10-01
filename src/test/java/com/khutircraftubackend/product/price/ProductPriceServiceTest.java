@@ -10,6 +10,7 @@ import com.khutircraftubackend.product.price.mapper.ProductPriceMapper;
 import com.khutircraftubackend.product.price.mapper.ProductUnitMapper;
 import com.khutircraftubackend.product.price.repo.ProductPriceRepository;
 import com.khutircraftubackend.product.price.repo.ProductUnitRepository;
+import com.khutircraftubackend.product.price.request.ProductPriceDTO;
 import com.khutircraftubackend.product.price.request.ProductPriceRequest;
 import com.khutircraftubackend.product.price.response.ProductPriceResponse;
 import com.khutircraftubackend.product.price.service.ProductPriceService;
@@ -25,10 +26,13 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -67,99 +71,38 @@ class ProductPriceServiceTest {
     class SyncProductPricesTests {
         
         @Test
-        @DisplayName("should create new price when valid request given")
-        void shouldCreateNewPrice_WhenValidRequest() {
+        @DisplayName("should create new prices when valid request given")
+        void shouldCreateNewPrices_WhenValidRequest() {
             
             // Arrange
-            List<ProductPriceRequest> priceRequests = List.of(
-                    new ProductPriceRequest(null, new BigDecimal("1.00"), 10, 1L)
-            );
-            
+            ProductPriceDTO dto = new ProductPriceDTO(new BigDecimal("1.00"), 10, 1L);
+            ProductPriceRequest request = new ProductPriceRequest(List.of(dto));
             ProductUnitEntity unit = new ProductUnitEntity();
+            
             unit.setId(1L);
             unit.setName("кг");
             
             when(productRepository.findById(1L)).thenReturn(Optional.of(productEntity));
-            when(productUnitRepository.findAllById(Set.of(1L))).thenReturn(List.of(unit));
+            when(productUnitRepository.findById(1L)).thenReturn(Optional.of(unit));
             
             // Act
-            List<ProductPriceResponse> responses = productPriceService.syncProductPrices(1L, priceRequests);
+            ProductPriceResponse responses = productPriceService.syncProductPrices(1L, request);
             
             // Assert
-            assertEquals(1, responses.size());
+            assertEquals(1, responses.prices().size());
             
-            ProductPriceResponse response = responses.get(0);
+            ProductPriceDTO response = responses.prices().get(0);
             
-            assertNull(response.id());
             assertEquals(new BigDecimal("1.00"), response.price());
             assertEquals(10, response.qty());
             
-            assertNotNull(response.unit());
-            assertEquals(1L, response.unit().id());
-            assertEquals("кг", response.unit().name());
+            assertEquals(1L, response.unitId());
             
+            verify(productPriceRepository, times(1)).deleteByProductId(1L);
             verify(productPriceRepository, times(1)).saveAll(anyList());
             
         }
         
-        @Test
-        @DisplayName("should update existing price when matching unit and qty exist")
-        void shouldUpdateExistingPrice_WhenUnitAndQtyMatch() {
-            
-            // Arrange
-            ProductUnitEntity unit = new ProductUnitEntity();
-            unit.setId(1L);
-            
-            ProductPriceEntity existingPrice = new ProductPriceEntity();
-            existingPrice.setId(1L);
-            existingPrice.setPrice(new BigDecimal("1.00"));
-            existingPrice.setQty(10);
-            existingPrice.setUnit(unit);
-            
-            productEntity.getPrices().add(existingPrice);
-            
-            List<ProductPriceRequest> priceRequests = List.of(
-                    new ProductPriceRequest(1L, new BigDecimal("2.00"), 20, 1L)
-            );
-            
-            when(productRepository.findById(1L)).thenReturn(Optional.of(productEntity));
-            when(productUnitRepository.findAllById(Set.of(1L))).thenReturn(List.of(unit));
-            
-            // Act
-            List<ProductPriceResponse> responses = productPriceService.syncProductPrices(1L, priceRequests);
-            
-            // Assert
-            assertEquals(1, responses.size());
-            ProductPriceResponse response = responses.get(0);
-            assertEquals(1L, response.id());
-            assertEquals(new BigDecimal("2.00"), response.price());
-            assertEquals(20, response.qty());
-            assertEquals(1L, response.unit().id());
-            
-            verify(productPriceRepository, times(1)).saveAll(anyList());
-        }
-        
-        @Test
-        @DisplayName("should be equal when product and unit are the same")
-        void shouldBeEqual_WhenProductAndUnitAreSame() {
-            ProductUnitEntity unit = new ProductUnitEntity(1L, "кг");
-            
-            ProductPriceEntity p1 = new ProductPriceEntity();
-            p1.setProduct(productEntity);
-            p1.setUnit(unit);
-            p1.setPrice(BigDecimal.valueOf(10.00));
-            p1.setQty(5);
-            
-            ProductPriceEntity p2 = new ProductPriceEntity();
-            p2.setProduct(productEntity);
-            p2.setUnit(unit);
-            p2.setPrice(BigDecimal.valueOf(20.00));
-            p2.setQty(10);
-            
-            assertThat(p1).isEqualTo(p2);
-            assertThat(p1.hashCode()).hasSameHashCodeAs(p2.hashCode());
-        }
-    
         
         @Test
         @DisplayName("should throw ProductNotFoundException when product does not exist")
@@ -167,59 +110,72 @@ class ProductPriceServiceTest {
             
             when(productRepository.findById(1L)).thenReturn(Optional.empty());
             
+            ProductPriceRequest request = new ProductPriceRequest(Collections.emptyList());
+            
             assertThrows(ProductNotFoundException.class,
-                    () -> productPriceService.syncProductPrices(1L, Collections.emptyList()));
+                    () -> productPriceService.syncProductPrices(1L, request));
         }
         
         @Test
         @DisplayName("should throw UnitNotFoundException when unit missing")
         void shouldThrowUnitNotFound_WhenUnitMissing() {
             
-            List<ProductPriceRequest> priceRequests = List.of(
-                    new ProductPriceRequest(null, new BigDecimal("1.00"), 10, 1L)
-            );
+            ProductPriceDTO dto = new ProductPriceDTO(new BigDecimal("1.00"), 10, 1L);
+            ProductPriceRequest request = new ProductPriceRequest(List.of(dto));
             
             when(productRepository.findById(1L)).thenReturn(Optional.of(productEntity));
-            when(productUnitRepository.findAllById(Set.of(1L))).thenReturn(Collections.emptyList());
+            when(productUnitRepository.findById(1L)).thenReturn(Optional.empty());
             
             assertThrows(UnitNotFoundException.class,
-                    () -> productPriceService.syncProductPrices(1L, priceRequests));
+                    () -> productPriceService.syncProductPrices(1L, request));
         }
     }
     
     @Nested
     @DisplayName("getProductPrices")
     class GetProductPricesTests {
-        
+    
         @Test
-        @DisplayName("should return mapped prices when product exists")
-        void shouldReturnMappedPrices_WhenProductExists() {
+        @DisplayName("should return mapped prices with correct units for existing product")
+        void shouldReturnMappedPricesWithCorrectUnits_WhenProductExists() {
             
-            ProductUnitEntity unit = new ProductUnitEntity();
-            unit.setId(1L);
-            unit.setName("кг");
+            ProductUnitEntity unit1 = new ProductUnitEntity();
+            unit1.setId(1L);
+            unit1.setName("кг");
+            
+            ProductUnitEntity unit2 = new ProductUnitEntity();
+            unit2.setId(2L);
+            unit2.setName("шт");
             
             ProductPriceEntity price1 = new ProductPriceEntity();
             price1.setId(1L);
             price1.setPrice(new BigDecimal("5.00"));
             price1.setQty(5);
-            price1.setUnit(unit);
+            price1.setUnit(unit1);
+            price1.setProduct(productEntity);
             
             ProductPriceEntity price2 = new ProductPriceEntity();
             price2.setId(2L);
             price2.setPrice(new BigDecimal("10.00"));
             price2.setQty(10);
-            price2.setUnit(unit);
+            price2.setUnit(unit2);
+            price2.setProduct(productEntity);
             
             productEntity.getPrices().addAll(List.of(price1, price2));
             
             when(productRepository.findById(1L)).thenReturn(Optional.of(productEntity));
             
-            List<ProductPriceResponse> responses = productPriceService.getProductPrices(1L);
+            ProductPriceResponse responses = productPriceService.getProductPrices(1L);
             
-            assertEquals(2, responses.size());
-            assertEquals(1L, responses.get(0).id());
-            assertEquals(2L, responses.get(1).id());
+            assertEquals(2, responses.prices().size());
+            assertEquals(1L, responses.prices().get(0).unitId());
+            assertEquals(2L, responses.prices().get(1).unitId());
+            
+            assertEquals(new BigDecimal("5.00"), responses.prices().get(0).price());
+            assertEquals(5, responses.prices().get(0).qty());
+            
+            assertEquals(new BigDecimal("10.00"), responses.prices().get(1).price());
+            assertEquals(10, responses.prices().get(1).qty());
         }
         
         @Test

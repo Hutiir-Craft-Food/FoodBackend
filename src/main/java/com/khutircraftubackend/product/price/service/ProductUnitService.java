@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.khutircraftubackend.product.exception.ProductResponseMessage.UNIT_INVALID_NAME;
+import static com.khutircraftubackend.product.exception.ProductResponseMessage.UNIT_NOT_BLANK;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +31,7 @@ public class ProductUnitService {
         String unitName = unit.getName();
     
         if (unitName == null || unitName.trim().isEmpty()) {
-            throw new InvalidUnitException(UNIT_INVALID_NAME);
+            throw new InvalidUnitException(UNIT_NOT_BLANK);
             
         }
         Optional<ProductUnitEntity> existingUnit = productUnitRepository.findByName(unitName);
