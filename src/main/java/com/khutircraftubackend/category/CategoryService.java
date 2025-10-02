@@ -6,6 +6,7 @@ import com.khutircraftubackend.category.request.CategoryRequest;
 import com.khutircraftubackend.storage.StorageService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -53,6 +54,7 @@ public class CategoryService {
 	}
 	
 
+	@CacheEvict(value = "categoryTree", allEntries = true)
 	@Transactional
 	public CategoryEntity createCategory(CategoryRequest request, MultipartFile iconFile) throws IOException {
 		
@@ -65,7 +67,7 @@ public class CategoryService {
 		return categoryRepository.save(category);
 	}
 	
-	
+	@CacheEvict(value = "categoryTree", allEntries = true)
 	@Transactional
 	public CategoryEntity updateCategory(Long id, CategoryRequest request,
 										 MultipartFile iconFile
@@ -83,7 +85,7 @@ public class CategoryService {
 		return categoryRepository.save(existingCategory);
 	}
 	
-	
+	@CacheEvict(value = "categoryTree", allEntries = true)
 	@Transactional
 	public void deleteCategory(Long id, boolean forceDelete) {
 		
