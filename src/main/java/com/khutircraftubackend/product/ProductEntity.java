@@ -6,6 +6,7 @@ import com.khutircraftubackend.product.price.entity.ProductPriceEntity;
 import com.khutircraftubackend.seller.SellerEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +48,8 @@ public class ProductEntity extends Auditable {
     private CategoryEntity category;
     
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 50)
+    @Builder.Default
     private List<ProductPriceEntity> prices = new ArrayList<>();
     
 }

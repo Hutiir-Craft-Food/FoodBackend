@@ -9,12 +9,12 @@ import com.khutircraftubackend.product.response.ProductResponse;
 import com.khutircraftubackend.seller.SellerEntity;
 import com.khutircraftubackend.seller.SellerService;
 import com.khutircraftubackend.storage.StorageService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -22,7 +22,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import static com.khutircraftubackend.product.exception.ProductResponseMessage.*;
+import static com.khutircraftubackend.product.exception.ProductResponseMessage.NO_ACCESS;
+import static com.khutircraftubackend.product.exception.ProductResponseMessage.PRODUCT_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
@@ -135,7 +136,7 @@ public class ProductService {
         }
     }
     
-    
+    @Transactional(readOnly = true)
     public Map<String, Object> getProducts(int offset, int limit) {
         
         int pageNumber = offset / limit;
