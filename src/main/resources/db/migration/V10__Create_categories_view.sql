@@ -38,7 +38,3 @@ create recursive view v_categories (
   from v_categories v
   inner join categories c
     on c.parent_id = v.id;
-
-select * from v_categories;
-
-select count(*) from v_categories;
