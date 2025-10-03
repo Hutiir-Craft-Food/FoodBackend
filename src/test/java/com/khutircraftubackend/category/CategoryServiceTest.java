@@ -217,14 +217,14 @@ class CategoryServiceTest {
 			existingCategory.setId(categoryId);
 			existingCategory.setIconUrl("oldLocalPath");
 			
-			when(storageService.upload(any())).thenReturn("newLocalPath");
+			when(storageService.upload(any(MultipartFile.class))).thenReturn("newLocalPath");
 			when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(existingCategory));
 			when(categoryRepository.save(any(CategoryEntity.class))).thenReturn(existingCategory);
 			
 			CategoryEntity updatedCategory = categoryService.updateCategory(categoryId, request, multipartFile);
 			
 			assertEquals("newLocalPath", updatedCategory.getIconUrl());
-			verify(storageService).upload(any());
+			verify(storageService).upload(any(MultipartFile.class));
 			verify(categoryRepository).save(any(CategoryEntity.class));
 		}
 		

@@ -12,22 +12,33 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CloudinaryService implements StorageService {
     private final Cloudinary cloudinary;
-    
+
+    @Override
+    public String upload(byte[] bytes, String originalFilename) throws IOException {
+        if (bytes == null || bytes.length == 0) {
+            throw new InvalidFileFormatException(StorageResponseMessage.INVALID_FILE);
+        }
+        try {
+            Map<?, ?> options = ObjectUtils.asMap("resource_type", "auto");
+            Map<?, ?> uploadResult = cloudinary.uploader().upload(bytes, options);
+
+            return uploadResult.get("url").toString();
+
+        } catch (IOException e) {
+            // TODO: review exception handling here.
+            //  is it necessary to catch IOException and re-throw it ?
+            throw new IOException(String.format(StorageResponseMessage.ERROR_SAVE, e));
+        }
+    }
+
     @Override
     public String upload(MultipartFile multipartFile) throws IOException {
         
         if (multipartFile == null || multipartFile.isEmpty()) {
             throw new InvalidFileFormatException(StorageResponseMessage.INVALID_FILE);
         }
-        try {
-            Map<?, ?> uploadResult = cloudinary.uploader().upload(multipartFile.getBytes(),
-                    ObjectUtils.asMap("resource_type", "auto"));
-            
-            return uploadResult.get("url").toString();
-            
-        } catch (IOException e) {
-            throw new IOException(String.format(StorageResponseMessage.ERROR_SAVE, e));
-        }
+
+        return upload(multipartFile.getBytes(), null);
     }
     
     @Override
