@@ -9,12 +9,9 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class CategoryTreeNode {
     
     private Long id;
     private String name;
-    
-    @Builder.Default
     private List<CategoryTreeNode> children = new ArrayList<>();
 }

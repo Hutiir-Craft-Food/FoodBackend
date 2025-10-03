@@ -1,18 +1,15 @@
 package com.khutircraftubackend.category.breadcramb;
 
-import com.khutircraftubackend.category.path.CategoryPathMapper;
-import com.khutircraftubackend.category.path.PathService;
 import com.khutircraftubackend.category.path.CategoryViewEntity;
 import com.khutircraftubackend.category.path.CategoryViewRepository;
+import com.khutircraftubackend.category.path.PathService;
 import com.khutircraftubackend.category.path.response.CategoryTreeNode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mapstruct.factory.Mappers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Sort;
 
@@ -29,9 +26,6 @@ class CatalogTreeTest {
     
     @Mock
     private CategoryViewRepository repo;
-    
-    @Spy
-    private CategoryPathMapper mapper = Mappers.getMapper(CategoryPathMapper.class);
     
     @InjectMocks
     private PathService service;
