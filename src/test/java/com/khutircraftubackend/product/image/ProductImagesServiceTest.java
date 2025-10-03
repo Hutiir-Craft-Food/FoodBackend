@@ -4,8 +4,8 @@
 //import com.khutircraftubackend.exception.httpstatus.NotFoundException;
 //import com.khutircraftubackend.product.ProductEntity;
 //import com.khutircraftubackend.product.ProductService;
-//import com.khutircraftubackend.product.image.request.ProductImagesResponse;
-//import com.khutircraftubackend.product.image.request.ProductImagesChanges;
+//import com.khutircraftubackend.product.image.response.ProductImagesResponse;
+//import com.khutircraftubackend.product.image.request.ProductImagesChangeRequest;
 //import com.khutircraftubackend.storage.StorageService;
 //import com.khutircraftubackend.validated.ImageMimeValidator;
 //import org.junit.jupiter.api.BeforeEach;
@@ -29,7 +29,7 @@
 //class ProductImagesServiceTest {
 //
 //    @Mock
-//    private ProductImagesRepository imageRepository;
+//    private ProductImageRepository imageRepository;
 //    @Mock
 //    private ProductService productService;
 //    @InjectMocks
@@ -43,7 +43,7 @@
 //    @Mock
 //    private ImageMimeValidator mimeValidator;
 //    private ProductEntity product;
-//    private List<ProductImagesEntity> imagesList;
+//    private List<ProductImageEntity> imagesList;
 //    private static final Long MAX_COUNT_FILES = 5L;
 //
 //
@@ -54,21 +54,21 @@
 //                .name("Test Product")
 //                .build();
 //
-//        ProductImagesEntity image1 = ProductImagesEntity.builder()
+//        ProductImageEntity image1 = ProductImageEntity.builder()
 //                .id(1L)
 //                .link("test link 1")
 //                .position(0)
 //                .uid("pic0.jpeg")
-//                .tsSize(ImageSizes.LARGE)
+//                .tsSize(ImageSize.LARGE)
 //                .product(product)
 //                .build();
 //
-//        ProductImagesEntity image2 = ProductImagesEntity.builder()
+//        ProductImageEntity image2 = ProductImageEntity.builder()
 //                .id(2L)
 //                .link("test link 2")
 //                .position(1)
 //                .uid("pic1.jpeg")
-//                .tsSize(ImageSizes.LARGE)
+//                .tsSize(ImageSize.LARGE)
 //                .product(product)
 //                .build();
 //
@@ -111,27 +111,27 @@
 //        @Test
 //        void uploadImagesSuccess() {
 //            doNothing().when(mimeValidator).validateMimeTypes(anyList(), anyString());
-//            ProductImagesChanges jsonImages = new ProductImagesChanges(
-//                    List.of(new ProductImagesChanges.Images("pic2.jpeg", 2))
+//            ProductImagesChangeRequest jsonImages = new ProductImagesChangeRequest(
+//                    List.of(new ProductImagesChangeRequest.Image("pic2.jpeg", 2))
 //            );
 //
 //            MultipartFile files = mock(MultipartFile.class);
 //            when(files.getOriginalFilename()).thenReturn("pic2.jpeg");
 //            List<MultipartFile> fileImages = List.of(files);
 //
-//            ProductImagesEntity savedEntity = ProductImagesEntity.builder()
+//            ProductImageEntity savedEntity = ProductImageEntity.builder()
 //                    .id(3L)
 //                    .uid("pic2.jpeg")
 //                    .position(2)
-//                    .tsSize(ImageSizes.LARGE)
+//                    .tsSize(ImageSize.LARGE)
 //                    .link("test-link 3")
 //                    .build();
 //
-//            List<ProductImagesEntity> savedEntities = new ArrayList<>(imagesList);
+//            List<ProductImageEntity> savedEntities = new ArrayList<>(imagesList);
 //            savedEntities.add(savedEntity);
 //
 //            ProductImagesResponse expected = new ProductImagesResponse(
-//                    savedEntities.stream().map(img -> new ProductImagesResponse.ImageResponse(
+//                    savedEntities.stream().map(img -> new ProductImagesResponse.Image(
 //                            img.getUid(), img.getLink(), img.getTsSize(), img.getPosition()
 //                    )).toList()
 //            );
@@ -151,8 +151,8 @@
 //        @Test
 //        void upload_WhenFilesExceedMaxCount_ThrowsBadRequestException() {
 //            doNothing().when(mimeValidator).validateMimeTypes(anyList(), anyString());
-//            ProductImagesChanges jsonImages = new ProductImagesChanges(
-//                    List.of(new ProductImagesChanges.Images("pic2.jpeg", 2))
+//            ProductImagesChangeRequest jsonImages = new ProductImagesChangeRequest(
+//                    List.of(new ProductImagesChangeRequest.Image("pic2.jpeg", 2))
 //            );
 //
 //            List<MultipartFile> fileImages = new ArrayList<>();
@@ -171,8 +171,8 @@
 //        @Test
 //        void validateNoDuplicates_WhenPositionAlreadyExistsInRequest_ThrowsException() {
 //            doNothing().when(mimeValidator).validateMimeTypes(anyList(), anyString());
-//            ProductImagesChanges jsonImages = new ProductImagesChanges(
-//                    List.of(new ProductImagesChanges.Images("pic2.jpeg", 1)));
+//            ProductImagesChangeRequest jsonImages = new ProductImagesChangeRequest(
+//                    List.of(new ProductImagesChangeRequest.Image("pic2.jpeg", 1)));
 //
 //            MultipartFile files = mock(MultipartFile.class);
 //            List<MultipartFile> fileImages = List.of(files);
@@ -188,8 +188,8 @@
 //        @Test
 //        void validateNoDuplicates_WhenUidAlreadyExists_ThrowsException() {
 //            doNothing().when(mimeValidator).validateMimeTypes(anyList(), anyString());
-//            ProductImagesChanges jsonImages = new ProductImagesChanges(
-//                    List.of(new ProductImagesChanges.Images("pic1.jpeg", 2)));
+//            ProductImagesChangeRequest jsonImages = new ProductImagesChangeRequest(
+//                    List.of(new ProductImagesChangeRequest.Image("pic1.jpeg", 2)));
 //
 //            MultipartFile files = mock(MultipartFile.class);
 //            List<MultipartFile> fileImages = List.of(files);
@@ -205,8 +205,8 @@
 //        @Test
 //        void uploadImages_WhenFileUidNotFoundInRequest_ThrowsException() {
 //            doNothing().when(mimeValidator).validateMimeTypes(anyList(), anyString());
-//            ProductImagesChanges jsonImages = new ProductImagesChanges(
-//                    List.of(new ProductImagesChanges.Images("pic2.jpeg", 2))
+//            ProductImagesChangeRequest jsonImages = new ProductImagesChangeRequest(
+//                    List.of(new ProductImagesChangeRequest.Image("pic2.jpeg", 2))
 //            );
 //
 //            MultipartFile files = mock(MultipartFile.class);
@@ -226,25 +226,25 @@
 //
 //        @Test
 //        void changesImagesSuccess() {
-//            ProductImagesChanges jsonImages = new ProductImagesChanges(
-//                    List.of(new ProductImagesChanges.Images("pic0", 1),
-//                            new ProductImagesChanges.Images("pic1", 0))
+//            ProductImagesChangeRequest jsonImages = new ProductImagesChangeRequest(
+//                    List.of(new ProductImagesChangeRequest.Image("pic0", 1),
+//                            new ProductImagesChangeRequest.Image("pic1", 0))
 //            );
 //
-//            List<ProductImagesEntity> allImages = List.of(
-//                ProductImagesEntity.builder().uid("pic0").tsSize(ImageSizes.LARGE).position(0).link("link0_s").build(),
-//                ProductImagesEntity.builder().uid("pic0").tsSize(ImageSizes.SMALL).position(0).link("link0_s").build(),
-//                ProductImagesEntity.builder().uid("pic0").tsSize(ImageSizes.MEDIUM).position(0).link("link0_m").build(),
-//                ProductImagesEntity.builder().uid("pic0").tsSize(ImageSizes.THUMBNAIL).position(0).link("link0_t").build(),
+//            List<ProductImageEntity> allImages = List.of(
+//                ProductImageEntity.builder().uid("pic0").tsSize(ImageSize.LARGE).position(0).link("link0_s").build(),
+//                ProductImageEntity.builder().uid("pic0").tsSize(ImageSize.SMALL).position(0).link("link0_s").build(),
+//                ProductImageEntity.builder().uid("pic0").tsSize(ImageSize.MEDIUM).position(0).link("link0_m").build(),
+//                ProductImageEntity.builder().uid("pic0").tsSize(ImageSize.THUMBNAIL).position(0).link("link0_t").build(),
 //
-//                ProductImagesEntity.builder().uid("pic1").tsSize(ImageSizes.LARGE).position(1).link("link1_s").build(),
-//                ProductImagesEntity.builder().uid("pic1").tsSize(ImageSizes.SMALL).position(1).link("link1_s").build(),
-//                ProductImagesEntity.builder().uid("pic1").tsSize(ImageSizes.MEDIUM).position(1).link("link1_m").build(),
-//                ProductImagesEntity.builder().uid("pic1").tsSize(ImageSizes.THUMBNAIL).position(1).link("link1_t").build()
+//                ProductImageEntity.builder().uid("pic1").tsSize(ImageSize.LARGE).position(1).link("link1_s").build(),
+//                ProductImageEntity.builder().uid("pic1").tsSize(ImageSize.SMALL).position(1).link("link1_s").build(),
+//                ProductImageEntity.builder().uid("pic1").tsSize(ImageSize.MEDIUM).position(1).link("link1_m").build(),
+//                ProductImageEntity.builder().uid("pic1").tsSize(ImageSize.THUMBNAIL).position(1).link("link1_t").build()
 //            );
 //
 //            ProductImagesResponse expected = new ProductImagesResponse(
-//                    allImages.stream().map(img -> new ProductImagesResponse.ImageResponse(
+//                    allImages.stream().map(img -> new ProductImagesResponse.Image(
 //                            img.getUid(), img.getLink(), img.getTsSize(), img.getPosition()
 //                    )).toList()
 //            );
@@ -261,8 +261,8 @@
 //
 //        @Test
 //        void validateImageCount_WhenSizeInvalid_ThrowsException() {
-//            ProductImagesChanges jsonImages = new ProductImagesChanges(
-//                    List.of(new ProductImagesChanges.Images("pic0", 2)));
+//            ProductImagesChangeRequest jsonImages = new ProductImagesChangeRequest(
+//                    List.of(new ProductImagesChangeRequest.Image("pic0", 2)));
 //
 //            BadRequestException ex = assertThrows(BadRequestException.class, () ->
 //                    imagesService.changesPosition(1L, jsonImages));
@@ -272,21 +272,21 @@
 //
 //        @Test
 //        void notFoundNameUidInDataBase_ThrowsException() {
-//            ProductImagesChanges jsonImages = new ProductImagesChanges(
-//                    List.of(new ProductImagesChanges.Images("missingUid", 1),
-//                            new ProductImagesChanges.Images("pic1", 0))
+//            ProductImagesChangeRequest jsonImages = new ProductImagesChangeRequest(
+//                    List.of(new ProductImagesChangeRequest.Image("missingUid", 1),
+//                            new ProductImagesChangeRequest.Image("pic1", 0))
 //            );
 //
-//            List<ProductImagesEntity> allImages = List.of(
-//                ProductImagesEntity.builder().uid("pic0").tsSize(ImageSizes.LARGE).position(0).link("link0_s").build(),
-//                ProductImagesEntity.builder().uid("pic0").tsSize(ImageSizes.SMALL).position(0).link("link0_s").build(),
-//                ProductImagesEntity.builder().uid("pic0").tsSize(ImageSizes.MEDIUM).position(0).link("link0_m").build(),
-//                ProductImagesEntity.builder().uid("pic0").tsSize(ImageSizes.THUMBNAIL).position(0).link("link0_t").build(),
+//            List<ProductImageEntity> allImages = List.of(
+//                ProductImageEntity.builder().uid("pic0").tsSize(ImageSize.LARGE).position(0).link("link0_s").build(),
+//                ProductImageEntity.builder().uid("pic0").tsSize(ImageSize.SMALL).position(0).link("link0_s").build(),
+//                ProductImageEntity.builder().uid("pic0").tsSize(ImageSize.MEDIUM).position(0).link("link0_m").build(),
+//                ProductImageEntity.builder().uid("pic0").tsSize(ImageSize.THUMBNAIL).position(0).link("link0_t").build(),
 //
-//                ProductImagesEntity.builder().uid("pic1").tsSize(ImageSizes.LARGE).position(1).link("link1_s").build(),
-//                ProductImagesEntity.builder().uid("pic1").tsSize(ImageSizes.SMALL).position(1).link("link1_s").build(),
-//                ProductImagesEntity.builder().uid("pic1").tsSize(ImageSizes.MEDIUM).position(1).link("link1_m").build(),
-//                ProductImagesEntity.builder().uid("pic1").tsSize(ImageSizes.THUMBNAIL).position(1).link("link1_t").build()
+//                ProductImageEntity.builder().uid("pic1").tsSize(ImageSize.LARGE).position(1).link("link1_s").build(),
+//                ProductImageEntity.builder().uid("pic1").tsSize(ImageSize.SMALL).position(1).link("link1_s").build(),
+//                ProductImageEntity.builder().uid("pic1").tsSize(ImageSize.MEDIUM).position(1).link("link1_m").build(),
+//                ProductImageEntity.builder().uid("pic1").tsSize(ImageSize.THUMBNAIL).position(1).link("link1_t").build()
 //            );
 //
 //            when(imageRepository.findByProductId(1L)).thenReturn(allImages);

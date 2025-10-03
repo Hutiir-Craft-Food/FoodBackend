@@ -1,6 +1,6 @@
 package com.khutircraftubackend.product.image;
 
-import com.khutircraftubackend.product.image.request.ProductImagesChanges;
+import com.khutircraftubackend.product.image.request.ProductImagesChangeRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -22,12 +22,12 @@ class UniqueUidAndPositionInListValidatorTest {
 
     @Test
     void shouldFailValidation_whenDuplicateUidExists() {
-        ProductImagesChanges request = new ProductImagesChanges(
+        ProductImagesChangeRequest request = new ProductImagesChangeRequest(
                 List.of(
-                        new ProductImagesChanges.Images("uid1", 0),
-                        new ProductImagesChanges.Images("uid1", 1)));
+                        new ProductImagesChangeRequest.Image("uid1", 0),
+                        new ProductImagesChangeRequest.Image("uid1", 1)));
 
-        Set<ConstraintViolation<ProductImagesChanges>> violations = validator.validate(request);
+        Set<ConstraintViolation<ProductImagesChangeRequest>> violations = validator.validate(request);
 
         assertFalse(violations.isEmpty());
 
@@ -39,12 +39,12 @@ class UniqueUidAndPositionInListValidatorTest {
 
     @Test
     void shouldFailValidation_whenDuplicatePositionExists() {
-        ProductImagesChanges request = new ProductImagesChanges(
+        ProductImagesChangeRequest request = new ProductImagesChangeRequest(
                 List.of(
-                        new ProductImagesChanges.Images("uid1", 0),
-                        new ProductImagesChanges.Images("uid2", 0)));
+                        new ProductImagesChangeRequest.Image("uid1", 0),
+                        new ProductImagesChangeRequest.Image("uid2", 0)));
 
-        Set<ConstraintViolation<ProductImagesChanges>> violations = validator.validate(request);
+        Set<ConstraintViolation<ProductImagesChangeRequest>> violations = validator.validate(request);
 
         assertFalse(violations.isEmpty());
 
@@ -56,12 +56,12 @@ class UniqueUidAndPositionInListValidatorTest {
 
     @Test
     void shouldPassValidation_whenUidsAndPositionsUnique() {
-        ProductImagesChanges request = new ProductImagesChanges(
+        ProductImagesChangeRequest request = new ProductImagesChangeRequest(
                 List.of(
-                        new ProductImagesChanges.Images("uid1", 0),
-                        new ProductImagesChanges.Images("uid2", 1)));
+                        new ProductImagesChangeRequest.Image("uid1", 0),
+                        new ProductImagesChangeRequest.Image("uid2", 1)));
 
-        Set<ConstraintViolation<ProductImagesChanges>> violations = validator.validate(request);
+        Set<ConstraintViolation<ProductImagesChangeRequest>> violations = validator.validate(request);
 
         assertTrue(violations.isEmpty());
     }

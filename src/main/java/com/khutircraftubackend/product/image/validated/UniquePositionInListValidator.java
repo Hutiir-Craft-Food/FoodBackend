@@ -13,7 +13,7 @@ import java.util.Set;
 
 
 @Slf4j
-@Component
+@Component // TODO: Is it necessary?
 @RequiredArgsConstructor
 public class UniquePositionInListValidator
     implements ConstraintValidator<UniquePositionInList, Object> {
@@ -23,6 +23,7 @@ public class UniquePositionInListValidator
         if (value == null) return true;
 
         try {
+            // TODO: Refactor bellow taking into account the comment in UniquePositionInList.java
             Method method = value.getClass().getMethod("images");
             List<?> images = (List<?>) method.invoke(value);
 
@@ -30,6 +31,7 @@ public class UniquePositionInListValidator
             boolean isValid = true;
 
             for (Object image : images) {
+                // TODO: get rid of reflection. Use interface HasPosition.java
                 Method posGetter = image.getClass().getMethod("position");
                 int position = (Integer) posGetter.invoke(image);
 

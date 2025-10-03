@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Set;
 
 @Slf4j
-@Component
+@Component // TODO: Is it necessary?
 public class UniqueUidInListValidator
     implements ConstraintValidator<UniqueUidInList, Object> {
 
@@ -20,6 +20,7 @@ public class UniqueUidInListValidator
         if (value == null) return true;
 
         try {
+            // TODO: Refactor bellow taking into account the comment in UniqueUidInList.java
             Method method = value.getClass().getMethod("images");
             List<?> images = (List<?>) method.invoke(value);
 
@@ -27,6 +28,7 @@ public class UniqueUidInListValidator
             boolean isValid = true;
 
             for (Object image : images) {
+                // TODO: get rid of reflection. Use interface HasUid.java
                 Method uidGetter = image.getClass().getMethod("uid");
                 String uid = (String) uidGetter.invoke(image);
 

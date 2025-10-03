@@ -13,4 +13,10 @@ public final class ProductImagesResponseMessages {
             "За цим UID %s, зображенням не знайдено.";
     public static final String ERROR_IMAGES_COUNT_MISMATCH =
             "Кількість переданих зображень %d не відповідає очікуваним %d.";
+
+    // ----- Other Exception Messages -----
+    public static final String NO_PRIVILEGES = "You do not have permission for this operation!";
+    public static final String POSITION_ALREADY_EXISTS = "Position %d already exists!";
+    public static final String INVALID_POSITION = "Position must be a positive integer!";
+    public static final String IMAGE_NOT_FOUND = "Image with id %s not found!";
 }

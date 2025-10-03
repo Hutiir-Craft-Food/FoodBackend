@@ -1,59 +1,60 @@
 package com.khutircraftubackend.product.image;
 
-import com.khutircraftubackend.product.image.request.ProductImagesResponse;
+import com.khutircraftubackend.product.image.response.ProductImageDTO;
+import com.khutircraftubackend.product.image.response.ProductImagesResponse;
+import jakarta.validation.constraints.NotNull;
 import org.mapstruct.Mapper;
 
 import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Mapper(componentModel = SPRING)
 public interface ProductImagesMapper {
 
-    default ProductImagesResponse toResponseDto(List<ProductImagesEntity> entities) {
-        return new ProductImagesResponse(
-                groupAndMapImages(entities)
-        );
-    }
+    // TODO: it would be a bad idea, to map List of Entities to single Response DTO.
+    default List<ProductImageDTO> toProductImageDto(List<ProductImageEntity> imageEntities) {
+        if (Objects.isNull(imageEntities) || imageEntities.isEmpty()) {
+            throw new IllegalArgumentException("list images cannot be null or empty");
+        }
 
-    private List<ProductImagesResponse.ImageResponse> groupAndMapImages(List<ProductImagesEntity> entities) {
-        return entities.stream()
-                .collect(Collectors.groupingBy(
-                        ProductImagesEntity::getUid,
-                        Collectors.groupingBy(ProductImagesEntity::getPosition)
-                ))
-                .entrySet().stream()
-                .flatMap(this::mapUidGroup)
-                .sorted(Comparator.comparingInt(ProductImagesResponse.ImageResponse::position))
-                .toList();
-    }
+        // TODO: review usage of LinkedHashMap.
+        //  maybe not needed, and just a HashMap could be enough
+        Map<String, ProductImageDTO> dtoMap = new LinkedHashMap<>();
 
-    private Stream<ProductImagesResponse.ImageResponse> mapUidGroup(
-            Map.Entry<String, Map<Integer, List<ProductImagesEntity>>> uidGroup) {
-        return uidGroup.getValue().entrySet().stream()
-                .map(positionGroup -> createImageResponse(
-                        uidGroup.getKey(),
-                        positionGroup.getKey(),
-                        positionGroup.getValue()
-                ));
-    }
+        for (ProductImageEntity entity : imageEntities) {
+            String key = String.format("%s-%s-%d",
+                    entity.getProduct().getId(),
+                    entity.getUid(),
+                    entity.getPosition());
 
-    private ProductImagesResponse.ImageResponse createImageResponse(
-            String uid, int position, List<ProductImagesEntity> sizeVariants) {
-        return new ProductImagesResponse.ImageResponse(
-                uid,
-                position,
-                mapSizeVariants(sizeVariants)
-        );
-    }
+            ProductImageDTO dto = dtoMap.get(key);
 
-    private Map<String, String> mapSizeVariants(List<ProductImagesEntity> sizeVariants) {
-        return sizeVariants.stream()
-                .collect(Collectors.toMap(
-                        variant -> variant.getTsSize().name().toLowerCase(),
-                        ProductImagesEntity::getLink
-                ));
+            if (dto == null) {
+                dto = ProductImageDTO.builder()
+                        .id(entity.getId())
+                        .productId(entity.getProduct().getId())
+                        .uid(entity.getUid())
+                        .position(entity.getPosition())
+                        .links(new ProductImageDTO.ImageLinks())
+                        .build();
+
+                dtoMap.put(key, dto);
+            }
+
+            ProductImageDTO.ImageLinks links = dto.getLinks();
+
+            if (entity.getTsSize() != null) {
+                String link = entity.getLink();
+                switch (entity.getTsSize()) {
+                    case SMALL -> links.setSmall(link);
+                    case MEDIUM -> links.setMedium(link);
+                    case LARGE -> links.setLarge(link);
+                    case THUMBNAIL -> links.setThumbnail(link);
+                }
+            }
+        }
+        return new ArrayList<>(dtoMap.values());
     }
 }

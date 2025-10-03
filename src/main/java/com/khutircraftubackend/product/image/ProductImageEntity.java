@@ -20,14 +20,11 @@ import java.time.LocalDateTime;
         @Index(name = "idx_product_images_uid", columnList = "product_id, uid"),
         @Index(name = "idx_product_images_position", columnList = "product_id, position"),
 })
-public class ProductImagesEntity {
+public class ProductImageEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE,
-    generator = "product_images_seq")
-    @SequenceGenerator( name = "product_images_seq",
-    sequenceName = "product_images_seq",
-    allocationSize = 20)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "product_images_seq")
+    @SequenceGenerator(name = "product_images_seq", sequenceName = "product_images_seq", allocationSize = 20)
     private Long id;
 
     @ManyToOne
@@ -41,7 +38,8 @@ public class ProductImagesEntity {
     private String link;
 
     @Enumerated(EnumType.STRING)
-    private ImageSizes tsSize;
+    @Column(name = "ts_size")
+    private ImageSize tsSize;
 
     @Column(name = "position")
     private int position;

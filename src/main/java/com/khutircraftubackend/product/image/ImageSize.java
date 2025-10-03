@@ -1,6 +1,6 @@
 package com.khutircraftubackend.product.image;
 
-public enum ImageSizes {
+public enum ImageSize {
     THUMBNAIL,
     SMALL,
     MEDIUM,
