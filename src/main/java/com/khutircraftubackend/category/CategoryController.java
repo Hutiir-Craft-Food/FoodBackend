@@ -1,7 +1,6 @@
 package com.khutircraftubackend.category;
 
 import com.khutircraftubackend.category.path.PathService;
-import com.khutircraftubackend.category.path.response.CategoryPathItem;
 import com.khutircraftubackend.category.path.response.CategoryTreeNode;
 import com.khutircraftubackend.category.request.CategoryRequest;
 import com.khutircraftubackend.category.response.CategoryResponse;
@@ -112,8 +111,8 @@ public class CategoryController {
     
     @GetMapping("/catalog/{categoryId}")
     @ResponseStatus(HttpStatus.OK)
-    public CategoryPathItem getCategoryPath(@PathVariable Long categoryId) {
+    public CategoryTreeNode getCategoryCatalog(@PathVariable Long categoryId) {
         
-        return pathService.getCategoryPathItem(categoryId);
+        return pathService.getCatalogTree(categoryId);
     }
 }

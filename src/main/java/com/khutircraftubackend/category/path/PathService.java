@@ -1,89 +1,66 @@
 package com.khutircraftubackend.category.path;
 
-import com.khutircraftubackend.category.path.response.CategoryPathItem;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.khutircraftubackend.category.CategoryEntity;
+import com.khutircraftubackend.category.CategoryRepository;
+import com.khutircraftubackend.category.exception.CategoryNotFoundException;
 import com.khutircraftubackend.category.path.response.CategoryTreeNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class PathService {
-    
-    private final CategoryViewRepository repo;
+
+    private final CategoryRepository categoryRepository;
+    private final CategoryViewRepository categoryViewRepository;
+    private final ObjectMapper objectMapper = new ObjectMapper();
     
     @Cacheable("categoryTree")
     public List<CategoryTreeNode> getCatalogTree() {
-        
-        List<CategoryViewEntity> categories = repo.findAll(Sort.by("path"));
-        Map<Long, CategoryTreeNode> nodeMap = new LinkedHashMap<>();
-        List<CategoryTreeNode> roots = new ArrayList<>();
-        
-        for (CategoryViewEntity category : categories) {
-            CategoryTreeNode node = new CategoryTreeNode(
-                    category.getId(),
-                    category.getName(),
-                    new ArrayList<>()
-            );
-            nodeMap.put(node.getId(), node);
-        }
-        
-        for (CategoryViewEntity category : categories) {
-            CategoryTreeNode node = nodeMap.get(category.getId());
-            
-            if (category.getParentId() == null) {
-                roots.add(node);
-            } else {
-                CategoryTreeNode parentNode = nodeMap.get(category.getParentId());
-                
-                if (parentNode != null) {
-                    parentNode.getChildren().add(node);
-                } else {
-                    nodeMap.remove(node.getId());
-                }
+
+        List<CategoryEntity> rootCategories = categoryRepository.findAllByParentCategoryIsNull();
+
+        return rootCategories.stream()
+                .map(this::traverseCategoryEntity)
+                .toList();
+    }
+
+    @Cacheable("categoryTree")
+    private CategoryTreeNode traverseCategoryEntity(CategoryEntity entity) {
+        if (entity == null) {
+            throw new IllegalArgumentException("Category entity cannot be null");
+        };
+
+        CategoryTreeNode parentNode = new CategoryTreeNode();
+        parentNode.setId(entity.getId());
+        parentNode.setName(entity.getName());
+        List<CategoryEntity> childrenNodes = categoryRepository.findAllByParentCategory_Id(entity.getId());
+
+        if (!childrenNodes.isEmpty()) {
+            for (CategoryEntity childNode : childrenNodes) {
+                parentNode.getChildren().add(traverseCategoryEntity(childNode));
             }
         }
-        return roots;
+        return parentNode;
     }
-    
-    private CategoryPathItem buildPathTree(CategoryViewEntity entity) {
-        String[] ids = entity.getPathIds().split(",");
-        String[] names = entity.getPathNames().split(",");
-        
-        int size = Math.min(ids.length, names.length);
-        
-        if (size == 0) return null;
-        
-        CategoryPathItem current = CategoryPathItem.leaf(
-                Long.parseLong(ids[size - 1].trim()),
-                names[size - 1].trim()
-        );
-        
-        for (int i = size - 2; i >= 0; i--) {
-            current = CategoryPathItem.withChild(
-                    Long.parseLong(ids[i].trim()),
-                    names[i].trim(),
-                    current
-            );
+
+    @Cacheable("categoryPathTree")
+    public CategoryTreeNode getCatalogTree(Long categoryId) {
+        CategoryViewEntity categoryViewEntity = categoryViewRepository.findById(categoryId).orElseThrow(() ->
+                new CategoryNotFoundException("BLAH!"));
+
+        // TODO: Handle json parsing exception properly.
+        try {
+            return objectMapper.readValue(categoryViewEntity.getJsonTree(), CategoryTreeNode.class);
+        } catch (Exception ex) {
+            log.error("Error parsing JSON tree for category ID {}: {}", categoryId, ex.getMessage());
+            throw new RuntimeException("Error parsing category tree JSON", ex);
         }
-        
-        return current;
-    }
-    
-    public CategoryPathItem getCategoryPathItem(Long categoryId) {
-        
-        
-        return repo.findById(categoryId)
-                .map(this::buildPathTree)
-                .orElse(null);
-        
     }
 }

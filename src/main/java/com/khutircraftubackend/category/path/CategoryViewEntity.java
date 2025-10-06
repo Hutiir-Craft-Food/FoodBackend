@@ -13,7 +13,7 @@ import org.hibernate.annotations.Synchronize;
 @Immutable
 @NoArgsConstructor
 @Getter
-@Subselect("SELECT * FROM v_categories")
+@Subselect("select *, build_json_tree(id) as json_tree from v_categories")
 @Synchronize({"categories"})
 public class CategoryViewEntity {
     
@@ -25,13 +25,10 @@ public class CategoryViewEntity {
     
     private String name;
     private String path;
-    
-    @Column(name = "path_ids")
-    private String pathIds;
-    
-    @Column(name = "path_names")
-    private String pathNames;
-    
+
+    @Column(name = "json_tree")
+    private String jsonTree;
+
     @Column(name = "icon_url")
     private String iconUrl;
     
