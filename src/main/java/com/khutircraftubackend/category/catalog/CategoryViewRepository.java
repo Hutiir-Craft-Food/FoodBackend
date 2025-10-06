@@ -1,4 +1,4 @@
-package com.khutircraftubackend.category.path;
+package com.khutircraftubackend.category.catalog;
 
 import lombok.NonNull;
 import org.springframework.data.jpa.repository.JpaRepository;

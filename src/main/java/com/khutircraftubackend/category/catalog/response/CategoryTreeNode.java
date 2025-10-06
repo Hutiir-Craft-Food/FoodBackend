@@ -1,4 +1,4 @@
-package com.khutircraftubackend.category.path.response;
+package com.khutircraftubackend.category.catalog.response;
 
 import lombok.*;
 

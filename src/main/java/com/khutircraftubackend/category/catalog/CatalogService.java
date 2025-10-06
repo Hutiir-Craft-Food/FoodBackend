@@ -1,10 +1,10 @@
-package com.khutircraftubackend.category.path;
+package com.khutircraftubackend.category.catalog;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.khutircraftubackend.category.CategoryEntity;
 import com.khutircraftubackend.category.CategoryRepository;
 import com.khutircraftubackend.category.exception.CategoryNotFoundException;
-import com.khutircraftubackend.category.path.response.CategoryTreeNode;
+import com.khutircraftubackend.category.catalog.response.CategoryTreeNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
@@ -12,10 +12,10 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Slf4j
-public class PathService {
+public class CatalogService {
 
     private final CategoryRepository categoryRepository;
     private final CategoryViewRepository categoryViewRepository;

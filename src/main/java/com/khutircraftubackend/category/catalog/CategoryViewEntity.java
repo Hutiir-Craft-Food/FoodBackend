@@ -1,4 +1,4 @@
-package com.khutircraftubackend.category.path;
+package com.khutircraftubackend.category.catalog;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
