@@ -18,6 +18,6 @@ public abstract class Auditable {
     private Instant createdAt;
     
     @LastModifiedDate
-    @Column(name = "updated_at", insertable = false, nullable = false)
+    @Column(name = "updated_at", insertable = false)
     private Instant updatedAt;
 }
