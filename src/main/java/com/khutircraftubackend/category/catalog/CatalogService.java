@@ -11,6 +11,9 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -24,30 +27,33 @@ public class CatalogService {
     @Cacheable("categoryTree")
     public List<CategoryTreeNode> getCatalogTree() {
 
-        List<CategoryEntity> rootCategories = categoryRepository.findAllByParentCategoryIsNull();
+        List<CategoryEntity> allCategories = categoryRepository.findAll();
+        Map<Long, CategoryEntity> categoryMap = allCategories.stream()
+                .collect(Collectors.toMap(CategoryEntity::getId, category -> category));
 
-        return rootCategories.stream()
-                .map(this::traverseCategoryEntity)
+        return allCategories.stream()
+                .filter(category -> category.getParentCategory() == null)
+                .map(category -> buildCategoryTree(category, categoryMap))
                 .toList();
     }
 
-    private CategoryTreeNode traverseCategoryEntity(CategoryEntity entity) {
-        if (entity == null) {
-            throw new IllegalArgumentException("Category entity cannot be null");
-        };
+    private CategoryTreeNode buildCategoryTree(CategoryEntity category, Map<Long, CategoryEntity> categoryMap) {
+        CategoryTreeNode node = new CategoryTreeNode();
+        node.setId(category.getId());
+        node.setName(category.getName());
 
-        CategoryTreeNode parentNode = new CategoryTreeNode();
-        parentNode.setId(entity.getId());
-        parentNode.setName(entity.getName());
+        Predicate<CategoryEntity> hasParent = cat ->
+                cat.getParentCategory() != null && cat.getParentCategory().getId().equals(category.getId());
 
-        List<CategoryEntity> childrenNodes = categoryRepository.findAllByParentCategory_Id(entity.getId());
+        List<CategoryEntity> children = categoryMap.values().stream()
+                .filter(hasParent)
+                .toList();
 
-        if (!childrenNodes.isEmpty()) {
-            for (CategoryEntity childEntity : childrenNodes) {
-                parentNode.getChildren().add(traverseCategoryEntity(childEntity));
-            }
+        for (CategoryEntity childEntity : children) {
+            node.getChildren().add(buildCategoryTree(childEntity, categoryMap));
         }
-        return parentNode;
+
+        return node;
     }
 
     @Cacheable("categoryPathTree")
