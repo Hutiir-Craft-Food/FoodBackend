@@ -31,7 +31,6 @@ public class CatalogService {
                 .toList();
     }
 
-    @Cacheable("categoryTree")
     private CategoryTreeNode traverseCategoryEntity(CategoryEntity entity) {
         if (entity == null) {
             throw new IllegalArgumentException("Category entity cannot be null");
@@ -40,11 +39,12 @@ public class CatalogService {
         CategoryTreeNode parentNode = new CategoryTreeNode();
         parentNode.setId(entity.getId());
         parentNode.setName(entity.getName());
+
         List<CategoryEntity> childrenNodes = categoryRepository.findAllByParentCategory_Id(entity.getId());
 
         if (!childrenNodes.isEmpty()) {
-            for (CategoryEntity childNode : childrenNodes) {
-                parentNode.getChildren().add(traverseCategoryEntity(childNode));
+            for (CategoryEntity childEntity : childrenNodes) {
+                parentNode.getChildren().add(traverseCategoryEntity(childEntity));
             }
         }
         return parentNode;
