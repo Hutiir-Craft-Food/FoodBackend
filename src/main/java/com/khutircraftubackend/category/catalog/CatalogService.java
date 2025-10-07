@@ -1,9 +1,7 @@
 package com.khutircraftubackend.category.catalog;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.khutircraftubackend.category.CategoryEntity;
 import com.khutircraftubackend.category.CategoryRepository;
-import com.khutircraftubackend.category.exception.CategoryNotFoundException;
 import com.khutircraftubackend.category.catalog.response.CategoryTreeNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,10 +19,8 @@ import java.util.stream.Collectors;
 public class CatalogService {
 
     private final CategoryRepository categoryRepository;
-    private final CategoryViewRepository categoryViewRepository;
-    private final ObjectMapper objectMapper = new ObjectMapper();
     
-    @Cacheable("categoryTree")
+    @Cacheable("catalogTree")
     public List<CategoryTreeNode> getCatalogTree() {
 
         List<CategoryEntity> allCategories = categoryRepository.findAll();
@@ -33,40 +29,57 @@ public class CatalogService {
 
         return allCategories.stream()
                 .filter(category -> category.getParentCategory() == null)
-                .map(category -> buildCategoryTree(category, categoryMap))
+                .map(category -> buildCatalogTree(category, categoryMap))
                 .toList();
     }
 
-    private CategoryTreeNode buildCategoryTree(CategoryEntity category, Map<Long, CategoryEntity> categoryMap) {
-        CategoryTreeNode node = new CategoryTreeNode();
-        node.setId(category.getId());
-        node.setName(category.getName());
+    @Cacheable("catalogTree")
+    public CategoryTreeNode getCatalogTree(Long categoryId) {
 
-        Predicate<CategoryEntity> hasParent = cat ->
-                cat.getParentCategory() != null && cat.getParentCategory().getId().equals(category.getId());
+        List<CategoryEntity> allCategories = categoryRepository.findAll();
+        Map<Long, CategoryEntity> categoryMap = allCategories.stream()
+                .collect(Collectors.toMap(CategoryEntity::getId, category -> category));
+
+        CategoryEntity category = categoryMap.get(categoryId);
+        CategoryTreeNode currentNode = new CategoryTreeNode();
+        currentNode.setId(category.getId());
+        currentNode.setName(category.getName());
+
+        return buildCategoryTree(currentNode, categoryMap);
+    }
+
+    private CategoryTreeNode buildCatalogTree(CategoryEntity currentEntity, Map<Long, CategoryEntity> categoryMap) {
+        CategoryTreeNode currentNode = new CategoryTreeNode();
+        currentNode.setId(currentEntity.getId());
+        currentNode.setName(currentEntity.getName());
+
+        Predicate<CategoryEntity> hasParent = category ->
+                category.getParentCategory() != null && category.getParentCategory().getId().equals(currentEntity.getId());
 
         List<CategoryEntity> children = categoryMap.values().stream()
                 .filter(hasParent)
                 .toList();
 
         for (CategoryEntity childEntity : children) {
-            node.getChildren().add(buildCategoryTree(childEntity, categoryMap));
+            currentNode.getChildren().add(buildCatalogTree(childEntity, categoryMap));
         }
 
-        return node;
+        return currentNode;
     }
 
-    @Cacheable("categoryPathTree")
-    public CategoryTreeNode getCatalogTree(Long categoryId) {
-        CategoryViewEntity categoryViewEntity = categoryViewRepository.findById(categoryId).orElseThrow(() ->
-                new CategoryNotFoundException("BLAH!"));
+    private CategoryTreeNode buildCategoryTree(CategoryTreeNode currentNode, Map<Long, CategoryEntity> categoryMap) {
+        CategoryEntity currentEntity = categoryMap.get(currentNode.getId());
 
-        // TODO: Handle json parsing exception properly.
-        try {
-            return objectMapper.readValue(categoryViewEntity.getJsonTree(), CategoryTreeNode.class);
-        } catch (Exception ex) {
-            log.error("Error parsing JSON tree for category ID {}: {}", categoryId, ex.getMessage());
-            throw new RuntimeException("Error parsing category tree JSON", ex);
+        if (currentEntity.getParentCategory() != null) {
+            CategoryEntity parentEntity = categoryMap.get(currentEntity.getParentCategory().getId());
+
+            CategoryTreeNode parentNode = new CategoryTreeNode();
+            parentNode.setId(parentEntity.getId());
+            parentNode.setName(parentEntity.getName());
+            parentNode.getChildren().add(currentNode);
+            return buildCategoryTree(parentNode, categoryMap);
         }
+
+        return currentNode;
     }
 }
