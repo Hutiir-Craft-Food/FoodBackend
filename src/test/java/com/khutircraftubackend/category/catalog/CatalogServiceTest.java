@@ -1,8 +1,7 @@
-package com.khutircraftubackend.category.breadcramb;
+package com.khutircraftubackend.category.catalog;
 
 import com.khutircraftubackend.category.CategoryEntity;
 import com.khutircraftubackend.category.CategoryRepository;
-import com.khutircraftubackend.category.catalog.CatalogService;
 import com.khutircraftubackend.category.catalog.response.CategoryTreeNode;
 import com.khutircraftubackend.category.exception.CategoryNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -76,7 +75,7 @@ class CatalogServiceTest {
         when(categoryRepository.findAll()).thenReturn(List.of(root, child));
         
         // Assert
-        CategoryTreeNode result = catalogService.getCatalogTree(2L);
+        CategoryTreeNode result = catalogService.getCategoryPathToRoot(2L);
         
         assertThat(result.getName()).isEqualTo("Root");
         assertThat(result.getChildren()).hasSize(1);
@@ -91,7 +90,7 @@ class CatalogServiceTest {
         when(categoryRepository.findAll()).thenReturn(List.of());
         
         // Act & Assert
-        assertThatThrownBy(() -> catalogService.getCatalogTree(99L))
+        assertThatThrownBy(() -> catalogService.getCategoryPathToRoot(99L))
                 .isInstanceOf(CategoryNotFoundException.class);
     }
     
