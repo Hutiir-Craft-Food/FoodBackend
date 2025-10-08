@@ -23,9 +23,9 @@ public class CatalogController {
     
     @GetMapping("/catalog/{categoryId}")
     @ResponseStatus(HttpStatus.OK)
-    public CategoryTreeNode getCategoryPath(@PathVariable Long categoryId) {
-        
-        return catalogService.getCatalogTree(categoryId);
+    public CategoryTreeNode getCategoryPathToRoot(@PathVariable Long categoryId) {
+
+        return catalogService.getCategoryPathToRoot(categoryId);
     }
     
 }
