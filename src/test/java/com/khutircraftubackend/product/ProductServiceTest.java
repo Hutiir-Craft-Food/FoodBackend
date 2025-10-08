@@ -262,14 +262,14 @@ class ProductServiceTest {
 			when(storageService.upload(mockThumbnailFile)).thenReturn("new-uploaded-thumbnail-url");
 			when(productRepository.save(any(ProductEntity.class))).thenReturn(existingProduct);
 			
-			ProductEntity updatedProduct = productService.updateProduct(1L, request, mockThumbnailFile, mockImageFile);
+			ProductResponse updatedProduct = productService.updateProduct(1L, request, mockThumbnailFile, mockImageFile);
 			
 			assertNotNull(updatedProduct);
-			assertEquals("Updated name", updatedProduct.getName());
-			assertEquals("new-uploaded-image-url", updatedProduct.getImageUrl());
-			assertEquals("new-uploaded-thumbnail-url", updatedProduct.getThumbnailImageUrl());
-			assertTrue(updatedProduct.isAvailable());
-			assertEquals("Updated description", updatedProduct.getDescription());
+			assertEquals("Updated name", updatedProduct.name());
+			assertEquals("new-uploaded-image-url", updatedProduct.imageUrl());
+			assertEquals("new-uploaded-thumbnail-url", updatedProduct.thumbnailImageUrl());
+			assertTrue(updatedProduct.available());
+			assertEquals("Updated description", updatedProduct.description());
 			
 			verify(productRepository, times(1)).save(any(ProductEntity.class));
 			verify(storageService, times(1)).upload(mockImageFile);
@@ -306,14 +306,14 @@ class ProductServiceTest {
 			when(categoryService.findCategoryById(2L)).thenReturn(mockCategory);
 			when(productRepository.save(any(ProductEntity.class))).thenReturn(existingProduct);
 			
-			ProductEntity updatedProduct = productService.updateProduct(1L, request, null, null);
+			ProductResponse updatedProduct = productService.updateProduct(1L, request, null, null);
 			
 			assertNotNull(updatedProduct, "Updated product should not be null");
-			assertEquals("Updated Product", updatedProduct.getName());
-			assertEquals("Updated Description", updatedProduct.getDescription());
+			assertEquals("Updated Product", updatedProduct.name());
+			assertEquals("Updated Description", updatedProduct.description());
 			
-			assertEquals("", updatedProduct.getImageUrl());
-			assertEquals("", updatedProduct.getThumbnailImageUrl());
+			assertEquals("", updatedProduct.imageUrl());
+			assertEquals("", updatedProduct.thumbnailImageUrl());
 			
 			verify(productRepository, times(1)).save(any(ProductEntity.class));
 		}
