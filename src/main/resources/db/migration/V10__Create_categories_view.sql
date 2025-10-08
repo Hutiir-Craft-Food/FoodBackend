@@ -30,5 +30,5 @@ create recursive view v_categories (
     c.icon_url,
     concat_ws(',', v.keywords, coalesce(c.keywords, clean(c.name))) as keywords
   from v_categories v
-  left join categories c
+  inner join categories c
     on c.parent_id = v.id;
