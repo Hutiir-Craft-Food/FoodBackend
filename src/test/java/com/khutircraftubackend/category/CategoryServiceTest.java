@@ -170,7 +170,7 @@ class CategoryServiceTest {
 			Exception exception = assertThrows(CategoryNotFoundException.class, () ->
 					categoryService.createCategory(request, multipartFile));
 			
-			assertEquals("Category not found", exception.getMessage());
+			assertEquals("Категорія не знайдена", exception.getMessage());
 			
 		}
 		

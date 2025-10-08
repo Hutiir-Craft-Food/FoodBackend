@@ -1,6 +1,9 @@
-package com.khutircraftubackend.category.path.response;
+package com.khutircraftubackend.category.catalog.response;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,4 +17,5 @@ public class CategoryTreeNode {
     private Long id;
     private String name;
     private List<CategoryTreeNode> children = new ArrayList<>();
+    
 }

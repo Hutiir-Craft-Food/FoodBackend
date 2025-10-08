@@ -1,8 +1,5 @@
 package com.khutircraftubackend.category;
 
-import com.khutircraftubackend.category.path.PathService;
-import com.khutircraftubackend.category.path.response.CategoryPathItem;
-import com.khutircraftubackend.category.path.response.CategoryTreeNode;
 import com.khutircraftubackend.category.request.CategoryRequest;
 import com.khutircraftubackend.category.response.CategoryResponse;
 import jakarta.annotation.Nullable;
@@ -27,7 +24,6 @@ import java.util.List;
 public class CategoryController {
     
     private final CategoryService categoryService;
-    private final PathService pathService;
     private final CategoryMapper categoryMapper;
     
     @GetMapping
@@ -103,17 +99,4 @@ public class CategoryController {
         return categoryMapper.toCategoryResponse(category);
     }
     
-    @GetMapping("/catalog")
-    @ResponseStatus(HttpStatus.OK)
-    public List<CategoryTreeNode> getCategoryCatalog() {
-        
-        return pathService.getCatalogTree();
-    }
-    
-    @GetMapping("/catalog/{categoryId}")
-    @ResponseStatus(HttpStatus.OK)
-    public CategoryPathItem getCategoryPath(@PathVariable Long categoryId) {
-        
-        return pathService.getCategoryPathItem(categoryId);
-    }
 }
