@@ -81,24 +81,24 @@ public class ProductService {
     }
     
     @Transactional
-    public ProductEntity updateProduct(Long productId, ProductRequest request,
+    public ProductResponse updateProduct(Long productId, ProductRequest request,
                                        MultipartFile thumbnailImageFile, MultipartFile imageFile) throws IOException {
         
         ProductEntity existingProduct = findProductById(productId);
         
         productMapper.updateProductFromRequest(existingProduct, request);
         
-        CategoryEntity categoryToUse;
-        
         if (request.categoryId() != null) {
-            categoryToUse = categoryService.findCategoryById(request.categoryId());
-            existingProduct.setCategory(categoryToUse);
+            CategoryEntity category = categoryService.findCategoryById(request.categoryId());
+            existingProduct.setCategory(category);
         }
         
         existingProduct.setThumbnailImageUrl(uploadIcon(thumbnailImageFile));
         existingProduct.setImageUrl(uploadIcon(imageFile));
         
-        return productRepository.save(existingProduct);
+        ProductEntity saved = productRepository.save(existingProduct);
+        
+        return productMapper.toProductResponse(saved);
     }
     
     @Transactional

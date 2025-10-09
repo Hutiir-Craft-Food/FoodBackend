@@ -45,9 +45,7 @@ public class ProductController {
             @RequestPart(value = "thumbnailImage", required = false) MultipartFile thumbnailImage,
             @RequestPart(value = "image", required = false) MultipartFile image) throws IOException {
         
-        ProductEntity updatedProduct = productService.updateProduct(productId, request, thumbnailImage, image);
-        
-        return productMapper.toProductResponse(updatedProduct);
+        return productService.updateProduct(productId, request, thumbnailImage, image);
     }
     
     
