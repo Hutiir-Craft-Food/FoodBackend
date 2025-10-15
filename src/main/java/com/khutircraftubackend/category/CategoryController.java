@@ -12,7 +12,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -49,7 +48,7 @@ public class CategoryController {
     public CategoryResponse createCategory(
             @Valid @ModelAttribute CategoryRequest request,
             @RequestPart(value = "iconFile", required = false) MultipartFile iconFile
-    ) throws IOException {
+    ) {
         CategoryEntity category = categoryService.createCategory(request, iconFile);
         
         return categoryMapper.toCategoryResponse(category);
@@ -71,7 +70,7 @@ public class CategoryController {
             @PathVariable Long id,
             @Valid @ModelAttribute CategoryRequest request,
             @RequestPart(value = "iconFile", required = false) MultipartFile iconFile
-    ) throws IOException {
+    ) {
         CategoryEntity updateCategory = categoryService.updateCategory(id, request, iconFile);
         
         return categoryMapper.toCategoryResponse(updateCategory);
