@@ -18,10 +18,10 @@ public class StorageConfig {
     @Bean
     @Profile("!local")
     public CloudinaryService cloudinaryService(Cloudinary cloudinary) {
-        
+
         return new CloudinaryService(cloudinary);
     }
-    
+
     @Bean
     @Profile("local")
     public LocalStorageService localStorageService(@Value("${storage.local.base-path}") String basePath) {
