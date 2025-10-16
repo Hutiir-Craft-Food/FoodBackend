@@ -1,8 +1,8 @@
 package com.khutircraftubackend.product.image;
 
-import com.khutircraftubackend.product.image.response.ProductImagesResponse;
-import com.khutircraftubackend.product.image.request.ProductImagesChangeRequest;
-import com.khutircraftubackend.product.image.request.ProductImagesUploadRequest;
+import com.khutircraftubackend.product.image.request.ProductImageUploadRequest;
+import com.khutircraftubackend.product.image.request.ProductImageChangeRequest;
+import com.khutircraftubackend.product.image.response.ProductImageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -18,7 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-public interface ProductImagesController {
+public interface ProductImageController {
 
     @Operation(
             summary = "Get all images for a product",
@@ -30,7 +30,7 @@ public interface ProductImagesController {
                     content = @Content(schema = @Schema(ref = "#/components/schemas/ErrorResponseGeneric")))
     })
     @SecurityRequirement(name = "BearerAuth")
-    ProductImagesResponse getProductImages(
+    ProductImageResponse getProductImages(
             @Parameter(description = "ID of the product to fetch images for") Long productId);
 
     @Operation(
@@ -44,7 +44,7 @@ public interface ProductImagesController {
                       - Supported formats: JPEG, PNG, GIF
                       - Max file size: 5 MB per image
                     
-                       **Positioning System:**
+                       **Position System:**
                        - 0 - Primary image (displayed first)
                        - 1-4 - Secondary images
                     """,
@@ -59,17 +59,17 @@ public interface ProductImagesController {
                     content = @Content(schema = @Schema(ref = "#/components/schemas/ErrorResponseGeneric")))
     })
     @SecurityRequirement(name = "BearerAuth")
-    ProductImagesResponse uploadProductImages(
-            @Parameter(description = "ID of the product to associate images with", example = "6") Long productId,
-
-            @Parameter(description = "List of image files (PNG, JPEG, etc.)")
-            @RequestPart("files") List<MultipartFile> imageFiles,
-
-            @Parameter(description = "JSON metadata for image processing",
-                    required = true,
-                    schema = @Schema(implementation = ProductImagesUploadRequest.class)
-            )
-            @RequestPart("metadata") ProductImagesUploadRequest metadata);
+    ProductImageResponse uploadProductImages
+            (@Parameter(description = "ID of the product to associate images with", example = "6") Long productId,
+             @Parameter(
+                     description = "JSON metadata for image processing",
+                     required = true,
+                     schema = @Schema(implementation = ProductImageUploadRequest.class)
+             )
+             @RequestPart("metadata") ProductImageUploadRequest json,
+             @Parameter(
+                     description = "List of image files (PNG, JPEG, etc.)")
+             @RequestPart("files") List<MultipartFile> files);
 
     @Operation(
             summary = "Replace images for product",
@@ -97,9 +97,9 @@ public interface ProductImagesController {
                     content = @Content(schema = @Schema(ref = "#/components/schemas/ErrorResponseGeneric")))
     })
     @SecurityRequirement(name = "BearerAuth")
-    ProductImagesResponse changesProductImages
+    ProductImageResponse changesProductImages
             (@Parameter(description = "The ID of the product in which the images need to be changed") Long productId,
-             @RequestBody(description = "Number images") ProductImagesChangeRequest request);
+             @RequestBody(description = "Number images") ProductImageChangeRequest request);
 
     @Operation(
             summary = "Delete product images by positions",
@@ -122,7 +122,7 @@ public interface ProductImagesController {
                     description = "ID of the product to delete images from") Long productId,
              @Parameter(
                      description = """
-                             List of image positions to delete.
+                             List of image positions to delete. 
                              If empty or not provided - deletes all product images.
                              Example: ?position=1&position=2
                              """)

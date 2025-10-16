@@ -1,11 +1,11 @@
-CREATE TABLE product_images (
+CREATE TABLE IF NOT EXISTS product_images (
     id BIGINT PRIMARY KEY,
     product_id BIGINT NOT NULL,
     uid VARCHAR(255) NOT NULL,
     link TEXT NOT NULL,
     ts_size VARCHAR(30),
     position INTEGER NOT NULL,
-    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITHOUT TIME ZONE
 );
 
@@ -17,4 +17,4 @@ CREATE INDEX idx_product_images_position ON product_images (product_id, position
 
 ALTER TABLE product_images
     ADD CONSTRAINT fk_product_images_product
-        FOREIGN KEY (product_id) REFERENCES product (id);
+        FOREIGN KEY (product_id) REFERENCES products (id);

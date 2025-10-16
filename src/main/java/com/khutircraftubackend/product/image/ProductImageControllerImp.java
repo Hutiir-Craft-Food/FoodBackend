@@ -1,6 +1,8 @@
 package com.khutircraftubackend.product.image;
 
-import com.khutircraftubackend.product.image.request.ProductImagesUploadAndChanges;
+import com.khutircraftubackend.product.image.request.ProductImageUploadRequest;
+import com.khutircraftubackend.product.image.request.ProductImageChangeRequest;
+import com.khutircraftubackend.product.image.response.ProductImageResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,13 +18,13 @@ import java.util.List;
 @RequestMapping("/v1/products/{productId}/images")
 @Slf4j
 @RequiredArgsConstructor
-public class ProductImagesControllerImp implements ProductImagesController {
+public class ProductImageControllerImp implements ProductImageController {
 
-    private final ProductImagesService service;
+    private final ProductImageService service;
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    public ProductImagesResponse getProductImages(@PathVariable Long productId) {
+    public ProductImageResponse getProductImages(@PathVariable Long productId) {
         return service.getProductImages(productId);
     }
 
@@ -32,12 +34,12 @@ public class ProductImagesControllerImp implements ProductImagesController {
     )
     @PreAuthorize("hasRole('ADMIN') or (hasRole('SELLER') and @productService.canModifyProduct(#productId))")
     @ResponseStatus(HttpStatus.CREATED)
-    public ProductImagesResponse uploadProductImages (
+    public ProductImageResponse uploadProductImages(
             @PathVariable Long productId,
-            @Valid @RequestPart(value = "json") ProductImagesUploadAndChanges json,
+            @Valid @RequestPart(value = "json") ProductImageUploadRequest json,
             @RequestPart(value = "files") List<MultipartFile> files
-    ){
-        return service.uploadImages(productId, json, files);
+    ) {
+        return service.createImages(productId, json, files);
     }
 
     @PutMapping(
@@ -46,16 +48,16 @@ public class ProductImagesControllerImp implements ProductImagesController {
     )
     @PreAuthorize("hasRole('ADMIN') or (hasRole('SELLER') and @productService.canModifyProduct(#productId))")
     @ResponseStatus(HttpStatus.OK)
-    public ProductImagesResponse changesProductImages(@PathVariable Long productId,
-                                                      @RequestBody ProductImagesUploadAndChanges request) {
-        return service.changesPosition(productId, request);
+    public ProductImageResponse changesProductImages(@PathVariable Long productId,
+                                                     @RequestBody ProductImageChangeRequest request) {
+        return service.updateImages(productId, request);
     }
 
     @DeleteMapping()
     @PreAuthorize("hasRole('ADMIN') or (hasRole('SELLER') and @productService.canModifyProduct(#productId))")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteProductImagesByPositions(@PathVariable Long productId,
-                @RequestParam(value = "position", required = false) List<Integer> positionIds) {
+                                               @RequestParam(value = "position", required = false) List<Integer> positionIds) {
         service.deleteProductImages(productId, positionIds);
     }
 }

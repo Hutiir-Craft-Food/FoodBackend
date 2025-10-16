@@ -26,7 +26,7 @@ public class UniquePositionInListValidator
 
         Set<Integer> seen = new HashSet<>();
         for (HasPosition item : value) {
-            if (!seen.add(item.getPosition())) {
+            if (!seen.add(item.position())) {
                 return false;
             }
         }

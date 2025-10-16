@@ -1,6 +1,7 @@
 package com.khutircraftubackend.product.image;
 
-import com.khutircraftubackend.product.image.request.ProductImagesUploadAndChanges;
+import com.khutircraftubackend.product.image.request.ProductImageChangeRequest;
+import com.khutircraftubackend.product.image.request.ProductImageUploadRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -22,46 +23,58 @@ class UniqueUidAndPositionInListValidatorTest {
 
     @Test
     void shouldFailValidation_whenDuplicateUidExists() {
-        ProductImagesUploadAndChanges request = new ProductImagesUploadAndChanges(
+        ProductImageChangeRequest request = new ProductImageChangeRequest(
                 List.of(
-                        new ProductImagesUploadAndChanges.ImagesUploadAndChanges("uid1", 0),
-                        new ProductImagesUploadAndChanges.ImagesUploadAndChanges("uid1", 1)));
+                        new ProductImageChangeRequest.Image("uid1", 0),
+                        new ProductImageChangeRequest.Image("uid1", 1)));
 
-        Set<ConstraintViolation<ProductImagesUploadAndChanges>> violations = validator.validate(request);
+        Set<ConstraintViolation<ProductImageChangeRequest>> violations = validator.validate(request);
 
         assertFalse(violations.isEmpty());
 
         boolean containsUidError = violations.stream()
-                .anyMatch(v -> v.getMessage().contains("UID uid1 дублюється"));
+                .anyMatch(v -> v.getMessage().contains("UID мають бути унікальними."));
 
         assertTrue(containsUidError);
     }
 
     @Test
     void shouldFailValidation_whenDuplicatePositionExists() {
-        ProductImagesUploadAndChanges request = new ProductImagesUploadAndChanges(
+        ProductImageUploadRequest request = new ProductImageUploadRequest(
                 List.of(
-                        new ProductImagesUploadAndChanges.ImagesUploadAndChanges("uid1", 0),
-                        new ProductImagesUploadAndChanges.ImagesUploadAndChanges("uid2", 0)));
+                        new ProductImageUploadRequest.Image(0),
+                        new ProductImageUploadRequest.Image( 0)));
 
-        Set<ConstraintViolation<ProductImagesUploadAndChanges>> violations = validator.validate(request);
+        Set<ConstraintViolation<ProductImageUploadRequest>> violations = validator.validate(request);
 
         assertFalse(violations.isEmpty());
 
         boolean containsPositionError = violations.stream()
-                .anyMatch(v -> v.getMessage().contains("Position 0 дублюється"));
+                .anyMatch(v -> v.getMessage().contains("Позиції мають бути унікальними."));
 
         assertTrue(containsPositionError);
     }
 
     @Test
     void shouldPassValidation_whenUidsAndPositionsUnique() {
-        ProductImagesUploadAndChanges request = new ProductImagesUploadAndChanges(
+        ProductImageChangeRequest request = new ProductImageChangeRequest(
                 List.of(
-                        new ProductImagesUploadAndChanges.ImagesUploadAndChanges("uid1", 0),
-                        new ProductImagesUploadAndChanges.ImagesUploadAndChanges("uid2", 1)));
+                        new ProductImageChangeRequest.Image("uid1", 0),
+                        new ProductImageChangeRequest.Image("uid2", 1)));
 
-        Set<ConstraintViolation<ProductImagesUploadAndChanges>> violations = validator.validate(request);
+        Set<ConstraintViolation<ProductImageChangeRequest>> violations = validator.validate(request);
+
+        assertTrue(violations.isEmpty());
+    }
+
+    @Test
+    void shouldPassValidation_whenPositionsUnique() {
+        ProductImageUploadRequest request = new ProductImageUploadRequest(
+                List.of(
+                        new ProductImageUploadRequest.Image(0),
+                        new ProductImageUploadRequest.Image(1)));
+
+        Set<ConstraintViolation<ProductImageUploadRequest>> violations = validator.validate(request);
 
         assertTrue(violations.isEmpty());
     }

@@ -23,7 +23,7 @@ public class UniqueUidInListValidator
 
         Set<String> seen = new HashSet<>();
         for (HasUid item : value) {
-            if (!seen.add(item.getUid())) {
+            if (!seen.add(item.uid())) {
                 return false;
             }
         }

@@ -30,7 +30,7 @@ public class ProductService {
 	private final ProductMapper productMapper;
 
 	public ProductEntity findProductById(Long productId) {
-
+		//TODO refactor SCRUM-250
 		return productRepository.findProductById(productId)
 				.orElseThrow(() -> new NotFoundException("Product with id " + productId + " not found"));
 	}

@@ -1,6 +1,8 @@
 package com.khutircraftubackend.validated;
 
 import com.khutircraftubackend.exception.httpstatus.BadRequestException;
+import com.khutircraftubackend.product.image.exception.ImageNotFoundException;
+import com.khutircraftubackend.product.image.exception.ImageValidationException;
 import org.apache.tika.Tika;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,7 +25,7 @@ public class ImageMimeValidator {
             String contentType = file.getContentType();
 
             if(!allowedMimeType.contains(contentType)){
-                throw new BadRequestException(String.format(
+                throw new ImageValidationException(String.format(
                         ERROR_MIME_TYPE, file.getOriginalFilename(), file.getContentType()));
             }
 
@@ -31,7 +33,7 @@ public class ImageMimeValidator {
                 String detectedMimeType = TIKA.detect(file.getInputStream());
 
                 if (detectedMimeType == null || !allowedMimeType.contains(detectedMimeType)) {
-                    throw new BadRequestException(String.format(
+                    throw new ImageNotFoundException(String.format(
                             ERROR_MIME_TYPE, file.getOriginalFilename(), detectedMimeType));
                     // TODO SCRUM-207 Need to send a notification to the administration. Do it via the method or via
                     // the announcement of a new executionHandler? What data do we send in the notification? Example:
@@ -39,7 +41,7 @@ public class ImageMimeValidator {
                     // You can insert the team lead's resolution here
                 }
             } catch (IOException e) {
-                throw new BadRequestException(
+                throw new ImageValidationException(
                         String.format("Не вдалося визначити MIME-тип файлу: %s", fileName));
             }
         }
