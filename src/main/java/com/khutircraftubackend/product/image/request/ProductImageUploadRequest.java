@@ -7,7 +7,7 @@ import jakarta.validation.constraints.*;
 
 import java.util.List;
 
-public record ProductImagesUploadRequest(
+public record ProductImageUploadRequest(
         @NotNull(message = "Список зображень не може бути null")
         @NotEmpty(message = "Список зображень не може бути порожнім")
         @Valid
@@ -16,7 +16,7 @@ public record ProductImagesUploadRequest(
 ) {
 
     public record Image(
-            @PositiveOrZero(message = "Позиція не може бути негативною")
+            @PositiveOrZero(message = "Номер позиції має бути додатнім або нулем")
             @Max(value = 4, message = "Максимально допустима позиція зображення - 4")
             int position
     ) implements HasPosition {

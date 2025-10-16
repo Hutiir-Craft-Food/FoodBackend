@@ -1,12 +1,9 @@
 package com.khutircraftubackend.product.image;
 
+import com.khutircraftubackend.audit.Auditable;
 import com.khutircraftubackend.product.ProductEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -20,7 +17,7 @@ import java.time.LocalDateTime;
         @Index(name = "idx_product_images_uid", columnList = "product_id, uid"),
         @Index(name = "idx_product_images_position", columnList = "product_id, position"),
 })
-public class ProductImageEntity {
+public class ProductImageEntity extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE,
@@ -45,12 +42,4 @@ public class ProductImageEntity {
 
     @Column(name = "position")
     private int position;
-
-    @Column (name = "created_at", updatable = false)
-    @CreationTimestamp
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at", insertable = false)
-    @UpdateTimestamp
-    private LocalDateTime updatedAt;
 }

@@ -1,11 +1,12 @@
 package com.khutircraftubackend.product.image.response;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class ProductImageDTO {
     private Long id;
     private Long productId;
@@ -15,6 +16,7 @@ public class ProductImageDTO {
 
     @Data
     @NoArgsConstructor
+    @AllArgsConstructor
     public static class ImageLinks {
         private String thumbnail;
         private String small;

@@ -9,7 +9,7 @@ import jakarta.validation.constraints.*;
 
 import java.util.List;
 
-public record ProductImagesChangeRequest(
+public record ProductImageChangeRequest(
         @NotNull(message = "Список зображень не може бути null")
         @NotEmpty(message = "Список зображень не може бути порожнім")
         @Valid
@@ -22,7 +22,7 @@ public record ProductImagesChangeRequest(
             @NotEmpty(message = "UID файлу не може бути порожнім")
             String uid,
 
-            @PositiveOrZero(message = "Позиція не може бути негативною")
+            @PositiveOrZero(message = "Номер позиції має бути додатнім або нулем")
             @Max(value = 4, message = "Максимально допустима позиція зображення - 4")
             int position
     ) implements HasPosition, HasUid {

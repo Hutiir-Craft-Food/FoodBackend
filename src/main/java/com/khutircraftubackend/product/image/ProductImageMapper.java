@@ -8,7 +8,7 @@ import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
 import java.util.*;
 
 @Mapper(componentModel = SPRING)
-public interface ProductImagesMapper {
+public interface ProductImageMapper {
 
     default List<ProductImageDTO> toProductImageDto(List<ProductImageEntity> imageEntities) {
         if (Objects.isNull(imageEntities) || imageEntities.isEmpty()) {

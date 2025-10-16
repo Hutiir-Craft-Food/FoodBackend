@@ -5,7 +5,7 @@ CREATE TABLE product_images (
     link TEXT NOT NULL,
     ts_size VARCHAR(30),
     position INTEGER NOT NULL,
-    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITHOUT TIME ZONE
 );
 

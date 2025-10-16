@@ -5,6 +5,6 @@ import lombok.Builder;
 import java.util.List;
 
 @Builder
-public record ProductImagesResponse(
+public record ProductImageResponse(
         List<ProductImageDTO> images
 ) {}
