@@ -51,7 +51,7 @@ public class LocalStorageService implements StorageService {
         HttpServletRequest request = ((ServletRequestAttributes)
                 Objects.requireNonNull(RequestContextHolder.getRequestAttributes()))
                 .getRequest();
-        String relativeUriStr = LocalStorageController.API_PATH + uploadPath
+        String relativeUriStr = LocalStorageController.API_PATH + "/" + uploadPath
                 .relativize(filePath).normalize();
         
         return UriComponentsBuilder.newInstance()
