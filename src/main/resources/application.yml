@@ -22,6 +22,12 @@ spring:
     hibernate:
       ddl-auto: none
     open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 50
+        order_inserts: true
+        order_updates: true
 
   flyway:
     enabled: true
@@ -45,6 +51,10 @@ spring:
           auth: true
           starttls:
             enable: true
+
+  servlet:
+    multipart:
+      max-file-size: 5MB
 
 cloudinary:
   cloud_name: ${CLOUDINARY_CLOUD_NAME}
@@ -89,3 +99,7 @@ server:
 
 springdoc:
   override-with-generic-response: false
+
+allowed:
+  mime:
+    types: image/jpeg,image/jpg,image/png,image/webp
