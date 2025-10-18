@@ -24,8 +24,8 @@ import static com.khutircraftubackend.category.exception.CategoryExceptionMessag
 @Slf4j
 public class CategoryService {
     
-    private static final String DONT_UPLOAD_ICON = "Не вдалося завантажити іконку категорії";
-    private static final String DONT_DELETE_ICON = "Не вдалося видалити іконку категорії з URL: ";
+    private static final String COULD_NOT_UPLOAD_ICON = "Не вдалося завантажити іконку категорії";
+    private static final String COULD_NOT_DELETE_ICON  = "Не вдалося видалити іконку категорії з URL: ";
     
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
@@ -44,8 +44,8 @@ public class CategoryService {
         try {
             return storageService.upload(iconFile);
         } catch (IOException e) {
-            log.warn(DONT_UPLOAD_ICON, e);
-            throw new StorageException(DONT_UPLOAD_ICON);
+            log.warn(COULD_NOT_UPLOAD_ICON, e);
+            throw new StorageException(COULD_NOT_UPLOAD_ICON);
         }
     }
     
@@ -55,8 +55,8 @@ public class CategoryService {
         try {
             storageService.deleteByUrl(iconUrl);
         } catch (IOException e) {
-            log.warn(DONT_DELETE_ICON + iconUrl, e);
-            throw new StorageException(DONT_DELETE_ICON + iconUrl);
+            log.warn(COULD_NOT_DELETE_ICON + iconUrl, e);
+            throw new StorageException(COULD_NOT_DELETE_ICON + iconUrl);
         }
     }
     
@@ -66,7 +66,7 @@ public class CategoryService {
         try {
             deleteIcon(category.getIconUrl());
         } catch (StorageException e) {
-            log.warn(DONT_DELETE_ICON + category.getIconUrl(), e);
+            log.warn(COULD_NOT_DELETE_ICON + category.getIconUrl(), e);
         }
     }
     
@@ -115,7 +115,7 @@ public class CategoryService {
                 try {
                     deleteIcon(oldIconUrl);
                 } catch (StorageException e) {
-                    log.warn(DONT_DELETE_ICON + oldIconUrl, e);
+                    log.warn(COULD_NOT_DELETE_ICON + oldIconUrl, e);
                 }
             }
         }
