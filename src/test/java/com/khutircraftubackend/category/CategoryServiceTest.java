@@ -7,6 +7,7 @@ import com.khutircraftubackend.search.exception.SearchResponseMessage;
 import com.khutircraftubackend.search.exception.InvalidSearchQueryException;
 import com.khutircraftubackend.storage.StorageService;
 import com.khutircraftubackend.storage.exception.InvalidFileFormatException;
+import com.khutircraftubackend.storage.exception.StorageException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -270,7 +271,7 @@ class CategoryServiceTest {
 			
 			when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(existingCategory));
 			
-			assertThrows(IOException.class, () ->
+			assertThrows(StorageException.class, () ->
 					categoryService.updateCategory(categoryId, categoryRequest, multipartFile));
 			
 			assertNull(existingCategory.getIconUrl());
@@ -341,6 +342,7 @@ class CategoryServiceTest {
 			existingCategory.setDescription("Updated Description");
 			
 			when(categoryRepository.findAllByParentCategory_Id(1L)).thenReturn(List.of());
+			when(categoryRepository.findById(1L)).thenReturn(Optional.of(existingCategory));
 			
 			categoryService.deleteCategory(1L, forceDelete);
 			

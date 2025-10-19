@@ -4,8 +4,10 @@ import com.khutircraftubackend.category.exception.CategoryDeletionException;
 import com.khutircraftubackend.category.exception.CategoryNotFoundException;
 import com.khutircraftubackend.category.request.CategoryRequest;
 import com.khutircraftubackend.storage.StorageService;
+import com.khutircraftubackend.storage.exception.StorageException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,108 +21,148 @@ import static com.khutircraftubackend.category.exception.CategoryExceptionMessag
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CategoryService {
-	
-	private final CategoryRepository categoryRepository;
-	private final CategoryMapper categoryMapper;
-	private final StorageService storageService;
-	
-	public CategoryEntity findCategoryById(Long id) {
-		
-		return categoryRepository.findById(id).orElseThrow(() ->
-				new CategoryNotFoundException(CATEGORY_NOT_FOUND));
-	}
-	
-
-    private String uploadIcon(MultipartFile iconFile) throws IOException {
-		
-		if (iconFile == null || iconFile.isEmpty()) {
-			return "";
-		}
-		
-		return storageService.upload(iconFile);
-	}
-	
-	
-	public List<CategoryEntity> getAllRootCategories() {
-		
-		return categoryRepository.findAllByParentCategoryIsNull();
-	}
-	
-	
-	public List<CategoryEntity> getAllByParentCategoryId(Long id) {
-		
-		return categoryRepository.findAllByParentCategory_Id(id);
-	}
-	
-
-	@CacheEvict(value = "categoryTree", allEntries = true)
-	@Transactional
-	public CategoryEntity createCategory(CategoryRequest request, MultipartFile iconFile) throws IOException {
-		
-		CategoryEntity category = categoryMapper.toCategoryEntity(request);
-		
+    
+    private static final String COULD_NOT_UPLOAD_ICON = "Не вдалося завантажити іконку категорії";
+    private static final String COULD_NOT_DELETE_ICON  = "Не вдалося видалити іконку категорії з URL: ";
+    
+    private final CategoryRepository categoryRepository;
+    private final CategoryMapper categoryMapper;
+    private final StorageService storageService;
+    
+    public CategoryEntity findCategoryById(Long id) {
+        
+        return categoryRepository.findById(id).orElseThrow(() ->
+                new CategoryNotFoundException(CATEGORY_NOT_FOUND));
+    }
+    
+    
+    private String uploadIcon(MultipartFile iconFile) {
+        
+        if (iconFile == null || iconFile.isEmpty()) return "";
+        try {
+            return storageService.upload(iconFile);
+        } catch (IOException e) {
+            log.warn(COULD_NOT_UPLOAD_ICON, e);
+            throw new StorageException(COULD_NOT_UPLOAD_ICON);
+        }
+    }
+    
+    private void deleteIcon(String iconUrl) {
+        
+        if (iconUrl == null || iconUrl.isBlank()) return;
+        try {
+            storageService.deleteByUrl(iconUrl);
+        } catch (IOException e) {
+            log.warn(COULD_NOT_DELETE_ICON + iconUrl, e);
+            throw new StorageException(COULD_NOT_DELETE_ICON + iconUrl);
+        }
+    }
+    
+    private void deleteCategoryWithIcon(Long id) {
+        CategoryEntity category = findCategoryById(id);
+        categoryRepository.deleteById(id);
+        try {
+            deleteIcon(category.getIconUrl());
+        } catch (StorageException e) {
+            log.warn(COULD_NOT_DELETE_ICON + category.getIconUrl(), e);
+        }
+    }
+    
+    
+    public List<CategoryEntity> getAllRootCategories() {
+        
+        return categoryRepository.findAllByParentCategoryIsNull();
+    }
+    
+    
+    public List<CategoryEntity> getAllByParentCategoryId(Long id) {
+        
+        return categoryRepository.findAllByParentCategory_Id(id);
+    }
+    
+    
+    @CacheEvict(value = "categoryTree", allEntries = true)
+    @Transactional
+    public CategoryEntity createCategory(CategoryRequest request, MultipartFile iconFile) {
+        
+        CategoryEntity category = categoryMapper.toCategoryEntity(request);
+        
         category.setIconUrl(uploadIcon(iconFile));
-		
-		setParentCategory(category, request.parentCategoryId());
-		
-		return categoryRepository.save(category);
-	}
-	
-	@CacheEvict(value = "categoryTree", allEntries = true)
-	@Transactional
-	public CategoryEntity updateCategory(Long id, CategoryRequest request,
-										 MultipartFile iconFile
-	) throws IOException {
-
-		CategoryEntity existingCategory = findCategoryById(id);
-        String iconFileUrl = uploadIcon(iconFile);
-        existingCategory.setIconUrl(iconFileUrl);
-
-		
-		setParentCategory(existingCategory, request.parentCategoryId());
-
-		categoryMapper.updateCategoryEntity(existingCategory, request);
-
-		return categoryRepository.save(existingCategory);
-	}
-	
-	@CacheEvict(value = "categoryTree", allEntries = true)
-	@Transactional
-	public void deleteCategory(Long id, boolean forceDelete) {
-		
-		List<CategoryEntity> childCategories = categoryRepository.findAllByParentCategory_Id(id);
-		
-		if (childCategories.isEmpty()) {
-			categoryRepository.deleteById(id);
-		} else if (forceDelete) {
-			for (CategoryEntity child : childCategories) {
-				deleteCategory(child.getId(), true);
-			}
-			categoryRepository.deleteById(id);
-		} else {
-			throw new CategoryDeletionException(CATEGORY_HAS_SUBCATEGORIES_OR_PRODUCTS);
-		}
-	}
-
-	@Transactional
-	public CategoryEntity updateKeywords (Long id, Set<String> keywords) {
-
-		CategoryEntity existingCategory = findCategoryById(id);
-
-		String keywordsStr = categoryMapper.keywordsToString(keywords);
-		existingCategory.setKeywords(keywordsStr);
-
-		return categoryRepository.save(existingCategory);
-	}
-
-	private void setParentCategory(CategoryEntity category, Long parentCategoryId) {
-
-		CategoryEntity parentCategory = null;
-
-		if (parentCategoryId != null) {
-			parentCategory = findCategoryById(parentCategoryId);
-		}
-		category.setParentCategory(parentCategory);
-	}
+        
+        setParentCategory(category, request.parentCategoryId());
+        
+        return categoryRepository.save(category);
+    }
+    
+    @CacheEvict(value = "categoryTree", allEntries = true)
+    @Transactional
+    public CategoryEntity updateCategory(Long id, CategoryRequest request,
+                                         MultipartFile iconFile
+    ) {
+        
+        CategoryEntity existingCategory = findCategoryById(id);
+        
+        if (iconFile != null && !iconFile.isEmpty()) {
+            
+            String oldIconUrl = existingCategory.getIconUrl();
+            String newIconUrl = uploadIcon(iconFile);
+            existingCategory.setIconUrl(newIconUrl);
+            
+            if (oldIconUrl != null && !oldIconUrl.equals(newIconUrl)) {
+                
+                try {
+                    deleteIcon(oldIconUrl);
+                } catch (StorageException e) {
+                    log.warn(COULD_NOT_DELETE_ICON + oldIconUrl, e);
+                }
+            }
+        }
+        
+        setParentCategory(existingCategory, request.parentCategoryId());
+        
+        categoryMapper.updateCategoryEntity(existingCategory, request);
+        
+        return categoryRepository.save(existingCategory);
+    }
+    
+    @CacheEvict(value = "categoryTree", allEntries = true)
+    @Transactional
+    public void deleteCategory(Long id, boolean forceDelete) {
+        
+        List<CategoryEntity> childCategories = categoryRepository.findAllByParentCategory_Id(id);
+        
+        if (childCategories.isEmpty()) {
+            deleteCategoryWithIcon(id);
+        } else if (forceDelete) {
+            for (CategoryEntity child : childCategories) {
+                deleteCategory(child.getId(), true);
+            }
+            deleteCategoryWithIcon(id);
+        } else {
+            throw new CategoryDeletionException(CATEGORY_HAS_SUBCATEGORIES_OR_PRODUCTS);
+        }
+    }
+    
+    @Transactional
+    public CategoryEntity updateKeywords(Long id, Set<String> keywords) {
+        
+        CategoryEntity existingCategory = findCategoryById(id);
+        
+        String keywordsStr = categoryMapper.keywordsToString(keywords);
+        existingCategory.setKeywords(keywordsStr);
+        
+        return categoryRepository.save(existingCategory);
+    }
+    
+    private void setParentCategory(CategoryEntity category, Long parentCategoryId) {
+        
+        CategoryEntity parentCategory = null;
+        
+        if (parentCategoryId != null) {
+            parentCategory = findCategoryById(parentCategoryId);
+        }
+        category.setParentCategory(parentCategory);
+    }
 }
