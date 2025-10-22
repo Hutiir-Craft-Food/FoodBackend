@@ -20,7 +20,9 @@ spring:
         show-sql: true
         format_sql: true
   flyway:
-    enabled: false
+    enabled: true
+    locations: classpath:db/migration,classpath:db/testdata
+    baseline-on-migrate: true
 
   mail:
     host: localhost
