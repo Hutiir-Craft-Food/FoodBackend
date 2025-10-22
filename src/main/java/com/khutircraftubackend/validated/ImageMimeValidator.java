@@ -1,6 +1,5 @@
 package com.khutircraftubackend.validated;
 
-import com.khutircraftubackend.exception.httpstatus.BadRequestException;
 import com.khutircraftubackend.product.image.exception.ImageNotFoundException;
 import com.khutircraftubackend.product.image.exception.ImageValidationException;
 import org.apache.tika.Tika;

@@ -1,10 +1,8 @@
 package com.khutircraftubackend.product.image;
 
-import com.khutircraftubackend.exception.httpstatus.BadRequestException;
 import com.khutircraftubackend.exception.httpstatus.NotFoundException;
 import com.khutircraftubackend.product.ProductEntity;
 import com.khutircraftubackend.product.ProductService;
-import com.khutircraftubackend.product.image.exception.PositionAlreadyExistsException;
 import com.khutircraftubackend.product.image.exception.TooManyImagesException;
 import com.khutircraftubackend.product.image.request.ProductImageUploadRequest;
 import com.khutircraftubackend.product.image.response.ProductImageDTO;
@@ -23,11 +21,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ProductImagesServiceTest {
@@ -175,7 +176,7 @@ class ProductImagesServiceTest {
 //        }
 
         @Test
-        void upload_WhenFilesExceedMaxCount_ThrowsBadRequestException() {
+        void upload_WhenFilesExceedMaxCount_ThrowsTooManyImagesException() {
             ProductImageUploadRequest jsonImages = new ProductImageUploadRequest(
                     List.of(new ProductImageUploadRequest.Image(2))
             );
@@ -224,7 +225,7 @@ class ProductImagesServiceTest {
 //
 //            when(imageRepository.findByProductId(1L)).thenReturn(imagesList);
 //
-//            BadRequestException ex = assertThrows(BadRequestException.class, () ->
+//            PositionAlreadyExistsException ex = assertThrows(PositionAlreadyExistsException.class, () ->
 //                    imagesService.createImages(1L, jsonImages, fileImages));
 //
 //            assertEquals(ProductImageResponseMessages.ERROR_POSITION_ALREADY_EXISTS, ex.getMessage());
@@ -240,7 +241,7 @@ class ProductImagesServiceTest {
 //            MultipartFile files = mock(MultipartFile.class);
 //            List<MultipartFile> fileImages = List.of(files);
 //
-//            BadRequestException ex = assertThrows(BadRequestException.class, () ->
+//            ImageNotFoundException ex = assertThrows(ImageNotFoundException.class, () ->
 //                    imagesService.createImages(1L, jsonImages, fileImages));
 //
 //            assertEquals(String.format(ProductImageResponseMessages.ERROR_IMAGE_NOT_FOUND_BY_UID,
@@ -292,7 +293,7 @@ class ProductImagesServiceTest {
 //            ProductImagesUploadAndChanges jsonImages = new ProductImagesUploadAndChanges(
 //                    List.of(new ProductImagesUploadAndChanges.ImagesUploadAndChanges("pic0", 2)));
 //
-//            BadRequestException ex = assertThrows(BadRequestException.class, () ->
+//            ImageValidationException ex = assertThrows(ImageValidationException.class, () ->
 //                    imagesService.changesPosition(1L, jsonImages));
 //
 //            assertEquals(ProductImagesResponseMessages.ERROR_SIZE, ex.getMessage());
@@ -319,7 +320,7 @@ class ProductImagesServiceTest {
 //
 //            when(imageRepository.findByProductId(1L)).thenReturn(allImages);
 //
-//            BadRequestException ex = assertThrows(BadRequestException.class, () ->
+//            ImageValidationException ex = assertThrows(ImageValidationException.class, () ->
 //                    imagesService.changesPosition(1L, jsonImages));
 //
 //            assertEquals(String.format(
