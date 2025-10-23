@@ -5,8 +5,8 @@ CREATE TABLE IF NOT EXISTS product_images (
     link TEXT NOT NULL,
     ts_size VARCHAR(30),
     position INTEGER NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-    updated_at TIMESTAMP WITHOUT TIME ZONE
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ
 );
 
 CREATE SEQUENCE product_images_seq START WITH 1 INCREMENT BY 20;
