@@ -6,7 +6,7 @@ spring:
     import: optional:file:.env[.properties]
 
   profiles:
-    default: local
+    default: ${PROFILES_LOCAL:qa}
 
   output:
     ansi:
@@ -20,7 +20,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: validate
     open-in-view: false
 
   flyway:
