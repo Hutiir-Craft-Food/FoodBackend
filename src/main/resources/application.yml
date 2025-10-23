@@ -31,7 +31,7 @@ spring:
 
   flyway:
     enabled: true
-    locations: classpath:db/migration,classpath:db/seed,classpath:db/seed/${spring.profiles.active}
+    locations: classpath:db/migration
     baseline-on-migrate: true
     placeholders:
       email: ${FLYWAY_EMAIL}
