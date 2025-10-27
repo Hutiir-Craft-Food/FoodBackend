@@ -56,13 +56,11 @@ public class CategoryService {
         
         category = saveCategoryWithIntegrityCheck(category);
         
-        if (iconFile != null && !iconFile.isEmpty()) {
+            String iconLink = uploadIcon(iconFile);
             
-            category.setIconUrl(uploadIcon(iconFile));
-            category = saveCategoryWithIntegrityCheck(category);
-        }
+            if(iconLink != null) category.setIconUrl(iconLink);
         
-        return category;
+        return categoryRepository.save(category);
     }
     
     @CacheEvict(value = "categoryTree", allEntries = true)
@@ -147,7 +145,7 @@ public class CategoryService {
     
     private String uploadIcon(MultipartFile iconFile) {
         
-        if (iconFile == null || iconFile.isEmpty()) return "";
+        if (iconFile == null || iconFile.isEmpty()) return null;
         
         try {
             return storageService.upload(iconFile);
