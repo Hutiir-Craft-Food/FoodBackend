@@ -1,5 +1,6 @@
 package com.khutircraftubackend.category;
 
+import com.khutircraftubackend.category.exception.CategoryCreationException;
 import com.khutircraftubackend.category.exception.CategoryDeletionException;
 import com.khutircraftubackend.category.exception.CategoryNotFoundException;
 import com.khutircraftubackend.category.request.CategoryRequest;
@@ -9,6 +10,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -16,16 +18,12 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
-import static com.khutircraftubackend.category.exception.CategoryExceptionMessages.CATEGORY_HAS_SUBCATEGORIES_OR_PRODUCTS;
-import static com.khutircraftubackend.category.exception.CategoryExceptionMessages.CATEGORY_NOT_FOUND;
+import static com.khutircraftubackend.category.exception.CategoryExceptionMessages.*;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class CategoryService {
-    
-    private static final String COULD_NOT_UPLOAD_ICON = "Не вдалося завантажити іконку категорії";
-    private static final String COULD_NOT_DELETE_ICON  = "Не вдалося видалити іконку категорії з URL: ";
     
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
@@ -36,40 +34,6 @@ public class CategoryService {
         return categoryRepository.findById(id).orElseThrow(() ->
                 new CategoryNotFoundException(CATEGORY_NOT_FOUND));
     }
-    
-    
-    private String uploadIcon(MultipartFile iconFile) {
-        
-        if (iconFile == null || iconFile.isEmpty()) return "";
-        try {
-            return storageService.upload(iconFile);
-        } catch (IOException e) {
-            log.warn(COULD_NOT_UPLOAD_ICON, e);
-            throw new StorageException(COULD_NOT_UPLOAD_ICON);
-        }
-    }
-    
-    private void deleteIcon(String iconUrl) {
-        
-        if (iconUrl == null || iconUrl.isBlank()) return;
-        try {
-            storageService.deleteByUrl(iconUrl);
-        } catch (IOException e) {
-            log.warn(COULD_NOT_DELETE_ICON + iconUrl, e);
-            throw new StorageException(COULD_NOT_DELETE_ICON + iconUrl);
-        }
-    }
-    
-    private void deleteCategoryWithIcon(Long id) {
-        CategoryEntity category = findCategoryById(id);
-        categoryRepository.deleteById(id);
-        try {
-            deleteIcon(category.getIconUrl());
-        } catch (StorageException e) {
-            log.warn(COULD_NOT_DELETE_ICON + category.getIconUrl(), e);
-        }
-    }
-    
     
     public List<CategoryEntity> getAllRootCategories() {
         
@@ -82,16 +46,19 @@ public class CategoryService {
         return categoryRepository.findAllByParentCategory_Id(id);
     }
     
-    
     @CacheEvict(value = "categoryTree", allEntries = true)
     @Transactional
     public CategoryEntity createCategory(CategoryRequest request, MultipartFile iconFile) {
         
         CategoryEntity category = categoryMapper.toCategoryEntity(request);
         
-        category.setIconUrl(uploadIcon(iconFile));
-        
         setParentCategory(category, request.parentCategoryId());
+        
+        category = saveCategoryWithIntegrityCheck(category);
+        
+            String iconLink = uploadIcon(iconFile);
+            
+            if(iconLink != null) category.setIconUrl(iconLink);
         
         return categoryRepository.save(category);
     }
@@ -99,8 +66,7 @@ public class CategoryService {
     @CacheEvict(value = "categoryTree", allEntries = true)
     @Transactional
     public CategoryEntity updateCategory(Long id, CategoryRequest request,
-                                         MultipartFile iconFile
-    ) {
+                                         MultipartFile iconFile) {
         
         CategoryEntity existingCategory = findCategoryById(id);
         
@@ -119,12 +85,11 @@ public class CategoryService {
                 }
             }
         }
-        
         setParentCategory(existingCategory, request.parentCategoryId());
         
         categoryMapper.updateCategoryEntity(existingCategory, request);
         
-        return categoryRepository.save(existingCategory);
+        return saveCategoryWithIntegrityCheck(existingCategory);
     }
     
     @CacheEvict(value = "categoryTree", allEntries = true)
@@ -135,6 +100,7 @@ public class CategoryService {
         
         if (childCategories.isEmpty()) {
             deleteCategoryWithIcon(id);
+            
         } else if (forceDelete) {
             for (CategoryEntity child : childCategories) {
                 deleteCategory(child.getId(), true);
@@ -156,6 +122,17 @@ public class CategoryService {
         return categoryRepository.save(existingCategory);
     }
     
+    private CategoryEntity saveCategoryWithIntegrityCheck(CategoryEntity category) {
+        
+        try {
+            return categoryRepository.save(category);
+        } catch (DataIntegrityViolationException e) {
+            log.error("Constraint violation while saving category '{}': {}", category.getName(), e.getMessage());
+                
+                throw new CategoryCreationException(String.format(CATEGORY_ALREADY_EXISTS, category.getName()));
+        }
+    }
+    
     private void setParentCategory(CategoryEntity category, Long parentCategoryId) {
         
         CategoryEntity parentCategory = null;
@@ -165,4 +142,41 @@ public class CategoryService {
         }
         category.setParentCategory(parentCategory);
     }
+    
+    private String uploadIcon(MultipartFile iconFile) {
+        
+        if (iconFile == null || iconFile.isEmpty()) return null;
+        
+        try {
+            return storageService.upload(iconFile);
+        } catch (IOException e) {
+            log.warn(COULD_NOT_UPLOAD_ICON, e);
+            throw new StorageException(COULD_NOT_UPLOAD_ICON);
+        }
+    }
+    
+    private void deleteIcon(String iconUrl) {
+        
+        if (iconUrl == null || iconUrl.isBlank()) return;
+        
+        try {
+            storageService.deleteByUrl(iconUrl);
+        } catch (IOException e) {
+            log.warn(COULD_NOT_DELETE_ICON + iconUrl, e);
+            throw new StorageException(COULD_NOT_DELETE_ICON + iconUrl);
+        }
+    }
+    
+    private void deleteCategoryWithIcon(Long id) {
+        
+        CategoryEntity category = findCategoryById(id);
+        categoryRepository.deleteById(id);
+        
+        try {
+            deleteIcon(category.getIconUrl());
+        } catch (StorageException e) {
+            log.warn(COULD_NOT_DELETE_ICON + category.getIconUrl(), e);
+        }
+    }
+    
 }

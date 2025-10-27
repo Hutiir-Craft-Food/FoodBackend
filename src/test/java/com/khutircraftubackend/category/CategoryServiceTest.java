@@ -125,7 +125,7 @@ class CategoryServiceTest {
 			assertNotNull(result);
 			assertEquals("cloudinaryUrl", result.getIconUrl());
 			verify(storageService).upload(multipartFile);
-			verify(categoryRepository).save(any(CategoryEntity.class));
+			verify(categoryRepository, times(2)).save(any(CategoryEntity.class));
 		}
 		
 		@Test
@@ -155,7 +155,7 @@ class CategoryServiceTest {
 			assertEquals("convertedFileUrl", result.getIconUrl());
 			
 			verify(storageService).upload(multipartFile);
-			verify(categoryRepository, times(1)).save(any(CategoryEntity.class));
+			verify(categoryRepository, times(2)).save(any(CategoryEntity.class));
 		}
 		
 		@Test
