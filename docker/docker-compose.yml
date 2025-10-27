@@ -9,6 +9,8 @@ services:
       SPRING_DATASOURCE_URL: "jdbc:postgresql://db:5432/khutir_craft"
     ports:
       - "8080:8080"
+    volumes:
+      - khutir-app-resources:/app/uploads
     env_file:
       - path: ../.env
         required: false
@@ -47,3 +49,7 @@ volumes:
     name: "khutir-db-data"
     labels:
       - "com.khutir-craft.db"
+  khutir-app-resources:
+    name: "khutir-app-resources"
+    labels:
+      - "com.khutir-craft.app"
