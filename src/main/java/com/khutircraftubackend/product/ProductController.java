@@ -81,4 +81,14 @@ public class ProductController {
 		
 		return productService.getProducts(offset, limit);
 	}
+	
+	@GetMapping("/featured")
+	@ResponseStatus(HttpStatus.OK)
+	public Map<String, Object> getFeaturedProducts(
+			@RequestParam(defaultValue = "0") int offset,
+			@RequestParam(defaultValue = "4") int limit) {
+		
+		return productService.getFeaturedProducts(offset, limit);
+	}
+	
 }
