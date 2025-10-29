@@ -17,7 +17,7 @@ CREATE TABLE product_images (
 INSERT INTO product_images (product_id, uid, link, ts_size, position)
 SELECT
     p.id,
-    'gdu-1234-image-v5d3-1',
+    CONCAT ('photo-', TO_CHAR(NOW(), 'YYmmDD-'), 'image-', p.id) as uid,
     CASE
         -- Курка и продукты из курицы
         WHEN p.name IN ('Курка', 'Куряче філе', 'Фарш курячий', 'Копчена курка', 'Курка гриль')
