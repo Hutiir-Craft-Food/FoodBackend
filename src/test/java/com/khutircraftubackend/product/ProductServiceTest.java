@@ -11,6 +11,10 @@ import com.khutircraftubackend.product.response.ProductResponse;
 import com.khutircraftubackend.seller.SellerEntity;
 import com.khutircraftubackend.seller.SellerMapper;
 import com.khutircraftubackend.seller.SellerService;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -25,10 +29,9 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.nio.file.AccessDeniedException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -55,9 +58,13 @@ class ProductServiceTest {
 	
 	private SellerEntity seller;
 	private ProductEntity product;
-	
+	private Validator validator;
+
 	@BeforeEach
 	void setUp() {
+
+		ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+		validator = factory.getValidator();
 
 		seller = new SellerEntity();
 		seller.setId(1L);
@@ -66,6 +73,10 @@ class ProductServiceTest {
 		product = new ProductEntity();
 		product.setId(1L);
 		product.setName("Test product");
+		product.setAllergens("Test Allergens");
+		product.setIngredients("Test Ingredients");
+		product.setNutrition("Test Nutrition");
+		product.setStorage("Test Storage");
 		product.setSeller(seller);
 	}
 	
@@ -107,7 +118,50 @@ class ProductServiceTest {
 
 		verify(sellerMapper, atLeastOnce()).toSellerResponse(any());
 	}
-	
+
+	@Nested
+	@DisplayName("Test Request")
+	class ProductRequestTest{
+		@Test
+		void productRequest_Valid() {
+			ProductRequest request = new ProductRequest(
+					"Valid Name", true, "Description",
+					"Ingredients", "Nutrition", "Storage", "Allergens", 1L
+			);
+
+			Set<ConstraintViolation<ProductRequest>> violations =
+					validator.validate(request);
+
+			assertTrue(violations.isEmpty());
+		}
+
+		@Test
+		void productRequest_NotValid_AllFields() {
+			ProductRequest request = new ProductRequest(
+					"", null, "",
+					null, null, null, null, null
+			);
+
+			Set<ConstraintViolation<ProductRequest>> violations = validator.validate(request);
+
+			assertFalse(violations.isEmpty());
+			assertEquals(8, violations.size());
+
+			Set<String> invalidFields = violations.stream()
+					.map(violation -> violation.getPropertyPath().toString())
+					.collect(Collectors.toSet());
+
+			assertTrue(invalidFields.contains("name"));
+			assertTrue(invalidFields.contains("available"));
+			assertTrue(invalidFields.contains("description"));
+			assertTrue(invalidFields.contains("ingredients"));
+			assertTrue(invalidFields.contains("nutrition"));
+			assertTrue(invalidFields.contains("storage"));
+			assertTrue(invalidFields.contains("allergens"));
+			assertTrue(invalidFields.contains("categoryId"));
+		}
+	}
+
 	@Nested
 	@DisplayName("Tests for modify product")
 	class CanModify {

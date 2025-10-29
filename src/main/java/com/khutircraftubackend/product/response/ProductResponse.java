@@ -10,10 +10,12 @@ public record ProductResponse(
         
         Long id,
         String name,
-        String thumbnailImageUrl,
-        String imageUrl,
         boolean available,
         String description,
+        String ingredients,
+        String nutrition,
+        String storage,
+        String allergens,
         SellerResponse seller,
         CategoryResponse category,
         List<ProductPriceResponse> prices
