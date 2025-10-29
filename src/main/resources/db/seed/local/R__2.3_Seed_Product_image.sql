@@ -1,21 +1,6 @@
--- Удалить старую таблицу если существует
-DROP TABLE IF EXISTS product_images;
-
--- Создать таблицу с BIGSERIAL
-CREATE TABLE product_images (
-                                id BIGSERIAL PRIMARY KEY,
-                                product_id BIGINT NOT NULL,
-                                uid VARCHAR(255) NOT NULL,
-                                link TEXT NOT NULL,
-                                ts_size VARCHAR(30),
-                                position INTEGER NOT NULL,
-                                created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-                                updated_at TIMESTAMPTZ,
-                                FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
-);
-
-INSERT INTO product_images (product_id, uid, link, ts_size, position)
+INSERT INTO product_images (id, product_id, uid, link, ts_size, position)
 SELECT
+    nextval('product_images_seq'),
     p.id,
     CONCAT ('photo-', TO_CHAR(NOW(), 'YYmmDD-'), 'image-', p.id) as uid,
     CASE
