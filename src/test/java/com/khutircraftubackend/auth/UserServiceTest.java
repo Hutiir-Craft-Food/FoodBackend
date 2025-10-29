@@ -1,19 +1,19 @@
-package com.khutircraftubackend.user;
-
-
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-@ExtendWith(MockitoExtension.class)
-class UserServiceTest {
-
-    @Mock
-    private UserRepository userRepository;
-
-    @InjectMocks
-    private UserService userService;
+//package com.khutircraftubackend.user;
+//
+//
+//import org.junit.jupiter.api.extension.ExtendWith;
+//import org.mockito.InjectMocks;
+//import org.mockito.Mock;
+//import org.mockito.junit.jupiter.MockitoExtension;
+//
+//@ExtendWith(MockitoExtension.class)
+//class UserServiceTest {
+//
+//    @Mock
+//    private UserRepository userRepository;
+//
+//    @InjectMocks
+//    private UserService userService;
 
 //    @Test
 //    void testGetUserForEmail_UserExists() {
@@ -42,4 +42,4 @@ class UserServiceTest {
 //
 //        verify(userRepository, times(1)).findByEmail(email);
 //    }
-}
+//}

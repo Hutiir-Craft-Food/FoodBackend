@@ -1,6 +1,7 @@
 package com.khutircraftubackend.product.response;
 
 import com.khutircraftubackend.category.response.CategoryResponse;
+import com.khutircraftubackend.product.image.response.ProductImageMinimalDTO;
 import com.khutircraftubackend.product.price.entity.ProductUnitEntity;
 import com.khutircraftubackend.product.price.request.ProductPriceDTO;
 import com.khutircraftubackend.seller.SellerResponse;
@@ -22,6 +23,7 @@ public record ProductResponse(
         SellerResponse seller,
         CategoryResponse category,
         List<ProductPriceDTO> prices,
-        List<ProductUnitEntity> units
+        List<ProductUnitEntity> units,
+        List<ProductImageMinimalDTO> images
 ) {
 }

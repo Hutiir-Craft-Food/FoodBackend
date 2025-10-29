@@ -4,6 +4,7 @@ import com.khutircraftubackend.category.CategoryEntity;
 import com.khutircraftubackend.category.CategoryMapper;
 import com.khutircraftubackend.category.CategoryService;
 import com.khutircraftubackend.category.exception.CategoryNotFoundException;
+import com.khutircraftubackend.product.image.ProductImageMapper;
 import com.khutircraftubackend.product.exception.ProductAccessException;
 import com.khutircraftubackend.product.exception.ProductNotFoundException;
 import com.khutircraftubackend.product.request.ProductRequest;
@@ -52,6 +53,8 @@ class ProductServiceTest {
 	@Spy
 	@InjectMocks
 	private ProductMapper productMapper = Mappers.getMapper(ProductMapper.class);
+	@Spy
+	private ProductImageMapper imageMapper = Mappers.getMapper(ProductImageMapper.class);
 	@InjectMocks
 	private ProductService productService;
 	

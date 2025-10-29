@@ -1,6 +1,7 @@
 package com.khutircraftubackend.product;
 
 import com.khutircraftubackend.category.CategoryMapper;
+import com.khutircraftubackend.product.image.ProductImageMapper;
 import com.khutircraftubackend.product.price.entity.ProductPriceEntity;
 import com.khutircraftubackend.product.price.entity.ProductUnitEntity;
 import com.khutircraftubackend.product.price.mapper.ProductPriceMapper;
@@ -21,7 +22,7 @@ import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
 import static org.mapstruct.ReportingPolicy.IGNORE;
 
 @Mapper(componentModel = SPRING, unmappedTargetPolicy = IGNORE,
-        uses = {SellerMapper.class, CategoryMapper.class, ProductPriceMapper.class})
+        uses = {SellerMapper.class, CategoryMapper.class, ProductPriceMapper.class, ProductImageMapper.class})
 public interface ProductMapper {
 	
 	ProductEntity toProductEntity(ProductRequest request);
@@ -35,23 +36,24 @@ public interface ProductMapper {
 	@Mapping(target = "allergens", source = "request.allergens")
 	void updateProductFromRequest(@MappingTarget ProductEntity product, ProductRequest request);
 
-	ProductResponse toProductResponse(ProductEntity productEntity);
-	
-	@AfterMapping
-	default void mapUnits(ProductEntity productEntity, @MappingTarget ProductResponse.ProductResponseBuilder builder) {
-		
-		if (productEntity.getPrices() == null) { return; }
-		
-		List<ProductUnitEntity> units = productEntity.getPrices().stream()
-				.map(ProductPriceEntity::getUnit)
-				.filter(Objects::nonNull)
-				.distinct()
-				.toList();
-		
-		builder.units(units);
-	}
+    @Mapping(target = "images", source = "images")
+    ProductResponse toProductResponse(ProductEntity productEntity);
+
+    @AfterMapping
+    default void mapUnits(ProductEntity productEntity, @MappingTarget ProductResponse.ProductResponseBuilder builder) {
+
+        if (productEntity.getPrices() == null) { return; }
+
+        List<ProductUnitEntity> units = productEntity.getPrices().stream()
+                .map(ProductPriceEntity::getUnit)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+
+        builder.units(units);
+    }
 	
 	Collection<ProductResponse> toProductResponse(Page<ProductEntity> entities);
-	Collection<ProductResponse> toProductResponse(Collection<ProductEntity> entities);
+    Collection<ProductResponse> toProductResponse(Collection<ProductEntity> entities);
 	
 }

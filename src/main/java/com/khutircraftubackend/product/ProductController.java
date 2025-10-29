@@ -83,13 +83,19 @@ public class ProductController {
 		
 		return productService.getProducts(offset, limit);
 	}
-	
-	@GetMapping("/featured")
-	@ResponseStatus(HttpStatus.OK)
-	public Collection<ProductResponse> getFeaturedProducts(
-			@RequestParam(defaultValue = "16") int limit) {
-		
-		return productService.getLatestProducts(limit);
-	}
+
+    @GetMapping(value = "/{productId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public ProductResponse getProductById(@PathVariable Long productId){
+        return productService.getProductById(productId);
+    }
+
+    @GetMapping("/featured")
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<ProductResponse> getFeaturedProducts(
+            @RequestParam(defaultValue = "16") int limit) {
+
+        return productService.getLatestProducts(limit);
+    }
 	
 }
