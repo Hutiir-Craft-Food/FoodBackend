@@ -7,10 +7,7 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProductImageDTO {
-    private Long id;
-    private Long productId;
-    private String uid;
+public class ProductImageMinimalDTO {
     private int position;
     private ProductImageLinks links;
 
@@ -25,3 +22,4 @@ public class ProductImageDTO {
         private String large;
     }
 }
+

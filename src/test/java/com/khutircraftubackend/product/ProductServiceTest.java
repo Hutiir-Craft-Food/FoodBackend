@@ -52,6 +52,8 @@ class ProductServiceTest {
 	@Spy
 	@InjectMocks
 	private ProductMapper productMapper = Mappers.getMapper(ProductMapper.class);
+	@Spy
+	private ProductImageMapper imageMapper = Mappers.getMapper(ProductImageMapper.class);
 	@InjectMocks
 	private ProductService productService;
 	
