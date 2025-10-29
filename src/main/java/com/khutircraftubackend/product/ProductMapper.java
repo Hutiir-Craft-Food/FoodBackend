@@ -40,7 +40,7 @@ public interface ProductMapper {
 	@AfterMapping
 	default void mapUnits(ProductEntity productEntity, @MappingTarget ProductResponse.ProductResponseBuilder builder) {
 		
-		if (productEntity.getPrices() == null) return;
+		if (productEntity.getPrices() == null) { return; }
 		
 		List<ProductUnitEntity> units = productEntity.getPrices().stream()
 				.map(ProductPriceEntity::getUnit)
@@ -51,6 +51,7 @@ public interface ProductMapper {
 		builder.units(units);
 	}
 	
-	Collection<ProductResponse> toProductResponse(Page<ProductEntity> productEntities);
+	Collection<ProductResponse> toProductResponse(Page<ProductEntity> entities);
+	Collection<ProductResponse> toProductResponse(Collection<ProductEntity> entities);
 	
 }
