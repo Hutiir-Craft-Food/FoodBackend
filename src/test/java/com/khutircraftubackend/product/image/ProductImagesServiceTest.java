@@ -86,14 +86,14 @@ class ProductImagesServiceTest {
                         .productId(1L)
                         .uid("pic0.jpeg")
                         .position(0)
-                        .links(new ProductImageDTO.ImageLinks())
+                        .links(new ProductImageDTO.ProductImageLinks())
                         .build(),
                 ProductImageDTO.builder()
                         .id(2L)
                         .productId(1L)
                         .uid("pic1.jpeg")
                         .position(1)
-                        .links(new ProductImageDTO.ImageLinks())
+                        .links(new ProductImageDTO.ProductImageLinks())
                         .build()
         );
     }
