@@ -9,7 +9,7 @@ import com.khutircraftubackend.product.image.response.ProductImageDTO;
 import com.khutircraftubackend.product.image.response.ProductImageResponse;
 import com.khutircraftubackend.product.image.response.ProductImageResponseMessages;
 import com.khutircraftubackend.storage.StorageService;
-import com.khutircraftubackend.validated.ImageMimeValidator;
+import com.khutircraftubackend.validated.MimeTypeValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -46,7 +46,7 @@ class ProductImagesServiceTest {
     @Mock
     private StorageService storageService;
     @Mock
-    private ImageMimeValidator mimeValidator;
+    private MimeTypeValidator mimeValidator;
     private ProductEntity product;
     private List<ProductImageEntity> imagesList;
     private List<ProductImageDTO> dtoList;
