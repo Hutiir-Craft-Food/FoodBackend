@@ -2,6 +2,7 @@ package com.khutircraftubackend.user;
 
 import com.khutircraftubackend.auth.request.RegisterRequest;
 import com.khutircraftubackend.exception.httpstatus.NotFoundException;
+import com.khutircraftubackend.product.ProductEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -45,8 +46,8 @@ public class UserService {
 
     public UserEntity findByEmail(String email) {
         return userRepository.findByEmail(email)
-               .orElseThrow(() ->
-                       new NotFoundException(String.format(UserResponseMessages.USER_NOT_FOUND, email)));
+                .orElseThrow(() ->
+                        new NotFoundException(String.format(UserResponseMessages.USER_NOT_FOUND, email)));
     }
 
     /**
@@ -69,5 +70,14 @@ public class UserService {
      */
     public boolean isSeller(UserEntity user){
         return Role.SELLER.equals(user.getRole());
+    }
+
+    public void updateUserEnabledStatus(UserEntity user, boolean enabled){
+        user.setEnabled(enabled);
+        userRepository.save(user);
+    }
+
+    public UserEntity findUserByProduct(ProductEntity product){
+        return product.getSeller().getUser();
     }
 }
