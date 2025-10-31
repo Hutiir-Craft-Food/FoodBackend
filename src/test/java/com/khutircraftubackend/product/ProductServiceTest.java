@@ -3,8 +3,8 @@ package com.khutircraftubackend.product;
 import com.khutircraftubackend.category.CategoryEntity;
 import com.khutircraftubackend.category.CategoryMapper;
 import com.khutircraftubackend.category.CategoryService;
-import com.khutircraftubackend.exception.httpstatus.NotFoundException;
 import com.khutircraftubackend.category.exception.CategoryNotFoundException;
+import com.khutircraftubackend.product.exception.ProductNotFoundException;
 import com.khutircraftubackend.product.request.ProductRequest;
 import com.khutircraftubackend.product.response.ProductResponse;
 import com.khutircraftubackend.seller.SellerEntity;
@@ -151,7 +151,7 @@ class ProductServiceTest {
 			
 			when(productRepository.findProductById(1L)).thenReturn(Optional.empty());
 			
-			assertThrows(NotFoundException.class, () -> productService.canModifyProduct(1L));
+			assertThrows(ProductNotFoundException.class, () -> productService.canModifyProduct(1L));
 		}
 		
 	}
@@ -287,7 +287,7 @@ class ProductServiceTest {
 					.name("Test product")
 					.build();
 
-			assertThrows(NotFoundException.class, () -> productService.updateProduct(1L, request));
+			assertThrows(ProductNotFoundException.class, () -> productService.updateProduct(1L, request));
 		}
 
 
@@ -302,7 +302,7 @@ class ProductServiceTest {
 			
 			when(productRepository.findProductById(1L)).thenReturn(Optional.empty());
 			
-			assertThrows(NotFoundException.class, () -> productService.deleteProduct(1L));
+			assertThrows(ProductNotFoundException.class, () -> productService.deleteProduct(1L));
 			verify(productRepository, never()).delete(any(ProductEntity.class));
 		}
 		
