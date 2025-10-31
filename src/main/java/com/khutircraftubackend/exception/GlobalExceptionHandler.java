@@ -108,8 +108,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             @NonNull HttpStatusCode status,
             @NonNull WebRequest request) {
     
-        String message = "Параметр '" + ex.getParameterName() +
-                "' є обовʼязковим";
+        String message = String.format("Параметр %s є обовʼязковим",ex.getParameterName());
 
         GlobalErrorResponse errorResponse = GlobalErrorResponse.builder()
                 .status(status.value())
@@ -161,5 +160,4 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .path(determineRequestPath(request))
                 .build();
     }
-
 }

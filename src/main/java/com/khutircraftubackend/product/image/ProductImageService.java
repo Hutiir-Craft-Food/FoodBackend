@@ -10,7 +10,9 @@ import com.khutircraftubackend.product.image.request.ProductImageUploadRequest;
 import com.khutircraftubackend.product.image.request.ProductImageChangeRequest;
 import com.khutircraftubackend.product.image.response.ProductImageResponse;
 import com.khutircraftubackend.product.image.response.ProductImageResponseMessages;
+import com.khutircraftubackend.storage.StorageResponseMessage;
 import com.khutircraftubackend.storage.StorageService;
+import com.khutircraftubackend.storage.exception.CloudStorageException;
 import com.khutircraftubackend.validated.ImageMimeValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -115,8 +117,7 @@ public class ProductImageService {
                 imageEntities.add(imageEntity);
 
             } catch (IOException e) {
-                // TODO: review exception handling here:
-                throw new RuntimeException(e);
+                throw new CloudStorageException(StorageResponseMessage.INVALID_FILE);
             }
         }
 
@@ -265,13 +266,6 @@ public class ProductImageService {
     }
 
     private void safeDeleteFromStorage(ProductImageEntity entity) {
-        try {
-            String publicId = entity.getLink();
-            storageService.deleteByUrl(publicId);
-        } catch (IOException e) {
-            throw new RuntimeException(entity.getLink(), e); //TODO need to implement SCRUM-211.
-            // Need implement global CloudStorageException??
-            // You can insert the team lead's resolution here
-        }
+        storageService.deleteByUrl(entity.getLink());
     }
 }
