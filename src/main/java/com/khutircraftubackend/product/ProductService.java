@@ -2,7 +2,7 @@ package com.khutircraftubackend.product;
 
 import com.khutircraftubackend.category.CategoryEntity;
 import com.khutircraftubackend.category.CategoryService;
-import com.khutircraftubackend.exception.httpstatus.NotFoundException;
+import com.khutircraftubackend.product.exception.ProductNotFoundException;
 import com.khutircraftubackend.product.request.ProductRequest;
 import com.khutircraftubackend.product.response.ProductResponse;
 import com.khutircraftubackend.seller.SellerEntity;
@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
 import java.nio.file.AccessDeniedException;
 import java.util.Collection;
 import java.util.Map;
@@ -30,9 +31,9 @@ public class ProductService {
 	private final ProductMapper productMapper;
 
 	public ProductEntity findProductById(Long productId) {
-		//TODO refactor SCRUM-250
+
 		return productRepository.findProductById(productId)
-				.orElseThrow(() -> new NotFoundException("Product with id " + productId + " not found"));
+				.orElseThrow(() -> new ProductNotFoundException(String.format(PRODUCT_NOT_FOUND, productId)));
 	}
 
 	public boolean canModifyProduct(Long productId) throws AccessDeniedException {
@@ -41,7 +42,7 @@ public class ProductService {
 		SellerEntity currentSeller = sellerService.getCurrentSeller();
 
 		if (!currentSeller.equals(existingProduct.getSeller())) {
-			throw new AccessDeniedException("You do not have permission to create for this company.");
+			throw new AccessDeniedException(NO_ACCESS);
 		}
 
 		return true;
