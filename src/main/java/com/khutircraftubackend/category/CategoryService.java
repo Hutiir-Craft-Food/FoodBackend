@@ -4,8 +4,8 @@ import com.khutircraftubackend.category.exception.CategoryCreationException;
 import com.khutircraftubackend.category.exception.CategoryDeletionException;
 import com.khutircraftubackend.category.exception.CategoryNotFoundException;
 import com.khutircraftubackend.category.request.CategoryRequest;
+import com.khutircraftubackend.category.exception.ImageProcessingException;
 import com.khutircraftubackend.storage.StorageService;
-import com.khutircraftubackend.storage.exception.StorageException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -77,12 +77,7 @@ public class CategoryService {
             existingCategory.setIconUrl(newIconUrl);
             
             if (oldIconUrl != null && !oldIconUrl.equals(newIconUrl)) {
-                
-                try {
-                    deleteIcon(oldIconUrl);
-                } catch (StorageException e) {
-                    log.warn(COULD_NOT_DELETE_ICON + oldIconUrl, e);
-                }
+                deleteIcon(oldIconUrl);
             }
         }
         setParentCategory(existingCategory, request.parentCategoryId());
@@ -146,37 +141,27 @@ public class CategoryService {
     private String uploadIcon(MultipartFile iconFile) {
         
         if (iconFile == null || iconFile.isEmpty()) return null;
-        
+
+        byte[] bytes;
         try {
-            return storageService.upload(iconFile);
-        } catch (IOException e) {
-            log.warn(COULD_NOT_UPLOAD_ICON, e);
-            throw new StorageException(COULD_NOT_UPLOAD_ICON);
+            bytes = iconFile.getBytes();
+        } catch (IOException ex) {
+            throw new ImageProcessingException(CategoryResponseMessage.ERROR_IMAGE_PROCESSING);
         }
+        return storageService.upload(bytes, null);
     }
     
     private void deleteIcon(String iconUrl) {
         
         if (iconUrl == null || iconUrl.isBlank()) return;
-        
-        try {
-            storageService.deleteByUrl(iconUrl);
-        } catch (IOException e) {
-            log.warn(COULD_NOT_DELETE_ICON + iconUrl, e);
-            throw new StorageException(COULD_NOT_DELETE_ICON + iconUrl);
-        }
+
+        storageService.deleteByUrl(iconUrl);
     }
     
     private void deleteCategoryWithIcon(Long id) {
         
         CategoryEntity category = findCategoryById(id);
         categoryRepository.deleteById(id);
-        
-        try {
-            deleteIcon(category.getIconUrl());
-        } catch (StorageException e) {
-            log.warn(COULD_NOT_DELETE_ICON + category.getIconUrl(), e);
-        }
+        deleteIcon(category.getIconUrl());
     }
-    
 }

@@ -2,10 +2,7 @@ package com.khutircraftubackend.product.image;
 
 import com.khutircraftubackend.product.ProductEntity;
 import com.khutircraftubackend.product.ProductService;
-import com.khutircraftubackend.product.image.exception.ImageNotFoundException;
-import com.khutircraftubackend.product.image.exception.ImagesCountMismatchException;
-import com.khutircraftubackend.product.image.exception.PositionAlreadyExistsException;
-import com.khutircraftubackend.product.image.exception.TooManyImagesException;
+import com.khutircraftubackend.product.image.exception.*;
 import com.khutircraftubackend.product.image.request.ProductImageUploadRequest;
 import com.khutircraftubackend.product.image.request.ProductImageChangeRequest;
 import com.khutircraftubackend.product.image.response.ProductImageResponse;
@@ -98,11 +95,16 @@ public class ProductImageService {
         List<ProductImageEntity> imageEntities = new LinkedList<>();
 
         for (ImageSize imageSize : sizes) {
+            byte[] bytes;
             try {
+                bytes = imageFile.getBytes();
+            } catch (IOException e) {
+                throw new ImageProcessingException(ProductImageResponseMessages.ERROR_IMAGE_PROCESSING);
+            }
                 // TODO need to implement SCRUM-210 for image resizing
                 //  result of resized image will be array of bytes.
                 //  example of java dependency for image resizing: net.coobird
-                byte[] bytes = imageFile.getBytes();
+
                 String link = storageService.upload(bytes, originalFileName);
                 ProductImageEntity imageEntity = ProductImageEntity.builder()
                         .product(product)
@@ -113,11 +115,6 @@ public class ProductImageService {
                         .build();
 
                 imageEntities.add(imageEntity);
-
-            } catch (IOException e) {
-                // TODO: review exception handling here:
-                throw new RuntimeException(e);
-            }
         }
 
         return imageEntities;
@@ -265,13 +262,6 @@ public class ProductImageService {
     }
 
     private void safeDeleteFromStorage(ProductImageEntity entity) {
-        try {
-            String publicId = entity.getLink();
-            storageService.deleteByUrl(publicId);
-        } catch (IOException e) {
-            throw new RuntimeException(entity.getLink(), e); //TODO need to implement SCRUM-211.
-            // Need implement global CloudStorageException??
-            // You can insert the team lead's resolution here
-        }
+        storageService.deleteByUrl(entity.getLink());
     }
 }

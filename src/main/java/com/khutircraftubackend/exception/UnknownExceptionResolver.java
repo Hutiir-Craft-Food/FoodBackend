@@ -14,7 +14,7 @@ import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 @Component
 public class UnknownExceptionResolver implements HandlerExceptionResolver {
 
-    private static final MappingJackson2JsonView jsonView;
+   private static final MappingJackson2JsonView jsonView;
 
    static {
         jsonView = new MappingJackson2JsonView();
