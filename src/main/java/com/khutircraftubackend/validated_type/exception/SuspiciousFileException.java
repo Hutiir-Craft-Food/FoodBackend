@@ -1,4 +1,4 @@
-package com.khutircraftubackend.validated.exception;
+package com.khutircraftubackend.validated_type.exception;
 
 import lombok.Getter;
 

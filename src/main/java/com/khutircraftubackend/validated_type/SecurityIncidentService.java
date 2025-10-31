@@ -1,4 +1,4 @@
-package com.khutircraftubackend.validated;
+package com.khutircraftubackend.validated_type;
 
 import com.khutircraftubackend.mail.EmailSender;
 import com.khutircraftubackend.product.ProductEntity;
@@ -6,7 +6,7 @@ import com.khutircraftubackend.user.Role;
 import com.khutircraftubackend.user.UserEntity;
 import com.khutircraftubackend.user.UserRepository;
 import com.khutircraftubackend.user.UserService;
-import com.khutircraftubackend.validated.exception.SuspiciousFileException;
+import com.khutircraftubackend.validated_type.exception.SuspiciousFileException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

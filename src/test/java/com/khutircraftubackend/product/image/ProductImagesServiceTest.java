@@ -9,7 +9,7 @@ import com.khutircraftubackend.product.image.response.ProductImageDTO;
 import com.khutircraftubackend.product.image.response.ProductImageResponse;
 import com.khutircraftubackend.product.image.response.ProductImageResponseMessages;
 import com.khutircraftubackend.storage.StorageService;
-import com.khutircraftubackend.validated.MimeTypeValidator;
+import com.khutircraftubackend.validated_type.MimeTypeValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

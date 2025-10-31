@@ -1,7 +1,7 @@
-package com.khutircraftubackend.validated;
+package com.khutircraftubackend.validated_type;
 
 import com.khutircraftubackend.product.image.exception.ImageValidationException;
-import com.khutircraftubackend.validated.exception.SuspiciousFileException;
+import com.khutircraftubackend.validated_type.exception.SuspiciousFileException;
 import lombok.RequiredArgsConstructor;
 import org.apache.tika.Tika;
 import org.springframework.stereotype.Component;

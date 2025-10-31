@@ -1,4 +1,4 @@
-package com.khutircraftubackend.validated;
+package com.khutircraftubackend.validated_type;
 
 public final class ThreatLevelResolver {
 
