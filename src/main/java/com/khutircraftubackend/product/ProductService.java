@@ -7,18 +7,17 @@ import com.khutircraftubackend.product.request.ProductRequest;
 import com.khutircraftubackend.product.response.ProductResponse;
 import com.khutircraftubackend.seller.SellerEntity;
 import com.khutircraftubackend.seller.SellerService;
-import jakarta.transaction.Transactional;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.nio.file.AccessDeniedException;
 import java.util.Collection;
 import java.util.Map;
-
-import static com.khutircraftubackend.product.exception.ProductResponseMessage.NO_ACCESS;
-import static com.khutircraftubackend.product.exception.ProductResponseMessage.PRODUCT_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
@@ -83,7 +82,7 @@ public class ProductService {
 		productRepository.deleteBySeller(seller);
 	}
 
-
+	@Transactional(readOnly = true)
 	public Map<String, Object> getProducts(int offset, int limit) {
 
 		Pageable pageable = PageRequest.of(offset, limit);
@@ -99,5 +98,11 @@ public class ProductService {
 				"offset", offset,
 				"limit", limit
 		);
+	}
+
+	@Transactional(readOnly = true)
+	public ProductResponse getProductById(Long productId){
+		ProductEntity product = findProductById(productId);
+		return productMapper.toProductResponse(product);
 	}
 }
