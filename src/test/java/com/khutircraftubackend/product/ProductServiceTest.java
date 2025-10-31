@@ -3,8 +3,9 @@ package com.khutircraftubackend.product;
 import com.khutircraftubackend.category.CategoryEntity;
 import com.khutircraftubackend.category.CategoryMapper;
 import com.khutircraftubackend.category.CategoryService;
-import com.khutircraftubackend.exception.httpstatus.NotFoundException;
 import com.khutircraftubackend.category.exception.CategoryNotFoundException;
+import com.khutircraftubackend.product.exception.ProductAccessException;
+import com.khutircraftubackend.product.exception.ProductNotFoundException;
 import com.khutircraftubackend.product.request.ProductRequest;
 import com.khutircraftubackend.product.response.ProductResponse;
 import com.khutircraftubackend.seller.SellerEntity;
@@ -24,7 +25,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import java.nio.file.AccessDeniedException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -112,12 +112,12 @@ class ProductServiceTest {
 	@DisplayName("Tests for modify product")
 	class CanModify {
 		@Test
-		void canModifyProduct_Success() throws AccessDeniedException {
+		void canModifyProduct_Success() {
 			
 			when(sellerService.getCurrentSeller()).thenReturn(seller);
 			when(productRepository.findProductById(1L)).thenReturn(Optional.of(product));
 			
-			boolean canModify = productService.canModifyProduct(1L);
+			boolean canModify = productService.assertCanModifyProduct(1L);
 			
 			assertTrue(canModify);
 		}
@@ -132,16 +132,16 @@ class ProductServiceTest {
 			when(sellerService.getCurrentSeller()).thenReturn(otherSeller);
 			when(productRepository.findProductById(1L)).thenReturn(Optional.of(product));
 			
-			assertThrows(AccessDeniedException.class, () -> productService.canModifyProduct(1L));
+			assertThrows(ProductAccessException.class, () -> productService.assertCanModifyProduct(1L));
 		}
 		
 		@Test
-		void canModifyProduct_ProductExistsAndBelongsToCurrentSeller() throws AccessDeniedException {
+		void canModifyProduct_ProductExistsAndBelongsToCurrentSeller() {
 			
 			when(productRepository.findProductById(1L)).thenReturn(Optional.of(product));
 			when(sellerService.getCurrentSeller()).thenReturn(seller);
 			
-			boolean canModify = productService.canModifyProduct(1L);
+			boolean canModify = productService.assertCanModifyProduct(1L);
 			
 			assertTrue(canModify);
 		}
@@ -151,7 +151,7 @@ class ProductServiceTest {
 			
 			when(productRepository.findProductById(1L)).thenReturn(Optional.empty());
 			
-			assertThrows(NotFoundException.class, () -> productService.canModifyProduct(1L));
+			assertThrows(ProductNotFoundException.class, () -> productService.assertCanModifyProduct(1L));
 		}
 		
 	}
@@ -287,7 +287,7 @@ class ProductServiceTest {
 					.name("Test product")
 					.build();
 
-			assertThrows(NotFoundException.class, () -> productService.updateProduct(1L, request));
+			assertThrows(ProductNotFoundException.class, () -> productService.updateProduct(1L, request));
 		}
 
 
@@ -302,7 +302,7 @@ class ProductServiceTest {
 			
 			when(productRepository.findProductById(1L)).thenReturn(Optional.empty());
 			
-			assertThrows(NotFoundException.class, () -> productService.deleteProduct(1L));
+			assertThrows(ProductNotFoundException.class, () -> productService.deleteProduct(1L));
 			verify(productRepository, never()).delete(any(ProductEntity.class));
 		}
 		
