@@ -14,7 +14,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
@@ -146,25 +145,15 @@ public class CategoryService {
     private String uploadIcon(MultipartFile iconFile) {
         
         if (iconFile == null || iconFile.isEmpty()) return null;
-        
-        try {
-            return storageService.upload(iconFile);
-        } catch (IOException e) {
-            log.warn(COULD_NOT_UPLOAD_ICON, e);
-            throw new StorageException(COULD_NOT_UPLOAD_ICON);
-        }
+
+        return storageService.upload(iconFile);
     }
     
     private void deleteIcon(String iconUrl) {
         
         if (iconUrl == null || iconUrl.isBlank()) return;
-        
-        try {
-            storageService.deleteByUrl(iconUrl);
-        } catch (IOException e) {
-            log.warn(COULD_NOT_DELETE_ICON + iconUrl, e);
-            throw new StorageException(COULD_NOT_DELETE_ICON + iconUrl);
-        }
+
+        storageService.deleteByUrl(iconUrl);
     }
     
     private void deleteCategoryWithIcon(Long id) {
