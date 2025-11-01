@@ -29,6 +29,8 @@ jobs:
           --health-retries 5
 
     env:
+      FLYWAY_EMAIL: ${{ secrets.FLYWAY_EMAIL }}
+      FLYWAY_ROLE: ${{ secrets.FLYWAY_ROLE }}
       JWT_SECRET: dk59GJKDslfl45kkdIUOWNNXVG495fjkdLSLLEWIkvmidorfpwa20658764UEmcskRIIKORcfd
       SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/khutir_craft
       SPRING_DATASOURCE_USERNAME: postgres
