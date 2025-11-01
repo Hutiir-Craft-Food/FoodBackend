@@ -12,7 +12,7 @@ import com.khutircraftubackend.product.image.response.ProductImageResponse;
 import com.khutircraftubackend.product.image.response.ProductImageResponseMessages;
 import com.khutircraftubackend.storage.StorageResponseMessage;
 import com.khutircraftubackend.storage.StorageService;
-import com.khutircraftubackend.storage.exception.CloudStorageException;
+import com.khutircraftubackend.storage.exception.StorageException;
 import com.khutircraftubackend.validated.ImageMimeValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -117,7 +117,7 @@ public class ProductImageService {
                 imageEntities.add(imageEntity);
 
             } catch (IOException e) {
-                throw new CloudStorageException(StorageResponseMessage.INVALID_FILE);
+                throw new StorageException(StorageResponseMessage.INVALID_FILE);
             }
         }
 

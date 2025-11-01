@@ -1,9 +1,9 @@
 package com.khutircraftubackend.storage;
 
 import com.khutircraftubackend.exception.httpstatus.NotFoundException;
-import com.khutircraftubackend.storage.exception.CloudStorageException;
 import com.khutircraftubackend.storage.exception.InvalidArgumentException;
 import com.khutircraftubackend.storage.exception.InvalidFileFormatException;
+import com.khutircraftubackend.storage.exception.StorageException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +34,7 @@ public class LocalStorageService implements StorageService {
         try {
             Files.createDirectories(uploadPath);
         } catch (IOException e) {
-            throw new CloudStorageException(e.getMessage());
+            throw new StorageException(e.getMessage());
         }
         String extension = "";
 
@@ -48,7 +48,7 @@ public class LocalStorageService implements StorageService {
         try {
             Files.copy(new ByteArrayInputStream(fileBytes), filePath);
         } catch (IOException e) {
-            throw new CloudStorageException(e.getMessage());
+            throw new StorageException(e.getMessage());
         }
 
         HttpServletRequest request = ((ServletRequestAttributes)
@@ -77,7 +77,7 @@ public class LocalStorageService implements StorageService {
         try {
             return upload(multipartFile.getBytes(), originalFileName);
         } catch (IOException e) {
-            throw new CloudStorageException(e.getMessage());
+            throw new StorageException(e.getMessage());
         }
     }
 
@@ -108,7 +108,7 @@ public class LocalStorageService implements StorageService {
         try {
             Files.delete(filePath);
         } catch (IOException e) {
-            throw new CloudStorageException(StorageResponseMessage.ERROR_DELETE_LOCAL);
+            throw new StorageException(StorageResponseMessage.ERROR_DELETE_LOCAL);
         }
     }
 

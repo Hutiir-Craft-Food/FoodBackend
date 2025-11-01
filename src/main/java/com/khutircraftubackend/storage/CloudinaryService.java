@@ -2,8 +2,8 @@ package com.khutircraftubackend.storage;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
-import com.khutircraftubackend.storage.exception.CloudStorageException;
 import com.khutircraftubackend.storage.exception.InvalidFileFormatException;
+import com.khutircraftubackend.storage.exception.StorageException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,7 +26,7 @@ public class CloudinaryService implements StorageService {
             return uploadResult.get("url").toString();
 
         } catch (IOException e) {
-            throw new CloudStorageException(String.format(StorageResponseMessage.ERROR_SAVE, e));
+            throw new StorageException(String.format(StorageResponseMessage.ERROR_SAVE, e));
         }
     }
 
@@ -40,7 +40,7 @@ public class CloudinaryService implements StorageService {
         try {
             return upload(multipartFile.getBytes(), null);
         } catch (IOException e) {
-            throw new CloudStorageException(String.format(StorageResponseMessage.ERROR_SAVE, e));
+            throw new StorageException(String.format(StorageResponseMessage.ERROR_SAVE, e));
         }
     }
 
@@ -49,7 +49,7 @@ public class CloudinaryService implements StorageService {
         try {
             cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
         } catch (IOException e) {
-            throw new CloudStorageException(String.format(StorageResponseMessage.ERROR_DELETE, publicId, e));
+            throw new StorageException(String.format(StorageResponseMessage.ERROR_DELETE, publicId, e));
         }
     }
 }

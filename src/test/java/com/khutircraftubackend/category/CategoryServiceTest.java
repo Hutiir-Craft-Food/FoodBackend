@@ -6,8 +6,8 @@ import com.khutircraftubackend.category.request.CategoryRequest;
 import com.khutircraftubackend.search.exception.SearchResponseMessage;
 import com.khutircraftubackend.search.exception.InvalidSearchQueryException;
 import com.khutircraftubackend.storage.StorageService;
-import com.khutircraftubackend.storage.exception.CloudStorageException;
 import com.khutircraftubackend.storage.exception.InvalidFileFormatException;
+import com.khutircraftubackend.storage.exception.StorageException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -266,11 +266,11 @@ class CategoryServiceTest {
 			existingCategory.setDescription("OldDescription");
 			
 			when(multipartFile.isEmpty()).thenReturn(false);
-			when(storageService.upload(multipartFile)).thenThrow(new CloudStorageException("File is corrupted"));
+			when(storageService.upload(multipartFile)).thenThrow(new StorageException("File is corrupted"));
 			
 			when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(existingCategory));
 			
-			assertThrows(CloudStorageException.class, () ->
+			assertThrows(StorageException.class, () ->
 					categoryService.updateCategory(categoryId, categoryRequest, multipartFile));
 			
 			assertNull(existingCategory.getIconUrl());
