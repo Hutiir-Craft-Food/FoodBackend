@@ -34,11 +34,8 @@ spring:
     locations: classpath:db/migration,classpath:db/seed,classpath:db/seed/${spring.profiles.active}
     baseline-on-migrate: true
     placeholders:
-      email: ${FLYWAY_EMAIL}
-      password: ${FLYWAY_PASSWORD}
-      role: ${FLYWAY_ROLE}
-      enabled: ${FLYWAY_ENABLED}
-      confirmed: ${FLYWAY_CONFIRMED}
+      email: ${FLYWAY_EMAIL:admintest@i.ua}
+      role: ${FLYWAY_ROLE:ADMIN}
 
   mail:
     host: ${MAIL_HOST}
