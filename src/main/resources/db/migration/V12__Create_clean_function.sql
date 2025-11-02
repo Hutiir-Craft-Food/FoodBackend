@@ -11,6 +11,6 @@ begin
     -- replace long whitespaces with single spaces:
     cleaned_str := regexp_replace(cleaned_str, '\s{2,}', ' ', 'g');
 
-    return cleaned_str;
+return cleaned_str;
 end
 $$ language plpgsql;
