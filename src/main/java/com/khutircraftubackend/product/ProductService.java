@@ -17,9 +17,6 @@ import java.nio.file.AccessDeniedException;
 import java.util.Collection;
 import java.util.Map;
 
-import static com.khutircraftubackend.product.exception.ProductResponseMessage.NO_ACCESS;
-import static com.khutircraftubackend.product.exception.ProductResponseMessage.PRODUCT_NOT_FOUND;
-
 @Service
 @RequiredArgsConstructor
 public class ProductService {
@@ -99,5 +96,11 @@ public class ProductService {
 				"offset", offset,
 				"limit", limit
 		);
+	}
+
+	@Transactional()
+	public ProductResponse getProductById(Long productId){
+		ProductEntity product = findProductById(productId);
+		return productMapper.toProductResponse(product);
 	}
 }
