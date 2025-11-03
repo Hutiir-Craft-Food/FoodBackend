@@ -2,16 +2,16 @@ package com.khutircraftubackend.product.image;
 
 import com.khutircraftubackend.product.ProductEntity;
 import com.khutircraftubackend.product.ProductService;
-import com.khutircraftubackend.product.image.exception.ImageNotFoundException;
-import com.khutircraftubackend.product.image.exception.ImagesCountMismatchException;
-import com.khutircraftubackend.product.image.exception.PositionAlreadyExistsException;
-import com.khutircraftubackend.product.image.exception.TooManyImagesException;
+import com.khutircraftubackend.product.image.exception.*;
 import com.khutircraftubackend.product.image.request.ProductImageUploadRequest;
 import com.khutircraftubackend.product.image.request.ProductImageChangeRequest;
 import com.khutircraftubackend.product.image.response.ProductImageResponse;
 import com.khutircraftubackend.product.image.response.ProductImageResponseMessages;
 import com.khutircraftubackend.storage.StorageService;
-import com.khutircraftubackend.validated.ImageMimeValidator;
+import com.khutircraftubackend.validated_type.MimeTypeValidator;
+import com.khutircraftubackend.validated_type.MimeTypeValidatorResponseMessages;
+import com.khutircraftubackend.validated_type.SecurityIncidentService;
+import com.khutircraftubackend.validated_type.exception.SuspiciousFileException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -34,9 +34,10 @@ public class ProductImageService {
 
     private final ProductImageRepository imageRepository;
     private final ProductService productService;
+    private final SecurityIncidentService securityIncidentService;
     private final ProductImageMapper imageMapper;
     private final StorageService storageService;
-    private final ImageMimeValidator mimeValidator;
+    private final MimeTypeValidator mimeValidator;
     private static final Long MAX_COUNT_FILES = 5L;
     private static final int TEMP_OFFSET = 100;
 
@@ -45,7 +46,7 @@ public class ProductImageService {
 
     @Transactional
     public ProductImageResponse createImages(Long productId, ProductImageUploadRequest request,
-                                              List<MultipartFile> imageFiles) {
+                                             List<MultipartFile> imageFiles) {
 
         if (imageFiles.size() > MAX_COUNT_FILES) {
             String errorMessage = String.format(
@@ -62,13 +63,20 @@ public class ProductImageService {
             throw new ImagesCountMismatchException(errorMessage);
         }
 
-        mimeValidator.validateMimeTypes(imageFiles, allowedMimeTypes);
+        ProductEntity product = ensureProductExists(productId);
+
+        try {
+            mimeValidator.validateMimeTypes(imageFiles, allowedMimeTypes);
+        }catch (SuspiciousFileException e) {
+            securityIncidentService.handleSuspiciousFile(product, e);
+            throw new ImageValidationException(String.format(
+                    MimeTypeValidatorResponseMessages.ERROR_MIME_TYPE, e.getMessage()));
+        }
 
         if (hasAnyDuplicatePosition(productId, request)) {
             throw new PositionAlreadyExistsException(ProductImageResponseMessages.ERROR_POSITION_ALREADY_EXISTS);
         }
 
-        ProductEntity product = ensureProductExists(productId);
         List<ProductImageEntity> allImagesEntities = new LinkedList<>();
 
         for (int i = 0; i < imageFiles.size(); i++) {
