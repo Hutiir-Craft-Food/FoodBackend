@@ -2,22 +2,23 @@ package com.khutircraftubackend.product;
 
 import com.khutircraftubackend.category.CategoryEntity;
 import com.khutircraftubackend.category.CategoryService;
-import com.khutircraftubackend.exception.httpstatus.NotFoundException;
+import com.khutircraftubackend.product.exception.ProductAccessException;
+import com.khutircraftubackend.product.exception.ProductNotFoundException;
 import com.khutircraftubackend.product.request.ProductRequest;
 import com.khutircraftubackend.product.response.ProductResponse;
 import com.khutircraftubackend.seller.SellerEntity;
 import com.khutircraftubackend.seller.SellerService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import java.nio.file.AccessDeniedException;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.Collection;
 import java.util.Map;
 
-import static com.khutircraftubackend.product.exception.ProductResponseMessage.NO_ACCESS;
+import static com.khutircraftubackend.product.exception.ProductResponseMessage.PRODUCT_ACCESS_DENIED;
 import static com.khutircraftubackend.product.exception.ProductResponseMessage.PRODUCT_NOT_FOUND;
 
 @Service
@@ -30,18 +31,18 @@ public class ProductService {
 	private final ProductMapper productMapper;
 
 	public ProductEntity findProductById(Long productId) {
-		//TODO refactor SCRUM-250
+
 		return productRepository.findProductById(productId)
-				.orElseThrow(() -> new NotFoundException("Product with id " + productId + " not found"));
+				.orElseThrow(() -> new ProductNotFoundException(String.format(PRODUCT_NOT_FOUND, productId)));
 	}
 
-	public boolean canModifyProduct(Long productId) throws AccessDeniedException {
+	public boolean assertCanModifyProduct(Long productId) {
 
 		ProductEntity existingProduct = findProductById(productId);
 		SellerEntity currentSeller = sellerService.getCurrentSeller();
 
 		if (!currentSeller.equals(existingProduct.getSeller())) {
-			throw new AccessDeniedException("You do not have permission to create for this company.");
+			throw new ProductAccessException(PRODUCT_ACCESS_DENIED);
 		}
 
 		return true;
@@ -84,6 +85,7 @@ public class ProductService {
 	}
 
 
+	@Transactional(readOnly = true)
 	public Map<String, Object> getProducts(int offset, int limit) {
 
 		Pageable pageable = PageRequest.of(offset, limit);

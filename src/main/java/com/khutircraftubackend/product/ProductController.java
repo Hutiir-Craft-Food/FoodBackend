@@ -34,7 +34,7 @@ public class ProductController {
 	}
 
 	@PutMapping(value = "/{productId}", consumes = {MediaType.APPLICATION_JSON_VALUE})
-	@PreAuthorize("hasRole('ADMIN') or (hasRole('SELLER') and @productService.canModifyProduct(#productId))")
+	@PreAuthorize("hasRole('ADMIN') or (hasRole('SELLER') and @productService.assertCanModifyProduct(#productId))")
 	@ResponseStatus(HttpStatus.OK)
 	public ProductResponse updateProduct(
 			@PathVariable Long productId,
@@ -46,7 +46,7 @@ public class ProductController {
 	}
 
 	@DeleteMapping("/{productId}")
-	@PreAuthorize("hasRole('ADMIN') or (hasRole('SELLER') and @productService.canModifyProduct(#productId))")
+	@PreAuthorize("hasRole('ADMIN') or (hasRole('SELLER') and @productService.asserCanModifyProduct(#productId))")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void deleteProduct(@PathVariable Long productId) {
 

@@ -1,6 +1,5 @@
 package com.khutircraftubackend.exception;
 
-import com.khutircraftubackend.product.exception.ProductResponseMessage;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -30,6 +29,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     private static final String ERROR_BAD_REQUEST = "Bad Request";
     private static final String ERROR_METHOD_NOT_ALLOWED = "Method Not Allowed";
     private static final String ERROR_VALIDATION = "Помилка валідації";
+    private static final String ACCESS_DENIED = "Доступ заборонено";
 
     private String determineRequestPath(WebRequest request) {
 
@@ -157,7 +157,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return GlobalErrorResponse.builder()
                 .status(HttpStatus.FORBIDDEN.value())
                 .error(HttpStatus.FORBIDDEN.getReasonPhrase())
-                .message(ProductResponseMessage.NO_ACCESS)
+                .message(ACCESS_DENIED)
                 .path(determineRequestPath(request))
                 .build();
     }
