@@ -37,6 +37,8 @@ jobs:
       SPRING_DATASOURCE_PASSWORD: postgres
 
     steps:
+      - name: Run environment check
+        run: bash ci/check-env.sh
       - name: Wait for PostgreSQL to be ready
         run: |
           until pg_isready -h localhost -p 5432 -U postgres; do

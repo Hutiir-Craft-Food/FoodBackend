@@ -3,6 +3,10 @@ FROM maven:3.8.5-openjdk-17 AS build
 WORKDIR /app
 
 COPY . .
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
 
 RUN mvn clean package -DskipTests
 
