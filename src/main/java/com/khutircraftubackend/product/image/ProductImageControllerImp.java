@@ -32,7 +32,7 @@ public class ProductImageControllerImp implements ProductImageController {
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @PreAuthorize("hasRole('ADMIN') or (hasRole('SELLER') and @productService.canModifyProduct(#productId))")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('SELLER') and @productService.assertCanModifyProduct(#productId))")
     @ResponseStatus(HttpStatus.CREATED)
     public ProductImageResponse uploadProductImages(
             @PathVariable Long productId,
@@ -46,7 +46,7 @@ public class ProductImageControllerImp implements ProductImageController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @PreAuthorize("hasRole('ADMIN') or (hasRole('SELLER') and @productService.canModifyProduct(#productId))")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('SELLER') and @productService.assertCanModifyProduct(#productId))")
     @ResponseStatus(HttpStatus.OK)
     public ProductImageResponse changesProductImages(@PathVariable Long productId,
                                                      @RequestBody ProductImageChangeRequest request) {
@@ -54,7 +54,7 @@ public class ProductImageControllerImp implements ProductImageController {
     }
 
     @DeleteMapping()
-    @PreAuthorize("hasRole('ADMIN') or (hasRole('SELLER') and @productService.canModifyProduct(#productId))")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('SELLER') and @productService.assertCanModifyProduct(#productId))")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteProductImagesByPositions(@PathVariable Long productId,
                                                @RequestParam(value = "position", required = false) List<Integer> positionIds) {

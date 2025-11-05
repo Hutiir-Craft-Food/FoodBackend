@@ -46,7 +46,7 @@ public class ProductController {
 	}
 
 	@DeleteMapping("/{productId}")
-	@PreAuthorize("hasRole('ADMIN') or (hasRole('SELLER') and @productService.asserCanModifyProduct(#productId))")
+	@PreAuthorize("hasRole('ADMIN') or (hasRole('SELLER') and @productService.assertCanModifyProduct(#productId))")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void deleteProduct(@PathVariable Long productId) {
 

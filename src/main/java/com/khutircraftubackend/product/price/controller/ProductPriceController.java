@@ -25,7 +25,7 @@ public class ProductPriceController {
     }
     
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN') or (hasRole('SELLER') and @productService.canModifyProduct(#productId))")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('SELLER') and @productService.assertCanModifyProduct(#productId))")
     @ResponseStatus(HttpStatus.OK)
     public ProductPriceResponse syncPrices(
             @PathVariable Long productId,
