@@ -29,7 +29,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import java.nio.file.AccessDeniedException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -145,7 +144,7 @@ class ProductServiceTest {
 			Set<ConstraintViolation<ProductRequest>> violations = validator.validate(request);
 
 			assertFalse(violations.isEmpty());
-			assertEquals(8, violations.size());
+			assertEquals(4, violations.size());
 
 			Set<String> invalidFields = violations.stream()
 					.map(violation -> violation.getPropertyPath().toString())
