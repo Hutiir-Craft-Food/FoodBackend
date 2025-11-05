@@ -153,10 +153,10 @@ class ProductServiceTest {
 			assertTrue(invalidFields.contains("name"));
 			assertTrue(invalidFields.contains("available"));
 			assertTrue(invalidFields.contains("description"));
-			assertTrue(invalidFields.contains("ingredients"));
-			assertTrue(invalidFields.contains("nutrition"));
-			assertTrue(invalidFields.contains("storage"));
-			assertTrue(invalidFields.contains("allergens"));
+			assertFalse(invalidFields.contains("ingredients"));
+			assertFalse(invalidFields.contains("nutrition"));
+			assertFalse(invalidFields.contains("storage"));
+			assertFalse(invalidFields.contains("allergens"));
 			assertTrue(invalidFields.contains("categoryId"));
 		}
 	}
