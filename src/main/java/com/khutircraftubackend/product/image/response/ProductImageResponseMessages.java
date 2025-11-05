@@ -14,5 +14,4 @@ public final class ProductImageResponseMessages {
     public static final String ERROR_IMAGES_COUNT_MISMATCH =
             "Кількість переданих зображень %d не відповідає очікуваним %d.";
     public static final String ERROR_LIST_EMPTY = "Список зображень не може бути порожнім.";
-    public static final String ERROR_IMAGE_PROCESSING = "Зображення не вдалося обробити.";
 }

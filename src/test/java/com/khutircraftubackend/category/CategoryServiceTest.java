@@ -129,14 +129,14 @@ class CategoryServiceTest {
 			categoryEntity.setDescription(request.description());
 			categoryEntity.setIconUrl("cloudinaryUrl");
 
-			when(storageService.upload(bytes, null)).thenReturn("cloudinaryUrl");
+			when(storageService.upload(multipartFile)).thenReturn("cloudinaryUrl");
 			when(categoryRepository.save(any(CategoryEntity.class))).thenReturn(categoryEntity);
 			
 			CategoryEntity result = categoryService.createCategory(request, multipartFile);
 			
 			assertNotNull(result);
 			assertEquals("cloudinaryUrl", result.getIconUrl());
-			verify(storageService).upload(bytes, null);
+			verify(storageService).upload(multipartFile);
 			verify(categoryRepository, times(2)).save(any(CategoryEntity.class));
 		}
 		
@@ -157,7 +157,7 @@ class CategoryServiceTest {
 			categoryEntity.setIconUrl("convertedFileUrl");
             
 			when(categoryRepository.save(any(CategoryEntity.class))).thenReturn(categoryEntity);
-			when(storageService.upload(bytes, null)).thenReturn("convertedFileUrl");
+			when(storageService.upload(multipartFile)).thenReturn("convertedFileUrl");
 			when(categoryRepository.findById(parentCategoryId)).thenReturn(Optional.of(parentCategory));
 			
 			CategoryEntity result = categoryService.createCategory(request, multipartFile);
@@ -166,7 +166,7 @@ class CategoryServiceTest {
 			assertEquals(parentCategory, result.getParentCategory());
 			assertEquals("convertedFileUrl", result.getIconUrl());
 			
-			verify(storageService).upload(bytes, null);
+			verify(storageService).upload(multipartFile);
 			verify(categoryRepository, times(2)).save(any(CategoryEntity.class));
 		}
 		
@@ -206,14 +206,14 @@ class CategoryServiceTest {
 			existingCategory.setIconUrl("oldCloudinaryUrl");
 			
 			when(multipartFile.isEmpty()).thenReturn(false);
-			when(storageService.upload(bytes, null)).thenReturn("newCloudinaryUrl");
+			when(storageService.upload(multipartFile)).thenReturn("newCloudinaryUrl");
 			when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(existingCategory));
 			when(categoryRepository.save(existingCategory)).thenReturn(existingCategory);
 			
 			CategoryEntity updatedCategory = categoryService.updateCategory(categoryId, request, multipartFile);
 			
 			assertEquals("newCloudinaryUrl", updatedCategory.getIconUrl());
-			verify(storageService).upload(bytes, null);
+			verify(storageService).upload(multipartFile);
 			verify(categoryRepository).save(existingCategory);
 		}
 		
@@ -230,14 +230,14 @@ class CategoryServiceTest {
 			existingCategory.setId(categoryId);
 			existingCategory.setIconUrl("oldLocalPath");
 
-			when(storageService.upload(any(), isNull())).thenReturn("newLocalPath");
+			when(storageService.upload(any())).thenReturn("newLocalPath");
 			when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(existingCategory));
 			when(categoryRepository.save(any(CategoryEntity.class))).thenReturn(existingCategory);
 
 			CategoryEntity updatedCategory = categoryService.updateCategory(categoryId, request, multipartFile);
 
 			assertEquals("newLocalPath", updatedCategory.getIconUrl());
-			verify(storageService).upload(any(), isNull());
+			verify(storageService).upload(multipartFile);
 			verify(categoryRepository).save(any(CategoryEntity.class));
 		}
 		
@@ -256,7 +256,7 @@ class CategoryServiceTest {
 			existingCategory.setDescription("OldDescription");
 			
 			when(multipartFile.isEmpty()).thenReturn(false);
-			when(storageService.upload(bytes, null)).thenThrow(new InvalidFileFormatException("File is not a valid image"));
+			when(storageService.upload(multipartFile)).thenThrow(new InvalidFileFormatException("File is not a valid image"));
 			when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(existingCategory));
 			
 			assertThrows(InvalidFileFormatException.class, () ->
@@ -279,7 +279,7 @@ class CategoryServiceTest {
 			existingCategory.setDescription("OldDescription");
 			
 			when(multipartFile.isEmpty()).thenReturn(false);
-			when(storageService.upload(bytes, null)).thenThrow(new StorageException("File is corrupted"));
+			when(storageService.upload(multipartFile)).thenThrow(new StorageException("File is corrupted"));
 			
 			when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(existingCategory));
 			

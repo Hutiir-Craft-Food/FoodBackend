@@ -25,7 +25,7 @@ public class CloudinaryService implements StorageService {
             return uploadResult.get("url").toString();
 
         } catch (IOException e) {
-            throw new StorageException(String.format(StorageResponseMessage.ERROR_SAVE, e));
+            throw new StorageException(StorageResponseMessage.ERROR_SAVE);
         }
     }
 

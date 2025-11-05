@@ -30,8 +30,10 @@ public class LocalStorageService implements StorageService {
         try {
             Files.createDirectories(uploadPath);
         } catch (IOException e) {
-            throw new StorageException(e.getMessage());
+            throw new DirectoryCreationException(
+                    String.format(StorageResponseMessage.ERROR_CREATE_DIRECTORY, uploadPath));
         }
+
         String extension = "";
 
         if (originalFileName != null && originalFileName.contains(".")) {
@@ -44,7 +46,7 @@ public class LocalStorageService implements StorageService {
         try {
             Files.copy(new ByteArrayInputStream(fileBytes), filePath);
         } catch (IOException e) {
-            throw new StorageException(e.getMessage());
+            throw new StorageException(StorageResponseMessage.ERROR_SAVE);
         }
 
         HttpServletRequest request = ((ServletRequestAttributes)
