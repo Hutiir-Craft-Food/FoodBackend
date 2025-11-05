@@ -37,6 +37,18 @@ public class ProductEntity extends Auditable {
     @Column(name = "description")
     private String description;
 
+    @Column(name = "ingredients")
+    private String ingredients;
+
+    @Column(name = "nutrition")
+    private String nutrition;
+
+    @Column(name = "storage")
+    private String storage;
+
+    @Column(name = "allergens")
+    private String allergens;
+
     @ManyToOne
     @JoinColumn(name = "seller_id")
     private SellerEntity seller;

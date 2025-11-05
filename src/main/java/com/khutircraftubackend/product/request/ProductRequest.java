@@ -14,6 +14,10 @@ public record ProductRequest(
         
         @NotBlank(message = "Опис продукта не може бути порожнім")
         String description,
+        String ingredients,
+        String nutrition,
+        String storage,
+        String allergens,
         
         @NotNull(message = "Ідентифікатор категорії не може бути порожнім")
         Long categoryId

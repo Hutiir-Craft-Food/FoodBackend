@@ -23,8 +23,12 @@ public interface ProductMapper {
 	@Mapping(target = "name", source = "request.name")
 	@Mapping(target = "available", source = "request.available")
 	@Mapping(target = "description", source = "request.description")
+	@Mapping(target = "ingredients", source = "request.ingredients")
+	@Mapping(target = "nutrition", source = "request.nutrition")
+	@Mapping(target = "storage", source = "request.storage")
+	@Mapping(target = "allergens", source = "request.allergens")
 	void updateProductFromRequest(@MappingTarget ProductEntity product, ProductRequest request);
-	
+
 	ProductResponse toProductResponse(ProductEntity productEntity);
 	
 	Collection<ProductResponse> toProductResponse(Page<ProductEntity> productEntities);
