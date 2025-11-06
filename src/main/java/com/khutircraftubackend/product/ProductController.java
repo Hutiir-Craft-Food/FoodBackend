@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Collection;
 import java.util.Map;
 
 @RestController
@@ -81,4 +83,13 @@ public class ProductController {
 		
 		return productService.getProducts(offset, limit);
 	}
+	
+	@GetMapping("/featured")
+	@ResponseStatus(HttpStatus.OK)
+	public Collection<ProductResponse> getFeaturedProducts(
+			@RequestParam(defaultValue = "16") int limit) {
+		
+		return productService.getLatestProducts(limit);
+	}
+	
 }

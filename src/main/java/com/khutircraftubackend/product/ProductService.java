@@ -2,6 +2,7 @@ package com.khutircraftubackend.product;
 
 import com.khutircraftubackend.category.CategoryEntity;
 import com.khutircraftubackend.category.CategoryService;
+import com.khutircraftubackend.product.exception.InvalidPaginationParameterException;
 import com.khutircraftubackend.product.exception.ProductAccessException;
 import com.khutircraftubackend.product.exception.ProductNotFoundException;
 import com.khutircraftubackend.product.request.ProductRequest;
@@ -12,18 +13,20 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.Map;
 
-import static com.khutircraftubackend.product.exception.ProductResponseMessage.PRODUCT_ACCESS_DENIED;
-import static com.khutircraftubackend.product.exception.ProductResponseMessage.PRODUCT_NOT_FOUND;
+import static com.khutircraftubackend.product.exception.ProductResponseMessage.*;
 
 @Service
 @RequiredArgsConstructor
 public class ProductService {
+	
+	private static final int FEATURED_MAX_LIMIT = 16;
 	
 	private final ProductRepository productRepository;
 	private final SellerService sellerService;
@@ -87,12 +90,12 @@ public class ProductService {
 
 	@Transactional(readOnly = true)
 	public Map<String, Object> getProducts(int offset, int limit) {
-
+		
 		Pageable pageable = PageRequest.of(offset, limit);
 		Page<ProductEntity> productEntities = productRepository.findAllBy(pageable);
-
+		
 		Collection<ProductResponse> products = productMapper.toProductResponse(productEntities);
-
+		
 		long total = productRepository.count();
 		
 		return Map.of(
@@ -102,4 +105,22 @@ public class ProductService {
 				"limit", limit
 		);
 	}
+	
+	@Transactional(readOnly = true)
+	public Collection<ProductResponse> getLatestProducts(int limit) {
+		
+		if (limit <= 0) {
+			throw new InvalidPaginationParameterException(LIMIT_EXCEEDED);
+		}
+		
+		int size = Math.min(limit, FEATURED_MAX_LIMIT);
+		
+		Pageable pageable = PageRequest.of(0, size,
+				Sort.by("createdAt").descending());
+		
+		Page<ProductEntity> productPage = productRepository.findAll(pageable);
+		
+		return productMapper.toProductResponse(productPage.getContent());
+	}
+	
 }
