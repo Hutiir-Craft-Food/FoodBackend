@@ -1,5 +1,7 @@
 package com.khutircraftubackend.product.image.response;
 
+import com.fasterxml.jackson.annotation.JsonView;
+import com.khutircraftubackend.common.view.Public;
 import lombok.*;
 
 @Getter
@@ -11,16 +13,10 @@ public class ProductImageDTO {
     private Long id;
     private Long productId;
     private String uid;
-    private int position;
-    private ImageLinks links;
 
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class ImageLinks {
-        private String thumbnail;
-        private String small;
-        private String medium;
-        private String large;
-    }
+    @JsonView(Public.class)
+    private int position;
+
+    @JsonView(Public.class)
+    private ImageLinks links;
 }

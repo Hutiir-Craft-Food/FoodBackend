@@ -1,5 +1,7 @@
 package com.khutircraftubackend.product;
 
+import com.fasterxml.jackson.annotation.JsonView;
+import com.khutircraftubackend.common.view.Public;
 import com.khutircraftubackend.product.request.ProductRequest;
 import com.khutircraftubackend.product.response.ProductResponse;
 import com.khutircraftubackend.seller.SellerEntity;
@@ -86,6 +88,7 @@ public class ProductController {
 	
 	@GetMapping("/featured")
 	@ResponseStatus(HttpStatus.OK)
+    @JsonView(Public.class)
 	public Collection<ProductResponse> getFeaturedProducts(
 			@RequestParam(defaultValue = "16") int limit) {
 		

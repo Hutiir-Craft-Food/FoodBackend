@@ -5,6 +5,7 @@ import com.khutircraftubackend.product.ProductEntity;
 import com.khutircraftubackend.product.ProductService;
 import com.khutircraftubackend.product.image.exception.TooManyImagesException;
 import com.khutircraftubackend.product.image.request.ProductImageUploadRequest;
+import com.khutircraftubackend.product.image.response.ImageLinks;
 import com.khutircraftubackend.product.image.response.ProductImageDTO;
 import com.khutircraftubackend.product.image.response.ProductImageResponse;
 import com.khutircraftubackend.product.image.response.ProductImageResponseMessages;
@@ -86,14 +87,14 @@ class ProductImagesServiceTest {
                         .productId(1L)
                         .uid("pic0.jpeg")
                         .position(0)
-                        .links(new ProductImageDTO.ImageLinks())
+                        .links(new ImageLinks())
                         .build(),
                 ProductImageDTO.builder()
                         .id(2L)
                         .productId(1L)
                         .uid("pic1.jpeg")
                         .position(1)
-                        .links(new ProductImageDTO.ImageLinks())
+                        .links(new ImageLinks())
                         .build()
         );
     }
@@ -156,7 +157,7 @@ class ProductImagesServiceTest {
 //            ProductImageResponse expected = new ProductImageResponse(
 //                    savedEntities.stream().map(img -> ProductImageDTO.builder()
 //                            .uid(img.getUid())
-//                            .links(new ProductImageDTO.ImageLinks())
+//                            .links(new ImageLinks())
 //                            .position(img.getPosition())
 //                            .productId(img.getProduct().getId())
 //                            .id(img.getId())

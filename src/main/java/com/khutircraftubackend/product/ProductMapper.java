@@ -1,6 +1,7 @@
 package com.khutircraftubackend.product;
 
 import com.khutircraftubackend.category.CategoryMapper;
+import com.khutircraftubackend.product.image.ProductImageMapper;
 import com.khutircraftubackend.product.price.entity.ProductPriceEntity;
 import com.khutircraftubackend.product.price.entity.ProductUnitEntity;
 import com.khutircraftubackend.product.price.mapper.ProductPriceMapper;
@@ -21,7 +22,7 @@ import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
 import static org.mapstruct.ReportingPolicy.IGNORE;
 
 @Mapper(componentModel = SPRING, unmappedTargetPolicy = IGNORE,
-        uses = {SellerMapper.class, CategoryMapper.class, ProductPriceMapper.class})
+        uses = {SellerMapper.class, CategoryMapper.class, ProductPriceMapper.class, ProductImageMapper.class})
 public interface ProductMapper {
 	
 	ProductEntity toProductEntity(ProductRequest request);

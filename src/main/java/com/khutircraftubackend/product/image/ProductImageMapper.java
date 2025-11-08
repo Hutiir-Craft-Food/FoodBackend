@@ -1,20 +1,24 @@
 package com.khutircraftubackend.product.image;
 
-import com.khutircraftubackend.product.image.exception.ImageValidationException;
+import com.khutircraftubackend.product.image.response.ImageLinks;
 import com.khutircraftubackend.product.image.response.ProductImageDTO;
-import com.khutircraftubackend.product.image.response.ProductImageResponseMessages;
 import org.mapstruct.Mapper;
 
-import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
-import java.util.*;
+import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
 
 @Mapper(componentModel = SPRING)
 public interface ProductImageMapper {
 
     default List<ProductImageDTO> toProductImageDto(List<ProductImageEntity> imageEntities) {
         if (Objects.isNull(imageEntities) || imageEntities.isEmpty()) {
-            throw new ImageValidationException(ProductImageResponseMessages.ERROR_LIST_EMPTY);
+            return Collections.emptyList();
         }
 
         Map<String, ProductImageDTO> dtoMap = new HashMap<>();
@@ -33,13 +37,13 @@ public interface ProductImageMapper {
                         .productId(entity.getProduct().getId())
                         .uid(entity.getUid())
                         .position(entity.getPosition())
-                        .links(new ProductImageDTO.ImageLinks())
+                        .links(new ImageLinks())
                         .build();
 
                 dtoMap.put(key, dto);
             }
 
-            ProductImageDTO.ImageLinks links = dto.getLinks();
+            ImageLinks links = dto.getLinks();
 
             if (entity.getTsSize() != null) {
                 String link = entity.getLink();
