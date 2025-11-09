@@ -7,6 +7,8 @@ public final class ProductImageResponseMessages {
 
     public static final String ERROR_TOO_MANY_IMAGES =
             "Завантажено забагато зображень. Максимальна кількість - %d файлів.";
+    public static final String ERROR_IMAGES_PER_MULTIPLE_PRODUCTS =
+            "Обробка зображень для кількох продуктів одночасно не підтримується.";
     public static final String ERROR_POSITION_ALREADY_EXISTS =
             "Дані позиції вже містять зображення.";
     public static final String ERROR_IMAGE_NOT_FOUND_BY_UID =

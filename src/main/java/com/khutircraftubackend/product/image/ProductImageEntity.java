@@ -21,13 +21,13 @@ public class ProductImageEntity extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE,
-    generator = "product_images_seq")
+            generator = "product_images_seq")
     @SequenceGenerator( name = "product_images_seq",
-    sequenceName = "product_images_seq",
-    allocationSize = 20)
+            sequenceName = "product_images_seq",
+            allocationSize = 20) // 20 = 5 images per product * 4 sizes
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     @JoinColumn(name = "product_id")
     private ProductEntity product;
 

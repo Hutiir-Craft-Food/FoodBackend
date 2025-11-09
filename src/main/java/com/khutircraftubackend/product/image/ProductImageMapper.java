@@ -1,15 +1,19 @@
 package com.khutircraftubackend.product.image;
 
-import com.khutircraftubackend.product.image.response.ImageLinks;
+import com.khutircraftubackend.product.image.exception.MultipleProductsException;
 import com.khutircraftubackend.product.image.response.ProductImageDTO;
+import com.khutircraftubackend.product.image.response.ProductImageResponseMessages;
 import org.mapstruct.Mapper;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
+
+import static com.khutircraftubackend.product.image.ProductImageUtil.groupByImageKey;
+import static com.khutircraftubackend.product.image.ProductImageUtil.getEntryToDtoMapper;
 
 import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
 
@@ -21,40 +25,21 @@ public interface ProductImageMapper {
             return Collections.emptyList();
         }
 
-        Map<String, ProductImageDTO> dtoMap = new HashMap<>();
-
-        for (ProductImageEntity entity : imageEntities) {
-            String key = String.format("%s-%s-%d",
-                    entity.getProduct().getId(),
-                    entity.getUid(),
-                    entity.getPosition());
-
-            ProductImageDTO dto = dtoMap.get(key);
-
-            if (dto == null) {
-                dto = ProductImageDTO.builder()
-                        .id(entity.getId())
-                        .productId(entity.getProduct().getId())
-                        .uid(entity.getUid())
-                        .position(entity.getPosition())
-                        .links(new ImageLinks())
-                        .build();
-
-                dtoMap.put(key, dto);
-            }
-
-            ImageLinks links = dto.getLinks();
-
-            if (entity.getTsSize() != null) {
-                String link = entity.getLink();
-                switch (entity.getTsSize()) {
-                    case SMALL -> links.setSmall(link);
-                    case MEDIUM -> links.setMedium(link);
-                    case LARGE -> links.setLarge(link);
-                    case THUMBNAIL -> links.setThumbnail(link);
-                }
-            }
+        // though, the current logic in the ProductImage domain
+        // doesn't expect to have images for multiple products in imageEntities
+        // it's still technically possible to have such a case here
+        // implementing CompoundImageKey helps us deal with cases like that
+        Map<CompoundImageKey, List<ProductImageEntity>> imageEntitiesGroupedByPosition = groupByImageKey(imageEntities);
+        if (imageEntitiesGroupedByPosition.size() > 1) {
+            throw new MultipleProductsException(ProductImageResponseMessages.ERROR_IMAGES_PER_MULTIPLE_PRODUCTS);
         }
-        return new ArrayList<>(dtoMap.values());
+
+        Function<Map.Entry<CompoundImageKey,
+                List<ProductImageEntity>>, ProductImageDTO> entryToDtoMapper = getEntryToDtoMapper();
+
+        return imageEntitiesGroupedByPosition.entrySet().stream()
+                .map(entryToDtoMapper)
+                .sorted(Comparator.comparing(ProductImageDTO::getPosition))
+                .toList();
     }
 }
