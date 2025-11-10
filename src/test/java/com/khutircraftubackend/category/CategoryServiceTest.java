@@ -3,7 +3,6 @@ package com.khutircraftubackend.category;
 import com.khutircraftubackend.category.exception.CategoryDeletionException;
 import com.khutircraftubackend.category.exception.CategoryNotFoundException;
 import com.khutircraftubackend.category.request.CategoryRequest;
-import com.khutircraftubackend.product.image.exception.ImageProcessingException;
 import com.khutircraftubackend.search.exception.SearchResponseMessage;
 import com.khutircraftubackend.search.exception.InvalidSearchQueryException;
 import com.khutircraftubackend.storage.StorageService;
@@ -21,7 +20,6 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -49,17 +47,6 @@ class CategoryServiceTest {
 
 	@InjectMocks
 	private CategoryService categoryService;
-
-	private byte [] bytes;
-
-	@BeforeEach
-	void setup() {
-		try {
-			bytes = multipartFile.getBytes();
-		} catch (IOException e) {
-			throw new ImageProcessingException(e.getMessage());
-		}
-	}
 
 	@Nested
 	@DisplayName("Tests for all Category")
