@@ -2,15 +2,15 @@ package com.khutircraftubackend.product.image;
 
 import com.khutircraftubackend.product.ProductEntity;
 import com.khutircraftubackend.product.ProductService;
-import com.khutircraftubackend.product.image.exception.ImageNotFoundException;
-import com.khutircraftubackend.product.image.exception.ImagesCountMismatchException;
-import com.khutircraftubackend.product.image.exception.PositionAlreadyExistsException;
-import com.khutircraftubackend.product.image.exception.TooManyImagesException;
+import com.khutircraftubackend.product.image.exception.*;
 import com.khutircraftubackend.product.image.request.ProductImageUploadRequest;
 import com.khutircraftubackend.product.image.request.ProductImageChangeRequest;
 import com.khutircraftubackend.product.image.response.ProductImageResponse;
 import com.khutircraftubackend.product.image.response.ProductImageResponseMessages;
+import com.khutircraftubackend.storage.StorageResponseMessage;
 import com.khutircraftubackend.storage.StorageService;
+import com.khutircraftubackend.exception.FileReadingException;
+import com.khutircraftubackend.storage.exception.StorageException;
 import com.khutircraftubackend.validated.ImageMimeValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -94,30 +93,27 @@ public class ProductImageService {
         List<ImageSize> sizes = List.of(ImageSize.THUMBNAIL, ImageSize.SMALL, ImageSize.MEDIUM, ImageSize.LARGE);
 
         String uid = UUID.randomUUID().toString();
-        String originalFileName = imageFile.getOriginalFilename();
         List<ProductImageEntity> imageEntities = new LinkedList<>();
 
         for (ImageSize imageSize : sizes) {
+            // TODO [SCRUM-210] need to implement for image resizing
+            //  result of resized image will be array of bytes.
+            //  example of java dependency for image resizing: net.coobird
+            String link;
             try {
-                // TODO need to implement SCRUM-210 for image resizing
-                //  result of resized image will be array of bytes.
-                //  example of java dependency for image resizing: net.coobird
-                byte[] bytes = imageFile.getBytes();
-                String link = storageService.upload(bytes, originalFileName);
-                ProductImageEntity imageEntity = ProductImageEntity.builder()
-                        .product(product)
-                        .uid(uid)
-                        .position(position)
-                        .tsSize(imageSize)
-                        .link(link)
-                        .build();
-
-                imageEntities.add(imageEntity);
-
-            } catch (IOException e) {
-                // TODO: review exception handling here:
-                throw new RuntimeException(e);
+                link = storageService.upload(imageFile);
+            }catch (FileReadingException ex){
+                throw new StorageException(StorageResponseMessage.ERROR_SAVE);
             }
+            ProductImageEntity imageEntity = ProductImageEntity.builder()
+                    .product(product)
+                    .uid(uid)
+                    .position(position)
+                    .tsSize(imageSize)
+                    .link(link)
+                    .build();
+
+            imageEntities.add(imageEntity);
         }
 
         return imageEntities;
@@ -265,13 +261,6 @@ public class ProductImageService {
     }
 
     private void safeDeleteFromStorage(ProductImageEntity entity) {
-        try {
-            String publicId = entity.getLink();
-            storageService.deleteByUrl(publicId);
-        } catch (IOException e) {
-            throw new RuntimeException(entity.getLink(), e); //TODO need to implement SCRUM-211.
-            // Need implement global CloudStorageException??
-            // You can insert the team lead's resolution here
-        }
+        storageService.deleteByUrl(entity.getLink());
     }
 }
