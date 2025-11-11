@@ -14,6 +14,16 @@ spring:
         show-sql: true
         format_sql: true
 
+  flyway:
+    locations: classpath:db/migration,classpath:db/seed
+    placeholders:
+      email: ${FLYWAY_EMAIL:email@example.com}
+      password: ${FLYWAY_PASSWORD:pwd}
+      role: ${FLYWAY_ROLE:bastard}
+      confirmed: ${FLYWAY_CONFIRMED:true}
+    baseline-on-migrate: true
+
+
   mail:
     host: localhost
     port: 1025
