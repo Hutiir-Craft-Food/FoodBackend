@@ -1,8 +1,6 @@
 package com.khutircraftubackend.product.image;
 
-import com.khutircraftubackend.product.image.exception.MultipleProductsException;
 import com.khutircraftubackend.product.image.response.ProductImageDTO;
-import com.khutircraftubackend.product.image.response.ProductImageResponseMessages;
 import org.mapstruct.Mapper;
 
 import java.util.Collections;
@@ -25,17 +23,10 @@ public interface ProductImageMapper {
             return Collections.emptyList();
         }
 
-        // though, the current logic in the ProductImage domain
-        // doesn't expect to have images for multiple products in imageEntities
-        // it's still technically possible to have such a case here
-        // implementing CompoundImageKey helps us deal with cases like that
         Map<CompoundImageKey, List<ProductImageEntity>> imageEntitiesGroupedByPosition = groupByImageKey(imageEntities);
-        if (imageEntitiesGroupedByPosition.size() > 1) {
-            throw new MultipleProductsException(ProductImageResponseMessages.ERROR_IMAGES_PER_MULTIPLE_PRODUCTS);
-        }
 
-        Function<Map.Entry<CompoundImageKey,
-                List<ProductImageEntity>>, ProductImageDTO> entryToDtoMapper = getEntryToDtoMapper();
+        Function<Map.Entry<CompoundImageKey, List<ProductImageEntity>>,
+                ProductImageDTO> entryToDtoMapper = getEntryToDtoMapper();
 
         return imageEntitiesGroupedByPosition.entrySet().stream()
                 .map(entryToDtoMapper)
