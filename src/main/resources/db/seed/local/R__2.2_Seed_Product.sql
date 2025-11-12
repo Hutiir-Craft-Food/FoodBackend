@@ -8,7 +8,7 @@ SELECT
     s.id
 FROM (
      VALUES
-         ('Курка', true, 'Свіжа курка, фермерська'),
+         ('Куряча тушка', true, 'Свіжа курка, фермерська'),
          ('Куряче серце', true, 'Курячі серця свіжі'),
          ('Куряча печінка', true, 'Куряча печінка свіжа'),
          ('Курячі стегна', true, 'Стегна курячі свіжі'),
@@ -18,7 +18,7 @@ FROM (
          ('Копчена курка', true, 'Курка копчена'),
          ('Курка гриль', true, 'Курка-гриль готова')
      ) AS prod (name, available, description)
-        JOIN categories c ON c.name = 'Курка' AND c.parent_id IS NOT NULL
+        JOIN categories c ON c.name = 'Курятина' AND c.parent_id IS NOT NULL
         JOIN sellers s ON s.seller_name = 'Seller';
 
 -- Свинина

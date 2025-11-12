@@ -8,5 +8,5 @@ from products p
 inner join categories c
   on c.id = p.category_id
 cross join product_units pu
-where c."name" like 'Курка'
+where c."name" like 'Курятина'
 and pu."name" = 'кг.'
