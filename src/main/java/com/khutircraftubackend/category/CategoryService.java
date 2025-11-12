@@ -5,7 +5,6 @@ import com.khutircraftubackend.category.exception.CategoryDeletionException;
 import com.khutircraftubackend.category.exception.CategoryNotFoundException;
 import com.khutircraftubackend.category.request.CategoryRequest;
 import com.khutircraftubackend.exception.FileReadingException;
-import com.khutircraftubackend.storage.StorageResponseMessage;
 import com.khutircraftubackend.storage.StorageService;
 import com.khutircraftubackend.storage.exception.StorageException;
 import jakarta.transaction.Transactional;
@@ -20,6 +19,7 @@ import java.util.List;
 import java.util.Set;
 
 import static com.khutircraftubackend.category.exception.CategoryExceptionMessages.*;
+import static com.khutircraftubackend.storage.StorageResponseMessage.ERROR_SAVE;
 
 @Service
 @RequiredArgsConstructor
@@ -147,7 +147,7 @@ public class CategoryService {
         try {
             link = storageService.upload(iconFile);
         } catch (FileReadingException ex) {
-            throw new StorageException(StorageResponseMessage.ERROR_SAVE);
+            throw new StorageException(ERROR_SAVE);
         }
 
         return link;

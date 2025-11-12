@@ -3,8 +3,8 @@ package com.khutircraftubackend.category;
 import com.khutircraftubackend.category.exception.CategoryDeletionException;
 import com.khutircraftubackend.category.exception.CategoryNotFoundException;
 import com.khutircraftubackend.category.request.CategoryRequest;
-import com.khutircraftubackend.search.exception.SearchResponseMessage;
 import com.khutircraftubackend.search.exception.InvalidSearchQueryException;
+import com.khutircraftubackend.search.exception.SearchResponseMessage;
 import com.khutircraftubackend.storage.StorageService;
 import com.khutircraftubackend.storage.exception.InvalidFileFormatException;
 import com.khutircraftubackend.storage.exception.StorageException;
@@ -20,11 +20,7 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
@@ -430,4 +426,32 @@ class CategoryServiceTest {
 					.hasMessage(SearchResponseMessage.EMPTY_KEYWORDS_ERROR);
 		}
 	}
+	
+	@Nested
+	@DisplayName("CategoryRequest normalization & validation")
+	class CategoryRequestValidation {
+		
+		@Test
+		@DisplayName("should normalize name: trim, lowercase, collapse spaces")
+		void shouldNormalizeNameProperly() {
+			CategoryRequest request = CategoryRequest.builder()
+					.name("  Тест   Назва  ")
+					.description("Опис")
+					.build();
+			
+			assertEquals("тест назва", request.name());
+		}
+		
+		@Test
+		@DisplayName("should remove HTML and decode entities in name")
+		void shouldCleanHtmlTagsAndEntities() {
+			CategoryRequest request = CategoryRequest.builder()
+					.name(" <b>Молоко</b> ")
+					.description("Опис")
+					.build();
+			
+			assertEquals("молоко", request.name());
+		}
+	}
+	
 }
