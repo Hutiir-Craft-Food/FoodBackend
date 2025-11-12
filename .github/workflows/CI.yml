@@ -2,7 +2,7 @@ name: FoodMarket CI
 
 on:
   pull_request:
-    types: ['synchronize', 'opened', 'ready_for_review']
+    types: ['synchronize', 'opened', 'reopened', 'edited', 'ready_for_review']
     branches: ['main']
     paths-ignore: ['.gitignore', '*.md']
 
@@ -12,6 +12,9 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: khutir_kraftu
+    # https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/deploy-to-environment
+    # https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/manage-environments#creating-an-environment
 
     services:
       postgres:
@@ -29,12 +32,9 @@ jobs:
           --health-retries 5
 
     env:
-      FLYWAY_EMAIL: ${{ secrets.FLYWAY_EMAIL }}
-      FLYWAY_PASSWORD: ${{ secrets.FLYWAY_PASSWORD }}
-      FLYWAY_ROLE: ${{ secrets.FLYWAY_ROLE }}
-      FLYWAY_ENABLED: ${{ secrets.FLYWAY_ENABLED }}
-      FLYWAY_CONFIRMED: ${{ secrets.FLYWAY_CONFIRMED }}
-      JWT_SECRET: dk59GJKDslfl45kkdIUOWNNXVG495fjkdLSLLEWIkvmidorfpwa20658764UEmcskRIIKORcfd
+      ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+      ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
       SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/khutir_craft
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres

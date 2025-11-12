@@ -15,13 +15,12 @@ spring:
         format_sql: true
 
   flyway:
-    locations: classpath:db/migration,classpath:db/seed
+    locations: classpath:db/migration,classpath:db/seed,classpath:db/seed/local
     placeholders:
-      email: ${FLYWAY_EMAIL:email@example.com}
-      password: ${FLYWAY_PASSWORD:pwd}
-      role: ${FLYWAY_ROLE:bastard}
-      confirmed: ${FLYWAY_CONFIRMED:true}
-    baseline-on-migrate: true
+      email: ${ADMIN_EMAIL:admin@example.com}
+      password: ${ADMIN_PASSWORD:admin}
+      enabled: ${ADMIN_ENABLED:true}
+      confirmed: ${ADMIN_CONFIRMED:true}
 
 
   mail:

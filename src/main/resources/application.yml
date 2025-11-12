@@ -31,10 +31,12 @@ spring:
 
   flyway:
     enabled: true
-    locations: classpath:db/migration
+    locations: classpath:db/migration,classpath:db/seed
     placeholders:
-      enabled: ${FLYWAY_ENABLED:false}
-    baseline-on-migrate: true
+      email: ${ADMIN_EMAIL}
+      password: ${ADMIN_PASSWORD}
+      enabled: ${ADMIN_ENABLED}
+      confirmed: ${ADMIN_CONFIRMED}
 
   mail:
     host: ${MAIL_HOST}
