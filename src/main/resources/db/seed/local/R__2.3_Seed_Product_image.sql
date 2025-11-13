@@ -4,8 +4,8 @@ SELECT
     p.id,
     CONCAT ('photo-', TO_CHAR(NOW(), 'YYmmDD-'), 'image-', p.id) as uid,
     CASE
-        -- Курка и продукты из курицы
-        WHEN p.name IN ('Курка', 'Куряче філе', 'Фарш курячий', 'Копчена курка', 'Курка гриль')
+        -- Курятина
+        WHEN p.name IN ('Куряча тушка', 'Куряче філе', 'Фарш курячий', 'Копчена курка', 'Курка гриль')
             THEN 'https://images.unsplash.com/photo-1587336768918-ca17c127c2e5?w=500&auto=format&fit=crop&q=60'
         WHEN p.name IN ('Куряче серце', 'Куряча печінка')
             THEN 'https://images.unsplash.com/photo-1587593810167-9d91a1ac6f1c?w=500&auto=format&fit=crop&q=60'

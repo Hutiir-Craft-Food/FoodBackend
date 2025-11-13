@@ -14,6 +14,15 @@ spring:
         show-sql: true
         format_sql: true
 
+  flyway:
+    locations: classpath:db/migration,classpath:db/seed,classpath:db/seed/local
+    placeholders:
+      email: ${ADMIN_EMAIL:admin@example.com}
+      password: ${ADMIN_PASSWORD:admin}
+      enabled: ${ADMIN_ENABLED:true}
+      confirmed: ${ADMIN_CONFIRMED:true}
+
+
   mail:
     host: localhost
     port: 1025

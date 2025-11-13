@@ -15,6 +15,7 @@ spring:
   datasource:
     driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME}
     url: ${SPRING_DATASOURCE_URL}
+    schema: ${SPRING_DATASOURCE_SCHEMA:public}
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
 
@@ -31,14 +32,14 @@ spring:
 
   flyway:
     enabled: true
-    locations: classpath:db/migration,classpath:db/seed,classpath:db/seed/${spring.profiles.active}
-    baseline-on-migrate: true
+    locations: classpath:db/migration,classpath:db/seed
+    create-schemas: true
+    schemas: ${SPRING_DATASOURCE_SCHEMA:public}
     placeholders:
-      email: ${FLYWAY_EMAIL}
-      password: ${FLYWAY_PASSWORD}
-      role: ${FLYWAY_ROLE}
-      enabled: ${FLYWAY_ENABLED}
-      confirmed: ${FLYWAY_CONFIRMED}
+      email: ${ADMIN_EMAIL}
+      password: ${ADMIN_PASSWORD}
+      enabled: ${ADMIN_ENABLED}
+      confirmed: ${ADMIN_CONFIRMED}
 
   mail:
     host: ${MAIL_HOST}
