@@ -2,26 +2,28 @@ package com.khutircraftubackend.product.image.response;
 
 import lombok.*;
 
-@Getter
-@Setter
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
-public class ProductImageDTO {
-    private Long id;
-    private Long productId;
-    private String uid;
-    private int position;
-    private ProductImageLinks links;
+import java.util.List;
 
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class ProductImageLinks implements ImageLinks {
-        private String thumbnail;
-        private String small;
-        private String medium;
-        private String large;
-    }
-}
+//@Getter
+//@Setter
+@Builder
+//@AllArgsConstructor
+//@NoArgsConstructor
+public record ProductImageDTO(
+     Long id,
+     Long productId,
+     String uid,
+     int position,
+     ImageLinks links
+){}
+
+//    @Getter
+//    @Setter
+//    @NoArgsConstructor
+//    @AllArgsConstructor
+//    public static class ProductImageLinks implements ImageLinks {
+//        private String thumbnail;
+//        private String small;
+//        private String medium;
+//        private String large;
+//    }

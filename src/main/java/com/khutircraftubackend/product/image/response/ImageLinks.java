@@ -1,15 +1,19 @@
 package com.khutircraftubackend.product.image.response;
 
-public interface ImageLinks {
-    String getThumbnail();
-    void setThumbnail(String thumbnail);
+import com.fasterxml.jackson.annotation.JsonView;
+//import com.khutircraftubackend.common.validation.Public;
+import lombok.*;
 
-    String getSmall();
-    void setSmall(String small);
-
-    String getMedium();
-    void setMedium(String medium);
-
-    String getLarge();
-    void setLarge(String large);
+//@Getter
+//@Setter
+//@NoArgsConstructor
+//@AllArgsConstructor
+//@JsonView(Public.class)
+@Builder
+public record ImageLinks (
+     String thumbnail,
+     String small,
+     String medium,
+     String large
+){
 }

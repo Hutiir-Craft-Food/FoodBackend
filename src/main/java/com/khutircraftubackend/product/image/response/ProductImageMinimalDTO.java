@@ -2,24 +2,24 @@ package com.khutircraftubackend.product.image.response;
 
 import lombok.*;
 
-@Getter
-@Setter
+//@Getter
+//@Setter
 @Builder
-@AllArgsConstructor
-@NoArgsConstructor
+//@AllArgsConstructor
+//@NoArgsConstructor
 public class ProductImageMinimalDTO {
     private int position;
-    private ProductImageLinks links;
+    private ImageLinks links;
 
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class ProductImageLinks implements ImageLinks {
-        private String thumbnail;
-        private String small;
-        private String medium;
-        private String large;
-    }
+//    @Getter
+//    @Setter
+//    @NoArgsConstructor
+//    @AllArgsConstructor
+//    public static class ProductImageLinks implements ImageLinks {
+//        private String thumbnail;
+//        private String small;
+//        private String medium;
+//        private String large;
+//    }
 }
 
