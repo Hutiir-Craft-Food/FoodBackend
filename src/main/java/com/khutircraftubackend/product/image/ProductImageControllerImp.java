@@ -61,4 +61,3 @@ public class ProductImageControllerImp implements ProductImageController {
         service.deleteProductImages(productId, positionIds);
     }
 }
-

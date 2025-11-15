@@ -18,13 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.io.IOException;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -146,6 +141,33 @@ public class ProductImageService {
                             allImages.size() / ImageSize.values().length));
         }
 
+    private boolean hasAnyDuplicatePosition(Long productId, ProductImageUploadRequest request) {
+        Set<Integer> existingPositions = imageRepository.findByProductId(productId).stream()
+                .map(ProductImageEntity::getPosition)
+                .collect(Collectors.toSet());
+
+        return request.images().stream()
+                .map(ProductImageUploadRequest.Image::position)
+                .anyMatch(existingPositions::contains);
+    }
+
+
+    @Transactional
+    public ProductImageResponse updateImages(Long productId, ProductImageChangeRequest request) {
+
+        ensureProductExists(productId);
+
+        List<ProductImageChangeRequest.Image> requestImages = request.images();
+        List<ProductImageEntity> allImages = imageRepository.findByProductId(productId);
+        int totalCountImages = requestImages.size() * ImageSize.values().length;
+
+        if (allImages.size() != totalCountImages) {
+            throw new ImagesCountMismatchException(
+                    String.format(ProductImageResponseMessages.ERROR_IMAGES_COUNT_MISMATCH,
+                            totalCountImages / ImageSize.values().length,
+                            allImages.size() / ImageSize.values().length));
+        }
+
         validateAllImagesExistByUid(requestImages, allImages);
 
         Map<String, List<ProductImageEntity>> imagesByUid = allImages.stream()
@@ -162,7 +184,7 @@ public class ProductImageService {
         List<ProductImageEntity> updatedImages = imageRepository.saveAll(toSave);
 
         return ProductImageResponse.builder()
-                .images(imageMapper.toProductImageDto(updatedImages))
+                .images(imageMapper.toProductImageDtoList(updatedImages))
                 .build();
     }
 
@@ -238,7 +260,7 @@ public class ProductImageService {
         List<ProductImageEntity> entities = imageRepository.findByProductId(productId);
 
         return ProductImageResponse.builder()
-                .images(imageMapper.toProductImageDto(entities))
+                .images(imageMapper.toProductImageDtoList(entities))
                 .build();
     }
 
@@ -261,6 +283,18 @@ public class ProductImageService {
     }
 
     private void safeDeleteFromStorage(ProductImageEntity entity) {
-        storageService.deleteByUrl(entity.getLink());
+        List<ProductImageVariant> imageVariantList = entity.getVariants();
+        try {
+            for (ProductImageVariant variant : imageVariantList) {
+                String imageUrl = variant.getLink();
+                if (imageUrl != null && !imageUrl.trim().isEmpty()) {
+                    storageService.deleteByUrl(imageUrl);
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e); //TODO need to implement SCRUM-211.
+            // Need implement global CloudStorageException??
+            // You can insert the team lead's resolution here
+        }
     }
 }
