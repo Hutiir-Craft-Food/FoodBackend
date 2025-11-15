@@ -63,20 +63,20 @@ public class ProductImageService {
 //        }
 
         ProductEntity product = ensureProductExists(productId);
-        ProductImageEntity uploadedImageEntities = new ProductImageEntity();
+        List<ProductImageEntity> allImagesEntities = new ArrayList<>();
 
         for (int i = 0; i < imageFiles.size(); i++) {
             MultipartFile imageFile = imageFiles.get(i);
             ProductImageUploadRequest.Image imageMeta = request.images().get(i);
             int position = imageMeta.position();
-            uploadedImageEntities = uploadProductImageFile(product, imageFile, position);
-//            allImagesEntities.addAll(uploadedImageEntities);
+            ProductImageEntity uploadedImageEntities = uploadProductImageFile(product, imageFile, position);
+            allImagesEntities.add(uploadedImageEntities);
         }
 
-        ProductImageEntity savedImageEntities = imageRepository.save(uploadedImageEntities);
+        List<ProductImageEntity> savedImageEntities = imageRepository.saveAll(allImagesEntities);
 
         return ProductImageResponse.builder()
-                .images(imageMapper.toProductImageDto(savedImageEntities))
+                .images(imageMapper.toProductImageDtoList(savedImageEntities))
                 .build();
     }
 
@@ -234,10 +234,10 @@ public class ProductImageService {
 
         ensureProductExists(productId);
 
-        ProductImageEntity entities = imageRepository.findByProductId(productId);
+        List<ProductImageEntity> entities = imageRepository.findByProductId(productId);
 
         return ProductImageResponse.builder()
-                .images(imageMapper.toProductImageDto(entities))
+                .images(imageMapper.toProductImageDtoList(entities))
                 .build();
     }
 

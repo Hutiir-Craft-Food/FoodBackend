@@ -7,12 +7,14 @@ import com.khutircraftubackend.product.request.ProductRequest;
 import com.khutircraftubackend.product.response.ProductResponse;
 import com.khutircraftubackend.seller.SellerEntity;
 import com.khutircraftubackend.seller.SellerService;
-import jakarta.transaction.Transactional;
+//import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.nio.file.AccessDeniedException;
 import java.util.Collection;
 import java.util.Map;
@@ -98,7 +100,7 @@ public class ProductService {
 		);
 	}
 
-	@Transactional()
+	@Transactional(readOnly = true)
 	public ProductResponse getProductById(Long productId){
 		ProductEntity product = findProductById(productId);
 		return productMapper.toProductResponse(product);
