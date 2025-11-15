@@ -6,5 +6,5 @@ import java.util.List;
 
 @Builder
 public record ProductImageResponse(
-        ProductImageDTO images
+        List<ProductImageDTO> images
 ) {}

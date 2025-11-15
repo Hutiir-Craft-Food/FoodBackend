@@ -24,10 +24,10 @@ public class ProductImageEntity extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE,
-    generator = "product_images_seq")
+    generator = "product_imagess_seq")
     @SequenceGenerator( name = "product_images_seq",
-    sequenceName = "product_images_seq",
-    allocationSize = 1)
+    sequenceName = "product_imagess_seq",
+    allocationSize = 4)
     private Long id;
 
     @ManyToOne
@@ -41,5 +41,5 @@ public class ProductImageEntity extends Auditable {
     private int position;
 
     @OneToMany(mappedBy = "image", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ProductImageVariant> variants = new ArrayList<>();
+    private List<ProductImageVariant> variants;
 }

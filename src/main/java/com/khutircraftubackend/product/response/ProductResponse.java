@@ -1,9 +1,9 @@
 package com.khutircraftubackend.product.response;
 
 import com.khutircraftubackend.category.response.CategoryResponse;
+import com.khutircraftubackend.product.image.response.ProductImageDTO;
 import com.khutircraftubackend.product.price.entity.ProductUnitEntity;
 import com.khutircraftubackend.product.price.request.ProductPriceDTO;
-import com.khutircraftubackend.product.image.response.ProductImageMinimalDTO;
 import com.khutircraftubackend.seller.SellerResponse;
 import lombok.Builder;
 
@@ -22,8 +22,8 @@ public record ProductResponse(
         String allergens,
         SellerResponse seller,
         CategoryResponse category,
+        List<ProductImageDTO> images
         List<ProductPriceDTO> prices,
-        List<ProductUnitEntity> units,
-        List<ProductImageMinimalDTO> images
+        List<ProductUnitEntity> units
 ) {
 }

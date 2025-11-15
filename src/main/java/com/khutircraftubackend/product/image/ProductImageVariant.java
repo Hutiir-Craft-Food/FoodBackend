@@ -16,15 +16,15 @@ public class ProductImageVariant extends Auditable {
     @Id
     @GeneratedValue(
             strategy = GenerationType.SEQUENCE,
-            generator = "product_image_variants_seq")
+            generator = "product_image_variantss_seq")
     @SequenceGenerator(
             name = "product_image_variants_seq",
-            sequenceName = "product_image_variants_seq",
-            allocationSize = 4)
+            sequenceName = "product_image_variantss_seq",
+            allocationSize = 20)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "image_id", nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "image_id")
     private ProductImageEntity image;
 
     @Column(name = "link", columnDefinition = "TEXT", nullable = false)
