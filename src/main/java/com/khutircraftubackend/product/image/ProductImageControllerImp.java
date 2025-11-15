@@ -42,23 +42,22 @@ public class ProductImageControllerImp implements ProductImageController {
         return service.createImages(productId, json, files);
     }
 
-//    @PutMapping(
-//            consumes = MediaType.APPLICATION_JSON_VALUE,
-//            produces = MediaType.APPLICATION_JSON_VALUE
-//    )
-//    @PreAuthorize("hasRole('ADMIN') or (hasRole('SELLER') and @productService.canModifyProduct(#productId))")
-//    @ResponseStatus(HttpStatus.OK)
-//    public ProductImageResponse changesProductImages(@PathVariable Long productId,
-//                                                     @RequestBody ProductImageChangeRequest request) {
-//        return service.updateImages(productId, request);
-//    }
-//
-//    @DeleteMapping()
-//    @PreAuthorize("hasRole('ADMIN') or (hasRole('SELLER') and @productService.canModifyProduct(#productId))")
-//    @ResponseStatus(HttpStatus.NO_CONTENT)
-//    public void deleteProductImagesByPositions(@PathVariable Long productId,
-//                                               @RequestParam(value = "position", required = false) List<Integer> positionIds) {
-//        service.deleteProductImages(productId, positionIds);
-//    }
-}
+    @PutMapping(
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('SELLER') and @productService.canModifyProduct(#productId))")
+    @ResponseStatus(HttpStatus.OK)
+    public ProductImageResponse changesProductImages(@PathVariable Long productId,
+                                                     @RequestBody ProductImageChangeRequest request) {
+        return service.updateImages(productId, request);
+    }
 
+    @DeleteMapping()
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('SELLER') and @productService.canModifyProduct(#productId))")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteProductImagesByPositions(@PathVariable Long productId,
+                                               @RequestParam(value = "position", required = false) List<Integer> positionIds) {
+        service.deleteProductImages(productId, positionIds);
+    }
+}

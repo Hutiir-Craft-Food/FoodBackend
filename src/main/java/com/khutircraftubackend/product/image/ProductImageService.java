@@ -58,9 +58,9 @@ public class ProductImageService {
 
         mimeValidator.validateMimeTypes(imageFiles, allowedMimeTypes);
 
-//        if (hasAnyDuplicatePosition(productId, request)) {
-//            throw new PositionAlreadyExistsException(ProductImageResponseMessages.ERROR_POSITION_ALREADY_EXISTS);
-//        }
+        if (hasAnyDuplicatePosition(productId, request)) {
+            throw new PositionAlreadyExistsException(ProductImageResponseMessages.ERROR_POSITION_ALREADY_EXISTS);
+        }
 
         ProductEntity product = ensureProductExists(productId);
         List<ProductImageEntity> allImagesEntities = new ArrayList<>();
@@ -118,52 +118,52 @@ public class ProductImageService {
         return imageEntity;
     }
 
-//    private boolean hasAnyDuplicatePosition(Long productId, ProductImageUploadRequest request) {
-//        Set<Integer> existingPositions = imageRepository.findByProductId(productId).stream()
-//                .map(ProductImageEntity::getPosition)
-//                .collect(Collectors.toSet());
-//
-//        return request.images().stream()
-//                .map(ProductImageUploadRequest.Image::position)
-//                .anyMatch(existingPositions::contains);
-//    }
+    private boolean hasAnyDuplicatePosition(Long productId, ProductImageUploadRequest request) {
+        Set<Integer> existingPositions = imageRepository.findByProductId(productId).stream()
+                .map(ProductImageEntity::getPosition)
+                .collect(Collectors.toSet());
+
+        return request.images().stream()
+                .map(ProductImageUploadRequest.Image::position)
+                .anyMatch(existingPositions::contains);
+    }
 
 
-//    @Transactional
-//    public ProductImageResponse updateImages(Long productId, ProductImageChangeRequest request) {
-//
-//        ensureProductExists(productId);
-//
-//        List<ProductImageChangeRequest.Image> requestImages = request.images();
-//        List<ProductImageEntity> allImages = imageRepository.findByProductId(productId);
-//        int totalCountImages = requestImages.size() * ImageSize.values().length;
-//
-//        if (allImages.size() != totalCountImages) {
-//            throw new ImagesCountMismatchException(
-//                    String.format(ProductImageResponseMessages.ERROR_IMAGES_COUNT_MISMATCH,
-//                            totalCountImages / ImageSize.values().length,
-//                            allImages.size() / ImageSize.values().length));
-//        }
-//
-//        validateAllImagesExistByUid(requestImages, allImages);
-//
-//        Map<String, List<ProductImageEntity>> imagesByUid = allImages.stream()
-//                .collect(Collectors.groupingBy(ProductImageEntity::getUid));
-//
-//        Map<Integer, String> currentPositions = new HashMap<>();
-//        for (ProductImageEntity image : allImages) {
-//            currentPositions.put(image.getPosition(), image.getUid());
-//        }
-//
-//        Set<ProductImageEntity> toSave = new HashSet<>();
-//        resolvePositionConflicts(requestImages, imagesByUid, currentPositions, toSave);
-//        assignNewPositions(requestImages, imagesByUid, currentPositions, toSave);
-//        List<ProductImageEntity> updatedImages = imageRepository.saveAll(toSave);
-//
-//        return ProductImageResponse.builder()
-//                .images(imageMapper.toProductImageDto(updatedImages))
-//                .build();
-//    }
+    @Transactional
+    public ProductImageResponse updateImages(Long productId, ProductImageChangeRequest request) {
+
+        ensureProductExists(productId);
+
+        List<ProductImageChangeRequest.Image> requestImages = request.images();
+        List<ProductImageEntity> allImages = imageRepository.findByProductId(productId);
+        int totalCountImages = requestImages.size() * ImageSize.values().length;
+
+        if (allImages.size() != totalCountImages) {
+            throw new ImagesCountMismatchException(
+                    String.format(ProductImageResponseMessages.ERROR_IMAGES_COUNT_MISMATCH,
+                            totalCountImages / ImageSize.values().length,
+                            allImages.size() / ImageSize.values().length));
+        }
+
+        validateAllImagesExistByUid(requestImages, allImages);
+
+        Map<String, List<ProductImageEntity>> imagesByUid = allImages.stream()
+                .collect(Collectors.groupingBy(ProductImageEntity::getUid));
+
+        Map<Integer, String> currentPositions = new HashMap<>();
+        for (ProductImageEntity image : allImages) {
+            currentPositions.put(image.getPosition(), image.getUid());
+        }
+
+        Set<ProductImageEntity> toSave = new HashSet<>();
+        resolvePositionConflicts(requestImages, imagesByUid, currentPositions, toSave);
+        assignNewPositions(requestImages, imagesByUid, currentPositions, toSave);
+        List<ProductImageEntity> updatedImages = imageRepository.saveAll(toSave);
+
+        return ProductImageResponse.builder()
+                .images(imageMapper.toProductImageDtoList(updatedImages))
+                .build();
+    }
 
     private void resolvePositionConflicts(List<ProductImageChangeRequest.Image> requestImages,
                                           Map<String, List<ProductImageEntity>> imagesByUid,
@@ -241,32 +241,37 @@ public class ProductImageService {
                 .build();
     }
 
-//    @Transactional
-//    public void deleteProductImages(Long productId, List<Integer> positionIds) {
-//
-//        ensureProductExists(productId);
-//
-//        List<ProductImageEntity> entities = imageRepository.findByProductId(productId);
-//
-//        List<ProductImageEntity> toDelete = (positionIds == null || positionIds.isEmpty())
-//                ? entities
-//                : entities.stream()
-//                .filter(e -> positionIds.contains(e.getPosition()))
-//                .toList();
-//
-//        toDelete.forEach(this::safeDeleteFromStorage);
-//
-//        imageRepository.deleteAll(toDelete);
-//    }
+    @Transactional
+    public void deleteProductImages(Long productId, List<Integer> positionIds) {
 
-//    private void safeDeleteFromStorage(ProductImageEntity entity) {
-//        try {
-//            String publicId = entity.getLink();
-//            storageService.deleteByUrl(publicId);
-//        } catch (IOException e) {
-//            throw new RuntimeException(entity.getLink(), e); //TODO need to implement SCRUM-211.
-//            // Need implement global CloudStorageException??
-//            // You can insert the team lead's resolution here
-//        }
-//    }
+        ensureProductExists(productId);
+
+        List<ProductImageEntity> entities = imageRepository.findByProductId(productId);
+
+        List<ProductImageEntity> toDelete = (positionIds == null || positionIds.isEmpty())
+                ? entities
+                : entities.stream()
+                .filter(e -> positionIds.contains(e.getPosition()))
+                .toList();
+
+        toDelete.forEach(this::safeDeleteFromStorage);
+
+        imageRepository.deleteAll(toDelete);
+    }
+
+    private void safeDeleteFromStorage(ProductImageEntity entity) {
+        List<ProductImageVariant> imageVariantList = entity.getVariants();
+        try {
+            for (ProductImageVariant variant : imageVariantList) {
+                String imageUrl = variant.getLink();
+                if (imageUrl != null && !imageUrl.trim().isEmpty()) {
+                    storageService.deleteByUrl(imageUrl);
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e); //TODO need to implement SCRUM-211.
+            // Need implement global CloudStorageException??
+            // You can insert the team lead's resolution here
+        }
+    }
 }

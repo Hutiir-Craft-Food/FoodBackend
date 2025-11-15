@@ -1,7 +1,7 @@
 package com.khutircraftubackend.product.image;
 
-import com.khutircraftubackend.product.image.response.ImageLinks;
 import com.khutircraftubackend.product.image.response.ProductImageDTO;
+import com.khutircraftubackend.product.image.response.PublicProductImageDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -17,4 +17,9 @@ public interface ProductImageMapper {
      ProductImageDTO toProductImageDto(ProductImageEntity entity);
 
      List<ProductImageDTO> toProductImageDtoList(List<ProductImageEntity> entities);
+
+     @Mapping(target = "links", source = "variants")
+     PublicProductImageDTO toPublicProductImageDto(ProductImageEntity entity);
+
+     List<PublicProductImageDTO> toPublicProductImageDtoList(List<ProductImageEntity> entities);
 }
