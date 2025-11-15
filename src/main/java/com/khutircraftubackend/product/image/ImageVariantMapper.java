@@ -2,32 +2,31 @@ package com.khutircraftubackend.product.image;
 
 import com.khutircraftubackend.product.image.response.ImageLinks;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.mapstruct.ReportingPolicy.IGNORE;
 
-@Mapper(componentModel = "spring",  unmappedTargetPolicy = IGNORE)
+@Mapper(componentModel = "spring", unmappedTargetPolicy = IGNORE)
 public interface ImageVariantMapper {
 
     default ImageLinks toImageLinks(List<ProductImageVariant> variants) {
-        if (variants == null) return null;
+        if (variants == null || variants.isEmpty()) return null;
+
+        Map<ImageSize, String> map = variants.stream()
+                .collect(Collectors.toMap(
+                        ProductImageVariant::getTsSize,
+                        ProductImageVariant::getLink,
+                        (a, b) -> a // на случай дублей
+                ));
 
         return ImageLinks.builder()
-                .thumbnail(findLink(variants, ImageSize.THUMBNAIL))
-                .small(findLink(variants, ImageSize.SMALL))
-                .medium(findLink(variants, ImageSize.MEDIUM))
-                .large(findLink(variants, ImageSize.LARGE))
+                .thumbnail(map.get(ImageSize.THUMBNAIL))
+                .small(map.get(ImageSize.SMALL))
+                .medium(map.get(ImageSize.MEDIUM))
+                .large(map.get(ImageSize.LARGE))
                 .build();
-    }
-
-    default String findLink(List<ProductImageVariant> variants, ImageSize size) {
-        if (variants == null) return null;
-        return variants.stream()
-                .filter(v -> v.getTsSize() == size)
-                .map(ProductImageVariant::getLink)
-                .findFirst()
-                .orElse(null);
     }
 }
