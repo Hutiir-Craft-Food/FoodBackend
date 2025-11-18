@@ -29,6 +29,7 @@ spring:
           batch_size: 50
         order_inserts: true
         order_updates: true
+        default_schema: ${SPRING_DATASOURCE_SCHEMA:public}
 
   flyway:
     enabled: true
