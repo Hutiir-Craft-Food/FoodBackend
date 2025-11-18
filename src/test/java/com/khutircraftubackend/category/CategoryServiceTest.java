@@ -428,8 +428,8 @@ class CategoryServiceTest {
 	}
 	
 	@Nested
-	@DisplayName("CategoryRequest normalization & validation")
-	class CategoryRequestValidation {
+	@DisplayName("Category name normalization")
+	class CategoryNameNormalization {
 		
 		@Test
 		@DisplayName("should normalize name: trim, lowercase, collapse spaces")
@@ -439,7 +439,14 @@ class CategoryServiceTest {
 					.description("Опис")
 					.build();
 			
-			assertEquals("тест назва", request.name());
+			when(categoryRepository.existsBySlug(anyString())).thenReturn(false);
+			when(categoryRepository.save(any(CategoryEntity.class)))
+					.thenAnswer(invocation -> invocation.getArgument(0));
+			
+			
+			CategoryEntity category = categoryService.createCategory(request, null);
+			
+			assertEquals("Тест Назва", category.getName());
 		}
 		
 		@Test
@@ -450,7 +457,31 @@ class CategoryServiceTest {
 					.description("Опис")
 					.build();
 			
-			assertEquals("молоко", request.name());
+			when(categoryRepository.existsBySlug(anyString())).thenReturn(false);
+			when(categoryRepository.save(any(CategoryEntity.class)))
+					.thenAnswer(invocation -> invocation.getArgument(0));
+			
+			
+			CategoryEntity category = categoryService.createCategory(request, null);
+			
+			assertEquals("Молоко", category.getName());
+		}
+		
+		@Test
+		@DisplayName("should generate slug correctly from normalized name")
+		void shouldGenerateSlug() {
+			CategoryRequest request = CategoryRequest.builder()
+					.name("  Молоко та Сир  ")
+					.description("Опис")
+					.build();
+			
+			when(categoryRepository.existsBySlug(anyString())).thenReturn(false);
+			when(categoryRepository.save(any(CategoryEntity.class)))
+					.thenAnswer(invocation -> invocation.getArgument(0));
+			
+			CategoryEntity category = categoryService.createCategory(request, null);
+			
+			assertEquals("молоко-та-сир", category.getSlug());
 		}
 	}
 	

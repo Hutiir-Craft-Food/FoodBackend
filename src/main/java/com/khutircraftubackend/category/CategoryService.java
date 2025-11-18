@@ -4,6 +4,7 @@ import com.khutircraftubackend.category.exception.CategoryCreationException;
 import com.khutircraftubackend.category.exception.CategoryDeletionException;
 import com.khutircraftubackend.category.exception.CategoryNotFoundException;
 import com.khutircraftubackend.category.request.CategoryRequest;
+import com.khutircraftubackend.category.response.CategoryNameNormalizer;
 import com.khutircraftubackend.exception.FileReadingException;
 import com.khutircraftubackend.storage.StorageService;
 import com.khutircraftubackend.storage.exception.StorageException;
@@ -51,8 +52,16 @@ public class CategoryService {
     @Transactional
     public CategoryEntity createCategory(CategoryRequest request, MultipartFile iconFile) {
 
+        String displayName = CategoryNameNormalizer.normalizeForDisplayName(request.name());
+        String slug = CategoryNameNormalizer.normalizeForSlug(displayName);
+        
+        if(categoryRepository.existsBySlug(slug)) {
+            throw new CategoryCreationException(String.format(CATEGORY_ALREADY_EXISTS, displayName));
+        }
+        
         CategoryEntity category = categoryMapper.toCategoryEntity(request);
-
+        category.setName(displayName);
+        category.setSlug(slug);
         setParentCategory(category, request.parentCategoryId());
 
         category = saveCategoryWithIntegrityCheck(category);
@@ -166,4 +175,5 @@ public class CategoryService {
         categoryRepository.deleteById(id);
         deleteIcon(category.getIconUrl());
     }
+    
 }

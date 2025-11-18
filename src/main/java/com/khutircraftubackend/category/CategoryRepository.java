@@ -11,4 +11,6 @@ public interface CategoryRepository extends JpaRepository<CategoryEntity, Long> 
 	List<CategoryEntity> findAllByParentCategoryIsNull();
 	
 	List<CategoryEntity> findAllByParentCategory_Id(Long id);
+	
+	boolean existsBySlug(String slug);
 }
