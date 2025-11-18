@@ -4,8 +4,8 @@ import com.khutircraftubackend.category.exception.CategoryCreationException;
 import com.khutircraftubackend.category.exception.CategoryDeletionException;
 import com.khutircraftubackend.category.exception.CategoryNotFoundException;
 import com.khutircraftubackend.category.request.CategoryRequest;
+import com.khutircraftubackend.category.response.CategoryNameNormalizer;
 import com.khutircraftubackend.exception.FileReadingException;
-import com.khutircraftubackend.storage.StorageResponseMessage;
 import com.khutircraftubackend.storage.StorageService;
 import com.khutircraftubackend.storage.exception.StorageException;
 import jakarta.transaction.Transactional;
@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Set;
 
 import static com.khutircraftubackend.category.exception.CategoryExceptionMessages.*;
+import static com.khutircraftubackend.storage.StorageResponseMessage.ERROR_SAVE;
 
 @Service
 @RequiredArgsConstructor
@@ -51,8 +52,16 @@ public class CategoryService {
     @Transactional
     public CategoryEntity createCategory(CategoryRequest request, MultipartFile iconFile) {
 
+        String displayName = CategoryNameNormalizer.normalizeForDisplayName(request.name());
+        String slug = CategoryNameNormalizer.normalizeForSlug(displayName);
+        
+        if(categoryRepository.existsBySlug(slug)) {
+            throw new CategoryCreationException(String.format(CATEGORY_ALREADY_EXISTS, displayName));
+        }
+        
         CategoryEntity category = categoryMapper.toCategoryEntity(request);
-
+        category.setName(displayName);
+        category.setSlug(slug);
         setParentCategory(category, request.parentCategoryId());
 
         category = saveCategoryWithIntegrityCheck(category);
@@ -147,7 +156,7 @@ public class CategoryService {
         try {
             link = storageService.upload(iconFile);
         } catch (FileReadingException ex) {
-            throw new StorageException(StorageResponseMessage.ERROR_SAVE);
+            throw new StorageException(ERROR_SAVE);
         }
 
         return link;
@@ -166,4 +175,5 @@ public class CategoryService {
         categoryRepository.deleteById(id);
         deleteIcon(category.getIconUrl());
     }
+    
 }
