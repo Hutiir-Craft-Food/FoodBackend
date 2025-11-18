@@ -1,6 +1,7 @@
 package com.khutircraftubackend.category;
 
 import com.khutircraftubackend.category.request.CategoryRequest;
+import com.khutircraftubackend.category.response.CategoryNameNormalizer;
 import com.khutircraftubackend.category.response.CategoryResponse;
 import com.khutircraftubackend.product.ProductMapper;
 import com.khutircraftubackend.search.exception.InvalidSearchQueryException;
@@ -10,11 +11,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.khutircraftubackend.search.exception.SearchResponseMessage.EMPTY_KEYWORDS_ERROR;
@@ -27,6 +24,7 @@ public interface CategoryMapper {
 	
 	@Mapping(target = "parentCategory.id", source = "request.parentCategoryId")
 	@Mapping(target = "keywords", source = "request.keywords", qualifiedByName = "keywordsToString", resultType = String.class)
+	@Mapping(target = "slug", source = "request.name", qualifiedByName = "normalizeForSlug")
 	CategoryEntity toCategoryEntity(CategoryRequest request);
 	
 	@Mapping(target = "parentCategoryId", source = "parentCategory.id")
@@ -38,6 +36,7 @@ public interface CategoryMapper {
 	@Mapping(target = "description", source = "request.description")
 	@Mapping(target = "parentCategory.id", source = "request.parentCategoryId")
 	@Mapping(target = "keywords", source = "request.keywords", qualifiedByName = "keywordsToString", resultType = String.class)
+	@Mapping(target = "slug", ignore = true)
 	void updateCategoryEntity(@MappingTarget CategoryEntity category, CategoryRequest request);
 	
 	Collection<CategoryResponse> toCategoryResponse(Collection<CategoryEntity> categoryEntities);
@@ -74,4 +73,11 @@ public interface CategoryMapper {
 
 		return String.join(",", validKeywords);
 	}
+	
+	@Named("normalizeForSlug")
+	default String normalizeForSlug (String name) {
+		
+		return CategoryNameNormalizer.normalizeForSlug(name);
+	}
+	
 }
