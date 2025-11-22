@@ -102,7 +102,7 @@ class CategoryServiceTest {
 		void createCategory_ShouldUploadFile(){
 			
 			CategoryRequest request = CategoryRequest.builder()
-					.name("TestName")
+					.name("тестНазва")
 					.description("TestDescription")
 					.parentCategoryId(null)
 					.build();
@@ -127,7 +127,7 @@ class CategoryServiceTest {
 		void createCategory_ShouldSetParentCategory() {
 			Long parentCategoryId = 1L;
 			CategoryRequest request = CategoryRequest.builder()
-					.name("TestName")
+					.name("тестНазва")
 					.description("TestDescription")
 					.parentCategoryId(parentCategoryId)
 					.build();
@@ -156,7 +156,7 @@ class CategoryServiceTest {
 		@Test
 		void createCategory_ShouldThrowExceptionIfParentNotFound() {
 			CategoryRequest request = CategoryRequest.builder()
-					.name("TestName")
+					.name("тестНазва")
 					.description("TestDescription")
 					.parentCategoryId(1L)
 					.build();

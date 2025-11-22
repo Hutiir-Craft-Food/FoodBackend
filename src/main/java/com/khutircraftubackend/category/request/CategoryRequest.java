@@ -14,7 +14,7 @@ import static com.khutircraftubackend.category.exception.CategoryExceptionMessag
 public record CategoryRequest (
 		@NotBlank(message = CATEGORY_NAME_INVALID)
 		@Size(max = 255, message = CATEGORY_NAME_BIG)
-		@Pattern(regexp = "^([\\p{IsCyrillic}\\d\\s.,:;_\\-+()%&]+|[\\p{IsLatin}\\d\\s.,:;_\\-+()%&]+)$",
+		@Pattern(regexp = "^[а-щА-ЩЬьЮюЯяЇїІіЄєҐґ\\d\\s.,:;_+\\-()%&]+$",
 				 message = CATEGORY_NAME_INVALID_CHARACTERS)
 		String name,
 

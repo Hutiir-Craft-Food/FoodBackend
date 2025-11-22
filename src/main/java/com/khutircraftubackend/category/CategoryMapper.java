@@ -1,7 +1,6 @@
 package com.khutircraftubackend.category;
 
 import com.khutircraftubackend.category.request.CategoryRequest;
-import com.khutircraftubackend.category.response.CategoryNameNormalizer;
 import com.khutircraftubackend.category.response.CategoryResponse;
 import com.khutircraftubackend.product.ProductMapper;
 import com.khutircraftubackend.search.exception.InvalidSearchQueryException;
@@ -24,7 +23,6 @@ public interface CategoryMapper {
 	
 	@Mapping(target = "parentCategory.id", source = "request.parentCategoryId")
 	@Mapping(target = "keywords", source = "request.keywords", qualifiedByName = "keywordsToString", resultType = String.class)
-	@Mapping(target = "slug", source = "request.name", qualifiedByName = "normalizeForSlug")
 	CategoryEntity toCategoryEntity(CategoryRequest request);
 	
 	@Mapping(target = "parentCategoryId", source = "parentCategory.id")
@@ -73,11 +71,5 @@ public interface CategoryMapper {
 
 		return String.join(",", validKeywords);
 	}
-	
-	@Named("normalizeForSlug")
-	default String normalizeForSlug (String name) {
-		
-		return CategoryNameNormalizer.normalizeForSlug(name);
-	}
-	
+
 }

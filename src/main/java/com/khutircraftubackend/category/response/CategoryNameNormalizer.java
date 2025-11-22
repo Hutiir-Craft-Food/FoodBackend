@@ -15,25 +15,31 @@ public class CategoryNameNormalizer {
     
     public static String normalizeForSlug(String input) {
         
-        if (input == null || input.isBlank()) {
+        if (input == null) {
             throw new InvalidCategoryNameException(String.format(CATEGORY_NAME_INVALID, input));
         }
-
-        String cleaned = Jsoup.clean(input, Safelist.none());
-        String nfc = Normalizer.normalize(cleaned, Normalizer.Form.NFC);
         
-        return nfc
+        String cleaned = Jsoup.clean(input, Safelist.none());
+        String nfc = Normalizer.normalize(cleaned, Normalizer.Form.NFC)
                 .strip()
-                .toLowerCase(Locale.ROOT)
+                .toLowerCase(Locale.ROOT);
+        
+        String slug = nfc
                 .replaceAll("[\\s\\u00A0\\u2007\\u202F]+", "-")
-                .replaceAll("[^\\p{L}\\p{Nd}\\-]", "")
+                .replaceAll("[^а-щьюяїієґ\\d\\-]", "")
                 .replaceAll("-{2,}", "-")
                 .replaceAll("(^-)|(-$)", "");
+        
+        if (slug.isBlank()) {
+            throw new InvalidCategoryNameException(String.format(CATEGORY_NAME_INVALID, input));
+        }
+        
+        return slug;
     }
     
     public static String normalizeForDisplayName(String input) {
         
-        if(input == null) return null;
+        if (input == null) return null;
         
         String cleaned = Jsoup.clean(input, Safelist.none());
         String nfc = Normalizer.normalize(cleaned, Normalizer.Form.NFC);
