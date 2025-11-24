@@ -25,7 +25,7 @@ public class ProductImageControllerImp implements ProductImageController {
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public ProductImageResponse getProductImages(@PathVariable Long productId) {
-        return service.getProductImages(productId);
+        return service.getImages(productId);
     }
 
     @PostMapping(
@@ -39,7 +39,7 @@ public class ProductImageControllerImp implements ProductImageController {
             @Valid @RequestPart(value = "json") ProductImageUploadRequest json,
             @RequestPart(value = "files") List<MultipartFile> files
     ) {
-        return service.createImages(productId, json, files);
+        return service.uploadImages(productId, json, files);
     }
 
     @PutMapping(
@@ -50,7 +50,7 @@ public class ProductImageControllerImp implements ProductImageController {
     @ResponseStatus(HttpStatus.OK)
     public ProductImageResponse changesProductImages(@PathVariable Long productId,
                                                      @RequestBody ProductImageChangeRequest request) {
-        return service.updateImages(productId, request);
+        return service.reorderImages(productId, request);
     }
 
     @DeleteMapping()
@@ -58,6 +58,6 @@ public class ProductImageControllerImp implements ProductImageController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteProductImagesByPositions(@PathVariable Long productId,
                                                @RequestParam(value = "position", required = false) List<Integer> positionIds) {
-        service.deleteProductImages(productId, positionIds);
+        service.deleteImages(productId, positionIds);
     }
 }

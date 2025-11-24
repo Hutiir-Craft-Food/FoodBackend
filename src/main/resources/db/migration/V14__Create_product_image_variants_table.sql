@@ -14,5 +14,5 @@ CREATE INDEX idx_product_image_variants_size ON product_image_variants (ts_size)
 
 ALTER TABLE product_image_variants
     ADD CONSTRAINT fk_product_image_variants_image
-        FOREIGN KEY (image_id) REFERENCES product_imagess (id)
+        FOREIGN KEY (image_id) REFERENCES product_images (id)
             ON DELETE CASCADE;

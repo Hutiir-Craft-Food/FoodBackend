@@ -31,6 +31,6 @@ public class ProductImageVariant extends Auditable {
     private String link;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "ts_size", nullable = false)
     private ImageSize tsSize;
 }

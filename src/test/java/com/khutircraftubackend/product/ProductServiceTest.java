@@ -6,6 +6,7 @@ import com.khutircraftubackend.category.CategoryService;
 import com.khutircraftubackend.category.exception.CategoryNotFoundException;
 import com.khutircraftubackend.product.exception.ProductAccessException;
 import com.khutircraftubackend.product.exception.ProductNotFoundException;
+import com.khutircraftubackend.product.image.ProductImageMapper;
 import com.khutircraftubackend.product.request.ProductRequest;
 import com.khutircraftubackend.product.response.ProductResponse;
 import com.khutircraftubackend.seller.SellerEntity;

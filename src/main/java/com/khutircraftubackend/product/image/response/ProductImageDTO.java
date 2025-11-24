@@ -6,7 +6,6 @@ import lombok.*;
 public record ProductImageDTO(
      Long id,
      Long productId,
-     String uid,
      int position,
      ImageLinks links
 ){}
