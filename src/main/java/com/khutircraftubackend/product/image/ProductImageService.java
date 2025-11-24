@@ -39,7 +39,7 @@ public class ProductImageService {
     @Value("${allowed.mime.types}")
     private Set<String> allowedMimeTypes;
 
-    @Transactional(readOnly = true)
+    @Transactional()
     public ProductImageResponse uploadImages(Long productId, ProductImageUploadRequest request,
                                              List<MultipartFile> files) {
 
@@ -132,17 +132,24 @@ public class ProductImageService {
                 .collect(Collectors.toSet());
 
         return request.images().stream()
-                .map(ProductImageUploadRequest.Image::position)
+                .map(ProductImageUploadRequest.ImageUpload::position)
                 .anyMatch(existingPositions::contains);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional()
     public ProductImageResponse reorderImages(Long productId, ProductImageChangeRequest request) {
 
         ensureProductExists(productId);
 
         List<ProductImageEntity> allImages = imageRepository.findByProductId(productId);
         validateImageIds(request, allImages);
+
+        if (allImages.size() != request.images().size()) {
+            throw new ImagesCountMismatchException(String.format(
+                    ProductImageResponseMessages.ERROR_IMAGES_COUNT_MISMATCH,
+                    request.images().size(),
+                    allImages.size()));
+        }
 
         Map<Long, List<ProductImageEntity>> groupById = allImages.stream()
                 .collect(Collectors.groupingBy(ProductImageEntity::getId));
@@ -206,16 +213,16 @@ public class ProductImageService {
     }
 
     private void validateImageIds(ProductImageChangeRequest request,
-                                            List<ProductImageEntity> dbImages) {
+                                  List<ProductImageEntity> dbImages) {
         Set<Long> dbIds = dbImages.stream().map(ProductImageEntity::getId).collect(Collectors.toSet());
         Set<Long> missing = request.images().stream()
                 .map(ProductImageChangeRequest.Image::id)
                 .filter(id -> !dbIds.contains(id))
                 .collect(Collectors.toSet());
 
-
         if (!missing.isEmpty()) {
-            throw new ImageNotFoundException(String.format(ProductImageResponseMessages.ERROR_IMAGE_NOT_FOUND_BY_ID, missing));
+            throw new ImageNotFoundException(
+                    String.format(ProductImageResponseMessages.ERROR_IMAGE_NOT_FOUND_BY_ID, missing));
         }
     }
 
@@ -229,11 +236,11 @@ public class ProductImageService {
                 .build();
     }
 
-    @Transactional(readOnly = true)
+    @Transactional()
     public void deleteImages(Long productId, List<Integer> positions) {
 
         ensureProductExists(productId);
-
+        //TODO Should we see an error when the position for this image does not exist?
         List<ProductImageEntity> all = imageRepository.findByProductId(productId);
 
         List<ProductImageEntity> target = (positions == null || positions.isEmpty())
@@ -251,7 +258,7 @@ public class ProductImageService {
         if (image.getVariants() == null) return;
 
         image.getVariants().forEach(variant ->
-            storageService.deleteByUrl(variant.getLink())
+                storageService.deleteByUrl(variant.getLink())
         );
     }
 }

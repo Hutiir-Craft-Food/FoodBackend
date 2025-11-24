@@ -49,7 +49,7 @@ public class ProductImageControllerImp implements ProductImageController {
     @PreAuthorize("hasRole('ADMIN') or (hasRole('SELLER') and @productService.assertCanModifyProduct(#productId))")
     @ResponseStatus(HttpStatus.OK)
     public ProductImageResponse changesProductImages(@PathVariable Long productId,
-                                                     @RequestBody ProductImageChangeRequest request) {
+                                                     @RequestBody @Valid ProductImageChangeRequest request) {
         return service.reorderImages(productId, request);
     }
 

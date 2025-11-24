@@ -1,6 +1,5 @@
 package com.khutircraftubackend.product.image;
 
-import com.khutircraftubackend.product.image.request.ProductImageChangeRequest;
 import com.khutircraftubackend.product.image.request.ProductImageUploadRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
@@ -42,8 +41,8 @@ class UniqueUidAndPositionInListValidatorTest {
     void shouldFailValidation_whenDuplicatePositionExists() {
         ProductImageUploadRequest request = new ProductImageUploadRequest(
                 List.of(
-                        new ProductImageUploadRequest.Image(0),
-                        new ProductImageUploadRequest.Image( 0)));
+                        new ProductImageUploadRequest.ImageUpload(0),
+                        new ProductImageUploadRequest.ImageUpload( 0)));
 
         Set<ConstraintViolation<ProductImageUploadRequest>> violations = validator.validate(request);
 
@@ -71,8 +70,8 @@ class UniqueUidAndPositionInListValidatorTest {
     void shouldPassValidation_whenPositionsUnique() {
         ProductImageUploadRequest request = new ProductImageUploadRequest(
                 List.of(
-                        new ProductImageUploadRequest.Image(0),
-                        new ProductImageUploadRequest.Image(1)));
+                        new ProductImageUploadRequest.ImageUpload(0),
+                        new ProductImageUploadRequest.ImageUpload(1)));
 
         Set<ConstraintViolation<ProductImageUploadRequest>> violations = validator.validate(request);
 
