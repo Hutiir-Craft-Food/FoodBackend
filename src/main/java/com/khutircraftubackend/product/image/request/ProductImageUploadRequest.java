@@ -8,7 +8,6 @@ import jakarta.validation.constraints.*;
 import java.util.List;
 
 public record ProductImageUploadRequest(
-        @NotNull(message = "Список зображень не може бути null")
         @NotEmpty(message = "Список зображень не може бути порожнім")
         @Valid
         @UniquePositionInList

@@ -16,10 +16,10 @@ public class ProductImageVariant extends Auditable {
     @Id
     @GeneratedValue(
             strategy = GenerationType.SEQUENCE,
-            generator = "product_image_variantss_seq")
+            generator = "product_image_variants_seq")
     @SequenceGenerator(
             name = "product_image_variants_seq",
-            sequenceName = "product_image_variantss_seq",
+            sequenceName = "product_image_variants_seq",
             allocationSize = 20)
     private Long id;
 

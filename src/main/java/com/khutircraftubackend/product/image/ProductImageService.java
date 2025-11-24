@@ -2,15 +2,15 @@ package com.khutircraftubackend.product.image;
 
 import com.khutircraftubackend.product.ProductEntity;
 import com.khutircraftubackend.product.ProductService;
-import com.khutircraftubackend.product.image.exception.*;
+import com.khutircraftubackend.product.image.exception.ImageNotFoundException;
+import com.khutircraftubackend.product.image.exception.ImagesCountMismatchException;
+import com.khutircraftubackend.product.image.exception.PositionAlreadyExistsException;
+import com.khutircraftubackend.product.image.exception.TooManyImagesException;
 import com.khutircraftubackend.product.image.request.ProductImageUploadRequest;
 import com.khutircraftubackend.product.image.request.ProductImageChangeRequest;
 import com.khutircraftubackend.product.image.response.ProductImageResponse;
 import com.khutircraftubackend.product.image.response.ProductImageResponseMessages;
-import com.khutircraftubackend.storage.StorageResponseMessage;
 import com.khutircraftubackend.storage.StorageService;
-import com.khutircraftubackend.exception.FileReadingException;
-import com.khutircraftubackend.storage.exception.StorageException;
 import com.khutircraftubackend.validated.ImageMimeValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -63,20 +63,20 @@ public class ProductImageService {
         }
 
         ProductEntity product = ensureProductExists(productId);
-        List<ProductImageEntity> allImagesEntities = new LinkedList<>();
+        List<ProductImageEntity> allImagesEntities = new ArrayList<>();
 
         for (int i = 0; i < imageFiles.size(); i++) {
             MultipartFile imageFile = imageFiles.get(i);
             ProductImageUploadRequest.Image imageMeta = request.images().get(i);
             int position = imageMeta.position();
-            List<ProductImageEntity> uploadedImageEntities = uploadProductImageFile(product, imageFile, position);
-            allImagesEntities.addAll(uploadedImageEntities);
+            ProductImageEntity uploadedImageEntities = uploadProductImageFile(product, imageFile, position);
+            allImagesEntities.add(uploadedImageEntities);
         }
 
         List<ProductImageEntity> savedImageEntities = imageRepository.saveAll(allImagesEntities);
 
         return ProductImageResponse.builder()
-                .images(imageMapper.toProductImageDto(savedImageEntities))
+                .images(imageMapper.toProductImageDtoList(savedImageEntities))
                 .build();
     }
 
@@ -84,62 +84,37 @@ public class ProductImageService {
         return productService.findProductById(productId);
     }
 
-    private List<ProductImageEntity> uploadProductImageFile(ProductEntity product, MultipartFile imageFile, int position) {
+    private ProductImageEntity uploadProductImageFile(ProductEntity product, MultipartFile imageFile, int position) {
         List<ImageSize> sizes = List.of(ImageSize.THUMBNAIL, ImageSize.SMALL, ImageSize.MEDIUM, ImageSize.LARGE);
 
-        String uid = UUID.randomUUID().toString();
-        List<ProductImageEntity> imageEntities = new LinkedList<>();
+        String originalFileName = imageFile.getOriginalFilename();
+        List<ProductImageVariant> imageVariant = new ArrayList<>();
+        ProductImageEntity imageEntity = ProductImageEntity.builder()
+                .product(product)
+                .position(position)
+                .build();
 
         for (ImageSize imageSize : sizes) {
-            // TODO [SCRUM-210] need to implement for image resizing
-            //  result of resized image will be array of bytes.
-            //  example of java dependency for image resizing: net.coobird
-            String link;
             try {
-                link = storageService.upload(imageFile);
-            }catch (FileReadingException ex){
-                throw new StorageException(StorageResponseMessage.ERROR_SAVE);
+                byte[] bytes = imageFile.getBytes();
+                String link = storageService.upload(bytes, originalFileName);
+                ProductImageVariant imageVariantEntity = ProductImageVariant.builder()
+                        .image(imageEntity)
+                        .tsSize(imageSize)
+                        .link(link)
+                        .build();
+
+                imageVariant.add(imageVariantEntity);
+
+            } catch (IOException e) {
+                // TODO: review exception handling here:
+                throw new RuntimeException(e);
             }
-            ProductImageEntity imageEntity = ProductImageEntity.builder()
-                    .product(product)
-                    .uid(uid)
-                    .position(position)
-                    .tsSize(imageSize)
-                    .link(link)
-                    .build();
-
-            imageEntities.add(imageEntity);
         }
 
-        return imageEntities;
+        imageEntity.setVariants(imageVariant);
+        return imageEntity;
     }
-
-    private boolean hasAnyDuplicatePosition(Long productId, ProductImageUploadRequest request) {
-        Set<Integer> existingPositions = imageRepository.findByProductId(productId).stream()
-                .map(ProductImageEntity::getPosition)
-                .collect(Collectors.toSet());
-
-        return request.images().stream()
-                .map(ProductImageUploadRequest.Image::position)
-                .anyMatch(existingPositions::contains);
-    }
-
-
-    @Transactional
-    public ProductImageResponse updateImages(Long productId, ProductImageChangeRequest request) {
-
-        ensureProductExists(productId);
-
-        List<ProductImageChangeRequest.Image> requestImages = request.images();
-        List<ProductImageEntity> allImages = imageRepository.findByProductId(productId);
-        int totalCountImages = requestImages.size() * ImageSize.values().length;
-
-        if (allImages.size() != totalCountImages) {
-            throw new ImagesCountMismatchException(
-                    String.format(ProductImageResponseMessages.ERROR_IMAGES_COUNT_MISMATCH,
-                            totalCountImages / ImageSize.values().length,
-                            allImages.size() / ImageSize.values().length));
-        }
 
     private boolean hasAnyDuplicatePosition(Long productId, ProductImageUploadRequest request) {
         Set<Integer> existingPositions = imageRepository.findByProductId(productId).stream()
@@ -170,17 +145,17 @@ public class ProductImageService {
 
         validateAllImagesExistByUid(requestImages, allImages);
 
-        Map<String, List<ProductImageEntity>> imagesByUid = allImages.stream()
-                .collect(Collectors.groupingBy(ProductImageEntity::getUid));
+        Map<Long, List<ProductImageEntity>> imagesById = allImages.stream()
+                .collect(Collectors.groupingBy(ProductImageEntity::getId));
 
-        Map<Integer, String> currentPositions = new HashMap<>();
+        Map<Integer, Long> currentPositions = new HashMap<>();
         for (ProductImageEntity image : allImages) {
-            currentPositions.put(image.getPosition(), image.getUid());
+            currentPositions.put(image.getPosition(), image.getId());
         }
 
         Set<ProductImageEntity> toSave = new HashSet<>();
-        resolvePositionConflicts(requestImages, imagesByUid, currentPositions, toSave);
-        assignNewPositions(requestImages, imagesByUid, currentPositions, toSave);
+        resolvePositionConflicts(requestImages, imagesById, currentPositions, toSave);
+        assignNewPositions(requestImages, imagesById, currentPositions, toSave);
         List<ProductImageEntity> updatedImages = imageRepository.saveAll(toSave);
 
         return ProductImageResponse.builder()
@@ -189,19 +164,19 @@ public class ProductImageService {
     }
 
     private void resolvePositionConflicts(List<ProductImageChangeRequest.Image> requestImages,
-                                          Map<String, List<ProductImageEntity>> imagesByUid,
-                                          Map<Integer, String> currentPositions,
+                                          Map<Long, List<ProductImageEntity>> imagesById,
+                                          Map<Integer, Long> currentPositions,
                                           Set<ProductImageEntity> toSave) {
         for (ProductImageChangeRequest.Image requestImage : requestImages) {
-            String uid = requestImage.uid();
+            Long id = requestImage.id();
             int newPosition = requestImage.position();
 
-            List<ProductImageEntity> group = imagesByUid.get(uid);
+            List<ProductImageEntity> group = imagesById.get(id);
             if (group == null) continue;
 
-            String occupyingUid = currentPositions.get(newPosition);
-            if (occupyingUid != null && !occupyingUid.equals(uid)) {
-                List<ProductImageEntity> conflictGroup = imagesByUid.get(occupyingUid);
+            Long occupyingUid = currentPositions.get(newPosition);
+            if (occupyingUid != null && !occupyingUid.equals(id)) {
+                List<ProductImageEntity> conflictGroup = imagesById.get(occupyingUid);
                 for (ProductImageEntity conflictImage : conflictGroup) {
                     int oldPosition = conflictImage.getPosition();
                     int shiftedPosition = oldPosition + TEMP_OFFSET;
@@ -210,21 +185,21 @@ public class ProductImageService {
                     toSave.add(conflictImage);
 
                     currentPositions.remove(oldPosition);
-                    currentPositions.put(shiftedPosition, conflictImage.getUid());
+                    currentPositions.put(shiftedPosition, conflictImage.getId());
                 }
             }
         }
     }
 
     private void assignNewPositions(List<ProductImageChangeRequest.Image> requestImages,
-                                    Map<String, List<ProductImageEntity>> imagesByUid,
-                                    Map<Integer, String> currentPositions,
+                                    Map<Long, List<ProductImageEntity>> imagesByUid,
+                                    Map<Integer, Long> currentPositions,
                                     Set<ProductImageEntity> toSave) {
         for (ProductImageChangeRequest.Image requestImage : requestImages) {
-            String uid = requestImage.uid();
+            Long id = requestImage.id();
             int newPosition = requestImage.position();
 
-            List<ProductImageEntity> group = imagesByUid.get(uid);
+            List<ProductImageEntity> group = imagesByUid.get(id);
             if (group == null) continue;
 
             for (ProductImageEntity image : group) {
@@ -232,23 +207,23 @@ public class ProductImageService {
                 toSave.add(image);
             }
 
-            currentPositions.put(newPosition, uid);
+            currentPositions.put(newPosition, id);
         }
     }
 
     private void validateAllImagesExistByUid(List<ProductImageChangeRequest.Image> imagesFromRequest,
                                              List<ProductImageEntity> allImages) {
-        Set<String> dbUid = allImages.stream()
-                .map(ProductImageEntity::getUid)
+        Set<Long> dbUid = allImages.stream()
+                .map(ProductImageEntity::getId)
                 .collect(Collectors.toSet());
 
-        Set<String> missingUid = imagesFromRequest.stream()
-                .map(ProductImageChangeRequest.Image::uid)
+        Set<Long> missingUid = imagesFromRequest.stream()
+                .map(ProductImageChangeRequest.Image::id)
                 .filter(uid -> !dbUid.contains(uid))
                 .collect(Collectors.toSet());
 
         if (!missingUid.isEmpty()) {
-            throw new ImageNotFoundException(String.format(ProductImageResponseMessages.ERROR_IMAGE_NOT_FOUND_BY_UID, missingUid));
+            throw new ImageNotFoundException(String.format(ProductImageResponseMessages.ERROR_IMAGE_NOT_FOUND_BY_ID, missingUid));
         }
     }
 

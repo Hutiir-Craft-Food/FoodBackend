@@ -13,28 +13,25 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Table(name = "product_imagess",
+@Table(name = "product_images",
         indexes = {
         @Index(name = "idx_product_images_product_id", columnList = "product_id"),
-        @Index(name = "idx_product_images_uid", columnList = "product_id, uid"),
         @Index(name = "idx_product_images_position", columnList = "product_id, position"),
 })
 public class ProductImageEntity extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE,
-    generator = "product_imagess_seq")
+    generator = "product_images_seq")
     @SequenceGenerator( name = "product_images_seq",
-    sequenceName = "product_imagess_seq",
-    allocationSize = 4)
+    sequenceName = "product_images_seq",
+    allocationSize = 5)
     private Long id;
 
     @ManyToOne
     @JoinColumn(name = "product_id")
     private ProductEntity product;
 
-    @Column(name = "uid", nullable = false)
-    private String uid;
 
     @Column(name = "position", nullable = false)
     private int position;
