@@ -30,7 +30,8 @@ public class ProductImageService {
     private final ProductImageMapper imageMapper;
     private final StorageService storageService;
     private final ImageMimeValidator mimeValidator;
-    private static final Long MAX_UPLOAD_FILE_COUNT = 5L;
+    private final ProductImageValidator validator;
+
     private static final int TEMP_POSITION_OFFSET = 100;
 
     @Value("${allowed.mime.types}")
@@ -39,35 +40,17 @@ public class ProductImageService {
     @Transactional()
     public ProductImageResponse uploadImages(Long productId, ProductImageUploadRequest request,
                                              List<MultipartFile> files) {
-
-        validateUploadRequest(productId, request, files);
         ProductEntity product = ensureProductExists(productId);
+        List<ProductImageEntity> existingImages = imageRepository.findByProductId(productId);
+        validator.validateUploadRequest(existingImages, request, files);
+        mimeValidator.validateMimeTypes(files, allowedMimeTypes);
+
         List<ProductImageEntity> createdImages = createImagesInternal(product, request, files);
         List<ProductImageEntity> saved = imageRepository.saveAll(createdImages);
 
         return ProductImageResponse.builder()
                 .images(imageMapper.toProductImageDtoList(saved))
                 .build();
-    }
-
-    private void validateUploadRequest(Long productId, ProductImageUploadRequest request, List<MultipartFile> files) {
-        if (files.size() > MAX_UPLOAD_FILE_COUNT) {
-            throw new TooManyImagesException(String.format(
-                    ProductImageResponseMessages.ERROR_TOO_MANY_IMAGES, MAX_UPLOAD_FILE_COUNT));
-        }
-
-        if (files.size() != request.images().size()) {
-            throw new ImagesCountMismatchException(String.format(
-                    ProductImageResponseMessages.ERROR_IMAGES_COUNT_MISMATCH,
-                    files.size(),
-                    request.images().size()));
-        }
-
-        mimeValidator.validateMimeTypes(files, allowedMimeTypes);
-
-        if (hasAnyDuplicatePosition(productId, request)) {
-            throw new PositionAlreadyExistsException(ProductImageResponseMessages.ERROR_POSITION_ALREADY_EXISTS);
-        }
     }
 
     private ProductEntity ensureProductExists(Long productId) {
@@ -123,23 +106,12 @@ public class ProductImageService {
         return image;
     }
 
-    private boolean hasAnyDuplicatePosition(Long productId, ProductImageUploadRequest request) {
-        Set<Integer> existingPositions = imageRepository.findByProductId(productId).stream()
-                .map(ProductImageEntity::getPosition)
-                .collect(Collectors.toSet());
-
-        return request.images().stream()
-                .map(ProductImageUploadRequest.ImageUpload::position)
-                .anyMatch(existingPositions::contains);
-    }
-
     @Transactional()
     public ProductImageResponse reorderImages(Long productId, ProductImageChangeRequest request) {
 
         ensureProductExists(productId);
-
         List<ProductImageEntity> allImages = imageRepository.findByProductId(productId);
-        validateImageIds(request, allImages);
+        validator.validateImageIds(request, allImages);
 
         if (allImages.size() != request.images().size()) {
             throw new ImagesCountMismatchException(String.format(
@@ -209,20 +181,6 @@ public class ProductImageService {
         }
     }
 
-    private void validateImageIds(ProductImageChangeRequest request,
-                                  List<ProductImageEntity> dbImages) {
-        Set<Long> dbIds = dbImages.stream().map(ProductImageEntity::getId).collect(Collectors.toSet());
-        Set<Long> missing = request.images().stream()
-                .map(ProductImageChangeRequest.Image::id)
-                .filter(id -> !dbIds.contains(id))
-                .collect(Collectors.toSet());
-
-        if (!missing.isEmpty()) {
-            throw new ImageNotFoundException(
-                    String.format(ProductImageResponseMessages.ERROR_IMAGE_NOT_FOUND_BY_ID, missing));
-        }
-    }
-
     @Transactional(readOnly = true)
     public ProductImageResponse getImages(Long productId) {
         ensureProductExists(productId);
@@ -239,8 +197,8 @@ public class ProductImageService {
         ensureProductExists(productId);
 
         List<ProductImageEntity> all = imageRepository.findByProductId(productId);
-        validatePositions(positions, all);
-        List<ProductImageEntity> target = (positions.isEmpty())
+        validator.validateDeletePositions(positions, all);
+        List<ProductImageEntity> target = (positions == null || positions.isEmpty())
                 ? all
                 : all.stream()
                 .filter(e -> positions.contains(e.getPosition()))
@@ -257,31 +215,5 @@ public class ProductImageService {
         image.getVariants().forEach(variant ->
                 storageService.deleteByUrl(variant.getLink())
         );
-    }
-
-    public void validatePositions(List<Integer> positions, List<ProductImageEntity> images) {
-
-        Set<Integer> validPositions = Set.of(0, 1, 2, 3, 4);
-        Set<Integer> invalid = positions.stream()
-                .filter(p -> !validPositions.contains(p))
-                .collect(Collectors.toSet());
-
-        if (!invalid.isEmpty()) {
-            throw new ImageValidationException(
-                    String.format(ProductImageResponseMessages.ERROR_INVALID_POSITION, invalid));
-        }
-
-        Set<Integer> existingPositions = images.stream()
-                .map(ProductImageEntity::getPosition)
-                .collect(Collectors.toSet());
-
-        Set<Integer> notFound = positions.stream()
-                .filter(p -> !existingPositions.contains(p))
-                .collect(Collectors.toSet());
-
-        if (!notFound.isEmpty()) {
-            throw new ImageNotFoundException(
-                    String.format(ProductImageResponseMessages.ERROR_NOT_FOUND_POSITION, notFound));
-        }
     }
 }
