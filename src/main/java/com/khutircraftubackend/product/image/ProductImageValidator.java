@@ -70,6 +70,18 @@ public class ProductImageValidator {
             throw new ImageNotFoundException(
                     String.format(ProductImageResponseMessages.ERROR_IMAGE_NOT_FOUND_BY_ID, missing));
         }
+
+        validateImagesCount(request, dbImages);
+    }
+
+    private void validateImagesCount(ProductImageChangeRequest request,
+                      List<ProductImageEntity> allImages) {
+        if (allImages.size() != request.images().size()) {
+            throw new ImagesCountMismatchException(String.format(
+                    ProductImageResponseMessages.ERROR_IMAGES_COUNT_MISMATCH,
+                    request.images().size(),
+                    allImages.size()));
+        }
     }
 
     public void validateUploadRequest(List<ProductImageEntity> existingImages,

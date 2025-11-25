@@ -3,11 +3,9 @@ package com.khutircraftubackend.product.image;
 import com.khutircraftubackend.exception.FileReadingException;
 import com.khutircraftubackend.product.ProductEntity;
 import com.khutircraftubackend.product.ProductService;
-import com.khutircraftubackend.product.image.exception.*;
 import com.khutircraftubackend.product.image.request.ProductImageUploadRequest;
 import com.khutircraftubackend.product.image.request.ProductImageChangeRequest;
 import com.khutircraftubackend.product.image.response.ProductImageResponse;
-import com.khutircraftubackend.product.image.response.ProductImageResponseMessages;
 import com.khutircraftubackend.storage.StorageResponseMessage;
 import com.khutircraftubackend.storage.StorageService;
 import com.khutircraftubackend.storage.exception.StorageException;
@@ -112,13 +110,6 @@ public class ProductImageService {
         ensureProductExists(productId);
         List<ProductImageEntity> allImages = imageRepository.findByProductId(productId);
         validator.validateImageIds(request, allImages);
-
-        if (allImages.size() != request.images().size()) {
-            throw new ImagesCountMismatchException(String.format(
-                    ProductImageResponseMessages.ERROR_IMAGES_COUNT_MISMATCH,
-                    request.images().size(),
-                    allImages.size()));
-        }
 
         Map<Long, List<ProductImageEntity>> groupById = allImages.stream()
                 .collect(Collectors.groupingBy(ProductImageEntity::getId));
