@@ -13,5 +13,6 @@ public final class ProductImageResponseMessages {
             "За цим ID %s, зображення не знайдено.";
     public static final String ERROR_IMAGES_COUNT_MISMATCH =
             "Кількість переданих зображень %d не відповідає очікуваним %d.";
-    public static final String ERROR_LIST_EMPTY = "Список зображень не може бути порожнім.";
+    public static final String ERROR_INVALID_POSITION = "Неприпустимі позиції зображень: %s. Допустимий діапазон: 0–4.";
+    public static final String ERROR_NOT_FOUND_POSITION = "Продукт не має зображень за позиціями: %s.";
 }

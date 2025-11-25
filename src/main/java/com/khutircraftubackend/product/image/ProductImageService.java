@@ -3,10 +3,7 @@ package com.khutircraftubackend.product.image;
 import com.khutircraftubackend.exception.FileReadingException;
 import com.khutircraftubackend.product.ProductEntity;
 import com.khutircraftubackend.product.ProductService;
-import com.khutircraftubackend.product.image.exception.ImageNotFoundException;
-import com.khutircraftubackend.product.image.exception.ImagesCountMismatchException;
-import com.khutircraftubackend.product.image.exception.PositionAlreadyExistsException;
-import com.khutircraftubackend.product.image.exception.TooManyImagesException;
+import com.khutircraftubackend.product.image.exception.*;
 import com.khutircraftubackend.product.image.request.ProductImageUploadRequest;
 import com.khutircraftubackend.product.image.request.ProductImageChangeRequest;
 import com.khutircraftubackend.product.image.response.ProductImageResponse;
@@ -240,10 +237,10 @@ public class ProductImageService {
     public void deleteImages(Long productId, List<Integer> positions) {
 
         ensureProductExists(productId);
-        //TODO Should we see an error when the position for this image does not exist?
-        List<ProductImageEntity> all = imageRepository.findByProductId(productId);
 
-        List<ProductImageEntity> target = (positions == null || positions.isEmpty())
+        List<ProductImageEntity> all = imageRepository.findByProductId(productId);
+        validatePositions(positions, all);
+        List<ProductImageEntity> target = (positions.isEmpty())
                 ? all
                 : all.stream()
                 .filter(e -> positions.contains(e.getPosition()))
@@ -260,5 +257,31 @@ public class ProductImageService {
         image.getVariants().forEach(variant ->
                 storageService.deleteByUrl(variant.getLink())
         );
+    }
+
+    public void validatePositions(List<Integer> positions, List<ProductImageEntity> images) {
+
+        Set<Integer> validPositions = Set.of(0, 1, 2, 3, 4);
+        Set<Integer> invalid = positions.stream()
+                .filter(p -> !validPositions.contains(p))
+                .collect(Collectors.toSet());
+
+        if (!invalid.isEmpty()) {
+            throw new ImageValidationException(
+                    String.format(ProductImageResponseMessages.ERROR_INVALID_POSITION, invalid));
+        }
+
+        Set<Integer> existingPositions = images.stream()
+                .map(ProductImageEntity::getPosition)
+                .collect(Collectors.toSet());
+
+        Set<Integer> notFound = positions.stream()
+                .filter(p -> !existingPositions.contains(p))
+                .collect(Collectors.toSet());
+
+        if (!notFound.isEmpty()) {
+            throw new ImageNotFoundException(
+                    String.format(ProductImageResponseMessages.ERROR_NOT_FOUND_POSITION, notFound));
+        }
     }
 }
