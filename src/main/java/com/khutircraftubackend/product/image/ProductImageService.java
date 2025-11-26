@@ -45,9 +45,10 @@ public class ProductImageService {
 
         List<ProductImageEntity> createdImages = createImagesInternal(product, request, files);
         List<ProductImageEntity> saved = imageRepository.saveAll(createdImages);
+        existingImages.addAll(saved);
 
         return ProductImageResponse.builder()
-                .images(imageMapper.toProductImageDtoList(saved))
+                .images(imageMapper.toProductImageDtoList(existingImages))
                 .build();
     }
 

@@ -20,23 +20,6 @@ class UniqueUidAndPositionInListValidatorTest {
 
     private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
-//    @Test
-//    void shouldFailValidation_whenDuplicateUidExists() {
-//        ProductImageChangeRequest request = new ProductImageChangeRequest(
-//                List.of(
-//                        new ProductImageChangeRequest.Image(1l, 0),
-//                        new ProductImageChangeRequest.Image(1l, 1)));
-//
-//        Set<ConstraintViolation<ProductImageChangeRequest>> violations = validator.validate(request);
-//
-//        assertFalse(violations.isEmpty());
-//
-//        boolean containsUidError = violations.stream()
-//                .anyMatch(v -> v.getMessage().contains("ID мають бути унікальними."));
-//
-//        assertTrue(containsUidError);
-//    }
-
     @Test
     void shouldFailValidation_whenDuplicatePositionExists() {
         ProductImageUploadRequest request = new ProductImageUploadRequest(
@@ -53,18 +36,6 @@ class UniqueUidAndPositionInListValidatorTest {
 
         assertTrue(containsPositionError);
     }
-
-//    @Test
-//    void shouldPassValidation_whenUidsAndPositionsUnique() {
-//        ProductImageChangeRequest request = new ProductImageChangeRequest(
-//                List.of(
-//                        new ProductImageChangeRequest.Image(1l, 0),
-//                        new ProductImageChangeRequest.Image(2l, 1)));
-//
-//        Set<ConstraintViolation<ProductImageChangeRequest>> violations = validator.validate(request);
-//
-//        assertTrue(violations.isEmpty());
-//    }
 
     @Test
     void shouldPassValidation_whenPositionsUnique() {
