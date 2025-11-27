@@ -3,8 +3,8 @@ package com.khutircraftubackend.category;
 import com.khutircraftubackend.category.exception.CategoryDeletionException;
 import com.khutircraftubackend.category.exception.CategoryNotFoundException;
 import com.khutircraftubackend.category.request.CategoryRequest;
-import com.khutircraftubackend.search.exception.SearchResponseMessage;
 import com.khutircraftubackend.search.exception.InvalidSearchQueryException;
+import com.khutircraftubackend.search.exception.SearchResponseMessage;
 import com.khutircraftubackend.storage.StorageService;
 import com.khutircraftubackend.storage.exception.InvalidFileFormatException;
 import com.khutircraftubackend.storage.exception.StorageException;
@@ -20,11 +20,7 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
@@ -106,7 +102,7 @@ class CategoryServiceTest {
 		void createCategory_ShouldUploadFile(){
 			
 			CategoryRequest request = CategoryRequest.builder()
-					.name("TestName")
+					.name("тестНазва")
 					.description("TestDescription")
 					.parentCategoryId(null)
 					.build();
@@ -131,7 +127,7 @@ class CategoryServiceTest {
 		void createCategory_ShouldSetParentCategory() {
 			Long parentCategoryId = 1L;
 			CategoryRequest request = CategoryRequest.builder()
-					.name("TestName")
+					.name("тестНазва")
 					.description("TestDescription")
 					.parentCategoryId(parentCategoryId)
 					.build();
@@ -160,7 +156,7 @@ class CategoryServiceTest {
 		@Test
 		void createCategory_ShouldThrowExceptionIfParentNotFound() {
 			CategoryRequest request = CategoryRequest.builder()
-					.name("TestName")
+					.name("тестНазва")
 					.description("TestDescription")
 					.parentCategoryId(1L)
 					.build();
@@ -430,4 +426,63 @@ class CategoryServiceTest {
 					.hasMessage(SearchResponseMessage.EMPTY_KEYWORDS_ERROR);
 		}
 	}
+	
+	@Nested
+	@DisplayName("Category name normalization")
+	class CategoryNameNormalization {
+		
+		@Test
+		@DisplayName("should normalize name: trim, lowercase, collapse spaces")
+		void shouldNormalizeNameProperly() {
+			CategoryRequest request = CategoryRequest.builder()
+					.name("  Тест   Назва  ")
+					.description("Опис")
+					.build();
+			
+			when(categoryRepository.existsBySlug(anyString())).thenReturn(false);
+			when(categoryRepository.save(any(CategoryEntity.class)))
+					.thenAnswer(invocation -> invocation.getArgument(0));
+			
+			
+			CategoryEntity category = categoryService.createCategory(request, null);
+			
+			assertEquals("Тест Назва", category.getName());
+		}
+		
+		@Test
+		@DisplayName("should remove HTML and decode entities in name")
+		void shouldCleanHtmlTagsAndEntities() {
+			CategoryRequest request = CategoryRequest.builder()
+					.name(" <b>Молоко</b> ")
+					.description("Опис")
+					.build();
+			
+			when(categoryRepository.existsBySlug(anyString())).thenReturn(false);
+			when(categoryRepository.save(any(CategoryEntity.class)))
+					.thenAnswer(invocation -> invocation.getArgument(0));
+			
+			
+			CategoryEntity category = categoryService.createCategory(request, null);
+			
+			assertEquals("Молоко", category.getName());
+		}
+		
+		@Test
+		@DisplayName("should generate slug correctly from normalized name")
+		void shouldGenerateSlug() {
+			CategoryRequest request = CategoryRequest.builder()
+					.name("  Молоко та Сир  ")
+					.description("Опис")
+					.build();
+			
+			when(categoryRepository.existsBySlug(anyString())).thenReturn(false);
+			when(categoryRepository.save(any(CategoryEntity.class)))
+					.thenAnswer(invocation -> invocation.getArgument(0));
+			
+			CategoryEntity category = categoryService.createCategory(request, null);
+			
+			assertEquals("молоко-та-сир", category.getSlug());
+		}
+	}
+	
 }
