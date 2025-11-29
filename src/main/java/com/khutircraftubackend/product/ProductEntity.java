@@ -2,6 +2,7 @@ package com.khutircraftubackend.product;
 
 import com.khutircraftubackend.audit.Auditable;
 import com.khutircraftubackend.category.CategoryEntity;
+import com.khutircraftubackend.product.image.ProductImageEntity;
 import com.khutircraftubackend.product.price.entity.ProductPriceEntity;
 import com.khutircraftubackend.seller.SellerEntity;
 import jakarta.persistence.*;
@@ -61,5 +62,9 @@ public class ProductEntity extends Auditable {
     @BatchSize(size = 50)
     @Builder.Default
     private List<ProductPriceEntity> prices = new ArrayList<>();
-    
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 20)
+    @Builder.Default
+    private List<ProductImageEntity> images = new ArrayList<>();
 }

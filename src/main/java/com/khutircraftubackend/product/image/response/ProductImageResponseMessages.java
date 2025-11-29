@@ -9,9 +9,10 @@ public final class ProductImageResponseMessages {
             "Завантажено забагато зображень. Максимальна кількість - %d файлів.";
     public static final String ERROR_POSITION_ALREADY_EXISTS =
             "Дані позиції вже містять зображення.";
-    public static final String ERROR_IMAGE_NOT_FOUND_BY_UID =
-            "За цим UID %s, зображення не знайдено.";
+    public static final String ERROR_IMAGE_NOT_FOUND_BY_ID =
+            "За цим ID %s, зображення не знайдено.";
     public static final String ERROR_IMAGES_COUNT_MISMATCH =
             "Кількість переданих зображень %d не відповідає очікуваним %d.";
-    public static final String ERROR_LIST_EMPTY = "Список зображень не може бути порожнім.";
+    public static final String ERROR_INVALID_POSITION = "Неприпустимі позиції зображень: %s. Допустимий діапазон: 0–4.";
+    public static final String ERROR_NOT_FOUND_POSITION = "Продукт не має зображень за позиціями: %s.";
 }
