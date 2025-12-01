@@ -1,4 +1,4 @@
-package com.khutircraftubackend.category.response;
+package com.khutircraftubackend.category.util;
 
 import com.khutircraftubackend.category.exception.InvalidCategoryNameException;
 import lombok.experimental.UtilityClass;
