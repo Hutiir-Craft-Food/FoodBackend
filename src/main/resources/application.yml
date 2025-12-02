@@ -32,7 +32,7 @@ spring:
 
   flyway:
     enabled: true
-    locations: classpath:db/migration,classpath:db/seed
+    locations: classpath:db/migration, classpath:db/seed/common
     create-schemas: true
     schemas: ${SPRING_DATASOURCE_SCHEMA:public}
     placeholders:

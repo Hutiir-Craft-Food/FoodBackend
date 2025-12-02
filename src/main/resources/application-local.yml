@@ -15,7 +15,7 @@ spring:
         format_sql: true
 
   flyway:
-    locations: classpath:db/migration,classpath:db/seed,classpath:db/seed/local
+    locations: classpath:db/migration, classpath:db/seed/common, classpath:db/seed/local
     placeholders:
       email: ${ADMIN_EMAIL:admin@example.com}
       password: ${ADMIN_PASSWORD:admin}
