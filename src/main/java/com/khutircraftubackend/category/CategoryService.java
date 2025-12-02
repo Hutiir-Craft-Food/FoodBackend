@@ -4,7 +4,7 @@ import com.khutircraftubackend.category.exception.CategoryCreationException;
 import com.khutircraftubackend.category.exception.CategoryDeletionException;
 import com.khutircraftubackend.category.exception.CategoryNotFoundException;
 import com.khutircraftubackend.category.request.CategoryRequest;
-import com.khutircraftubackend.category.response.CategoryNameNormalizer;
+import com.khutircraftubackend.category.util.CategoryNameNormalizer;
 import com.khutircraftubackend.exception.FileReadingException;
 import com.khutircraftubackend.storage.StorageService;
 import com.khutircraftubackend.storage.exception.StorageException;
