@@ -1,6 +1,7 @@
 package com.khutircraftubackend.category;
 
 import com.khutircraftubackend.category.request.CategoryRequest;
+import com.khutircraftubackend.category.response.CategoryNameNormalizer;
 import com.khutircraftubackend.category.response.CategoryResponse;
 import com.khutircraftubackend.product.ProductMapper;
 import com.khutircraftubackend.search.exception.InvalidSearchQueryException;
@@ -41,7 +42,9 @@ public interface CategoryMapper {
 
 	@Named("parseKeywords")
 	default Set<String> parseKeywords (String keywords) {
+		
 		if (StringUtils.isEmpty(keywords)) {
+			
 			return Collections.emptySet();
 		}
 		return new LinkedHashSet<>(Arrays.stream(keywords.split(",")).toList());
@@ -49,16 +52,18 @@ public interface CategoryMapper {
 
 	@Named("keywordsToString")
 	default String keywordsToString (Set<String> keywords) {
+		
 		if (keywords == null || keywords.isEmpty()) {
+			
 			return null;
 		}
 
 		Set<String> validKeywords = keywords.stream()
 				.map(s -> s.trim()
 						
-						.replaceAll("[^[\\p{L}\\d\\-]]+", "")
+						.replaceAll("[^\\p{L}\\d\\-]+", "")
 						
-						.replaceAll("[\\u0027\\u02B9\\u02BB\\u02BC\\u02BE\\u02C8\\u02EE\\u0301\\u0313\\u0315\\u055A\\u05F3\\u07F4\\u07F5\\u1FBF\\u2018\\u2019\\u2032\\uA78C\\uFF07]", "")
+						.replaceAll("[" +CategoryNameNormalizer.APOSTROPHE_CHARS + "]", "")
 						
 						.toLowerCase()
 						
