@@ -1,5 +1,6 @@
 package com.khutircraftubackend.category.request;
 
+import com.khutircraftubackend.category.response.CategoryNameNormalizer;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -14,7 +15,7 @@ import static com.khutircraftubackend.category.exception.CategoryExceptionMessag
 public record CategoryRequest (
 		@NotBlank(message = CATEGORY_NAME_INVALID)
 		@Size(max = 255, message = CATEGORY_NAME_BIG)
-		@Pattern(regexp = "^[а-щА-ЩЬьЮюЯяЇїІіЄєҐґ\\d\\s.,:;_+\\-()%&]+$",
+		@Pattern(regexp = CategoryNameNormalizer.CATEGORY_NAME_PATTERN,
 				 message = CATEGORY_NAME_INVALID_CHARACTERS)
 		String name,
 
