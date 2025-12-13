@@ -4,9 +4,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(HttpStatus.CONFLICT)
-public class ImageConflictException extends RuntimeException{
+public class DuplicateImagePositionException extends RuntimeException{
 
-    public ImageConflictException(String message){
+    public DuplicateImagePositionException(String message){
         super(message);
     }
 }

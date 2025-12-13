@@ -67,8 +67,8 @@ public interface ProductImageController {
                       linked to a single `product_images` entry.
 
                     **Position System**
-                    - 0 → Primary image  
-                    - 1–4 → Secondary images  
+                    - 1 → Primary image  
+                    - 2–5 → Secondary images  
                     - Positions must be unique  
 
                     If positions are not provided, they are auto-assigned sequentially.
@@ -109,7 +109,7 @@ public interface ProductImageController {
                     **Key Properties:**
                     - Only existing images can be reordered  
                     - Positions must be unique inside request  
-                    - Allowed position range: **0–4**
+                    - Allowed position range: **1–5**
                     - All variants belonging to an image inherit the new position
 
                     **Conflict Handling:**

@@ -11,12 +11,12 @@ public record ProductImageUploadRequest(
         @NotEmpty(message = "Список зображень не може бути порожнім")
         @Valid
         @UniquePositionInList
-        List<ImageUpload> images
+        List<UploadImageInfo> images
 ) {
 
-    public record ImageUpload(
-            @PositiveOrZero(message = "Номер позиції має бути додатнім або нулем")
-            @Max(value = 4, message = "Максимально допустима позиція зображення - 4")
+    public record UploadImageInfo(
+            @Positive(message = "Номер позиції має бути додатнім.")
+            @Max(value = 5, message = "Максимально допустима позиція зображення - 5")
             int position
     ) implements HasPosition {
     }

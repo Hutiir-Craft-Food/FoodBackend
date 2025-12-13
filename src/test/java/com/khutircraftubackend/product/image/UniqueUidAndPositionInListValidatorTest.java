@@ -24,8 +24,8 @@ class UniqueUidAndPositionInListValidatorTest {
     void shouldFailValidation_whenDuplicatePositionExists() {
         ProductImageUploadRequest request = new ProductImageUploadRequest(
                 List.of(
-                        new ProductImageUploadRequest.ImageUpload(0),
-                        new ProductImageUploadRequest.ImageUpload( 0)));
+                        new ProductImageUploadRequest.UploadImageInfo(0),
+                        new ProductImageUploadRequest.UploadImageInfo( 0)));
 
         Set<ConstraintViolation<ProductImageUploadRequest>> violations = validator.validate(request);
 
@@ -41,8 +41,8 @@ class UniqueUidAndPositionInListValidatorTest {
     void shouldPassValidation_whenPositionsUnique() {
         ProductImageUploadRequest request = new ProductImageUploadRequest(
                 List.of(
-                        new ProductImageUploadRequest.ImageUpload(0),
-                        new ProductImageUploadRequest.ImageUpload(1)));
+                        new ProductImageUploadRequest.UploadImageInfo(0),
+                        new ProductImageUploadRequest.UploadImageInfo(1)));
 
         Set<ConstraintViolation<ProductImageUploadRequest>> violations = validator.validate(request);
 

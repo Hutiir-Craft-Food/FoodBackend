@@ -11,14 +11,14 @@ public record ProductImageChangeRequest(
         @NotEmpty(message = "Список зображень не може бути порожнім")
         @Valid
         @UniquePositionInList
-        List<Image> images
+        List<ChangeImageInfo> images
 ) {
-    public record Image(
+    public record ChangeImageInfo(
             @NotNull(message = "ID файлу не може бути порожнім")
             Long id,
 
-            @PositiveOrZero(message = "Номер позиції має бути додатнім або нулем")
-            @Max(value = 4, message = "Максимально допустима позиція зображення - 4")
+            @Positive(message = "Номер позиції має бути додатнім.")
+            @Max(value = 5, message = "Максимально допустима позиція зображення - 5")
             int position
     ) implements HasPosition {
     }

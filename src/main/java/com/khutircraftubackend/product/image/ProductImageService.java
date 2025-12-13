@@ -3,7 +3,7 @@ package com.khutircraftubackend.product.image;
 import com.khutircraftubackend.exception.FileReadingException;
 import com.khutircraftubackend.product.ProductEntity;
 import com.khutircraftubackend.product.ProductService;
-import com.khutircraftubackend.product.image.exception.ImageConflictException;
+import com.khutircraftubackend.product.image.exception.DuplicateImagePositionException;
 import com.khutircraftubackend.product.image.request.ProductImageUploadRequest;
 import com.khutircraftubackend.product.image.request.ProductImageChangeRequest;
 import com.khutircraftubackend.product.image.response.ProductImageResponse;
@@ -51,7 +51,7 @@ public class ProductImageService {
         try {
             saved = imageRepository.saveAll(createdImages);
         } catch (DataIntegrityViolationException e) {
-            throw new ImageConflictException(ProductImageResponseMessages.ERROR_UNIQUE_POSITION);
+            throw new DuplicateImagePositionException(ProductImageResponseMessages.ERROR_UNIQUE_POSITION);
         }
 
         existingImages.addAll(saved);
@@ -138,11 +138,11 @@ public class ProductImageService {
                 .build();
     }
 
-    private void resolvePositionConflicts(List<ProductImageChangeRequest.Image> requestImages,
+    private void resolvePositionConflicts(List<ProductImageChangeRequest.ChangeImageInfo> requestImages,
                                           Map<Long, List<ProductImageEntity>> imagesById,
                                           Map<Integer, Long> currentPositions,
                                           Set<ProductImageEntity> toSave) {
-        for (ProductImageChangeRequest.Image requestImage : requestImages) {
+        for (ProductImageChangeRequest.ChangeImageInfo requestImage : requestImages) {
             Long id = requestImage.id();
             int newPosition = requestImage.position();
             Long conflictId = currentPositions.get(newPosition);
@@ -160,11 +160,11 @@ public class ProductImageService {
         }
     }
 
-    private void applyNewPositions(List<ProductImageChangeRequest.Image> requestImages,
+    private void applyNewPositions(List<ProductImageChangeRequest.ChangeImageInfo> requestImages,
                                    Map<Long, List<ProductImageEntity>> grouped,
                                    Map<Integer, Long> currentPositions,
                                    Set<ProductImageEntity> toSave) {
-        for (ProductImageChangeRequest.Image requestImage : requestImages) {
+        for (ProductImageChangeRequest.ChangeImageInfo requestImage : requestImages) {
             Long id = requestImage.id();
             int newPosition = requestImage.position();
 

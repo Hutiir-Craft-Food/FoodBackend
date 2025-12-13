@@ -12,7 +12,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Collections;
 
@@ -102,9 +101,9 @@ class ProductImageValidatorTest {
         void validateImageIds_WhenAllIdsExist_ShouldNotThrow() {
             ProductImageChangeRequest request = new ProductImageChangeRequest(
                 List.of(
-                    new ProductImageChangeRequest.Image(1L, 0),
-                    new ProductImageChangeRequest.Image(2L, 1),
-                    new ProductImageChangeRequest.Image(3L, 2)
+                    new ProductImageChangeRequest.ChangeImageInfo(1L, 0),
+                    new ProductImageChangeRequest.ChangeImageInfo(2L, 1),
+                    new ProductImageChangeRequest.ChangeImageInfo(3L, 2)
                 )
             );
 
@@ -116,8 +115,8 @@ class ProductImageValidatorTest {
         void validateImageIds_WhenMissingIds_ThrowsException() {
             ProductImageChangeRequest request = new ProductImageChangeRequest(
                 List.of(
-                    new ProductImageChangeRequest.Image(1L, 0),
-                    new ProductImageChangeRequest.Image(999L, 1)
+                    new ProductImageChangeRequest.ChangeImageInfo(1L, 0),
+                    new ProductImageChangeRequest.ChangeImageInfo(999L, 1)
                 )
             );
 
@@ -131,7 +130,7 @@ class ProductImageValidatorTest {
         void validateImageIds_WhenCountMismatch_ThrowsException() {
             ProductImageChangeRequest request = new ProductImageChangeRequest(
                 List.of(
-                    new ProductImageChangeRequest.Image(1L, 0)
+                    new ProductImageChangeRequest.ChangeImageInfo(1L, 0)
                 )
             );
 
@@ -150,7 +149,7 @@ class ProductImageValidatorTest {
         @Test
         void validateUploadRequest_WhenTooManyFiles_ThrowsException() {
             ProductImageUploadRequest request = new ProductImageUploadRequest(
-                List.of(new ProductImageUploadRequest.ImageUpload(3))
+                List.of(new ProductImageUploadRequest.UploadImageInfo(3))
             );
             List<MultipartFile> tooManyFiles = Collections.nCopies(6, mock(MultipartFile.class));
 
@@ -163,7 +162,7 @@ class ProductImageValidatorTest {
         @Test
         void validateUploadRequest_WhenFilesCountMismatch_ThrowsException() {
             ProductImageUploadRequest request = new ProductImageUploadRequest(
-                List.of(new ProductImageUploadRequest.ImageUpload(3))
+                List.of(new ProductImageUploadRequest.UploadImageInfo(3))
             );
             List<MultipartFile> files = Collections.nCopies(2, mock(MultipartFile.class));
 
@@ -177,7 +176,7 @@ class ProductImageValidatorTest {
         @Test
         void validateUploadRequest_WhenDuplicatePosition_ThrowsException() {
             ProductImageUploadRequest request = new ProductImageUploadRequest(
-                List.of(new ProductImageUploadRequest.ImageUpload(1))
+                List.of(new ProductImageUploadRequest.UploadImageInfo(1))
             );
             List<MultipartFile> files = List.of(mock(MultipartFile.class));
 
@@ -190,7 +189,7 @@ class ProductImageValidatorTest {
         @Test
         void validateUploadRequest_WhenValidRequest_ShouldNotThrow() {
             ProductImageUploadRequest request = new ProductImageUploadRequest(
-                List.of(new ProductImageUploadRequest.ImageUpload(3))
+                List.of(new ProductImageUploadRequest.UploadImageInfo(3))
             );
             List<MultipartFile> files = List.of(mock(MultipartFile.class));
 

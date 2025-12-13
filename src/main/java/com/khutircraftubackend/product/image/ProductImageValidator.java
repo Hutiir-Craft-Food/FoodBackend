@@ -62,7 +62,7 @@ public class ProductImageValidator {
                                   List<ProductImageEntity> dbImages) {
         Set<Long> dbIds = dbImages.stream().map(ProductImageEntity::getId).collect(Collectors.toSet());
         Set<Long> missing = request.images().stream()
-                .map(ProductImageChangeRequest.Image::id)
+                .map(ProductImageChangeRequest.ChangeImageInfo::id)
                 .filter(id -> !dbIds.contains(id))
                 .collect(Collectors.toSet());
 
@@ -109,7 +109,7 @@ public class ProductImageValidator {
                 .collect(Collectors.toSet());
 
         return request.images().stream()
-                .map(ProductImageUploadRequest.ImageUpload::position)
+                .map(ProductImageUploadRequest.UploadImageInfo::position)
                 .anyMatch(existingPositions::contains);
     }
 }

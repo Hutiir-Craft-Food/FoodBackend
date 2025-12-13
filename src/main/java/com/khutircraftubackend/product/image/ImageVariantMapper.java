@@ -1,6 +1,6 @@
 package com.khutircraftubackend.product.image;
 
-import com.khutircraftubackend.product.image.exception.ImageConflictException;
+import com.khutircraftubackend.product.image.exception.DuplicateImagePositionException;
 import com.khutircraftubackend.product.image.response.ImageLinks;
 import com.khutircraftubackend.product.image.response.ProductImageResponseMessages;
 import org.mapstruct.Mapper;
@@ -22,7 +22,7 @@ public interface ImageVariantMapper {
                 .anyMatch(v -> !v.getImage().getId().equals(firstImageId));
 
         if (mixed) {
-            throw new ImageConflictException(
+            throw new DuplicateImagePositionException(
                     ProductImageResponseMessages.ERROR_UNIQUE_CONFLICT);
         }
 

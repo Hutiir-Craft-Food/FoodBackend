@@ -139,7 +139,7 @@ class ProductImagesServiceTest {
         void uploadImagesSuccess() {
             // Given
             ProductImageUploadRequest request = new ProductImageUploadRequest(
-                    List.of(new ProductImageUploadRequest.ImageUpload(2))
+                    List.of(new ProductImageUploadRequest.UploadImageInfo(2))
             );
             MultipartFile file = mock(MultipartFile.class);
             List<MultipartFile> files = List.of(file);
@@ -177,7 +177,7 @@ class ProductImagesServiceTest {
         @Test
         void upload_WhenFilesExceedMaxCount_ThrowsTooManyImagesException() {
             ProductImageUploadRequest request = new ProductImageUploadRequest(
-                    List.of(new ProductImageUploadRequest.ImageUpload(2))
+                    List.of(new ProductImageUploadRequest.UploadImageInfo(2))
             );
 
             List<MultipartFile> files = new ArrayList<>();
@@ -198,7 +198,7 @@ class ProductImagesServiceTest {
         @Test
         void upload_WhenDuplicatePosition_ThrowsPositionAlreadyExistsException() {
             ProductImageUploadRequest request = new ProductImageUploadRequest(
-                    List.of(new ProductImageUploadRequest.ImageUpload(1))
+                    List.of(new ProductImageUploadRequest.UploadImageInfo(1))
             );
             MultipartFile file = mock(MultipartFile.class);
             List<MultipartFile> files = List.of(file);
@@ -222,8 +222,8 @@ class ProductImagesServiceTest {
         void reorderImagesSuccess() {
             ProductImageChangeRequest request = new ProductImageChangeRequest(
                     List.of(
-                            new ProductImageChangeRequest.Image(1L, 1),
-                            new ProductImageChangeRequest.Image(2L, 0)
+                            new ProductImageChangeRequest.ChangeImageInfo(1L, 1),
+                            new ProductImageChangeRequest.ChangeImageInfo(2L, 0)
                     )
             );
 
@@ -239,7 +239,7 @@ class ProductImagesServiceTest {
         @Test
         void reorder_WhenImageNotFound_ThrowsImageNotFoundException() {
             ProductImageChangeRequest request = new ProductImageChangeRequest(
-                    List.of(new ProductImageChangeRequest.Image(999L, 0))
+                    List.of(new ProductImageChangeRequest.ChangeImageInfo(999L, 0))
             );
 
             when(imageRepository.findByProductId(1L)).thenReturn(imagesList);
