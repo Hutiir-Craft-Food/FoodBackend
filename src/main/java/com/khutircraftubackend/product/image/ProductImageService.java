@@ -20,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,8 +31,6 @@ public class ProductImageService {
     private final StorageService storageService;
     private final ImageMimeValidator mimeValidator;
     private final ProductImageValidator validator;
-
-    private static final int TEMP_POSITION_OFFSET = 100;
 
     @Value("${allowed.mime.types}")
     private Set<String> allowedMimeTypes;
@@ -114,72 +111,24 @@ public class ProductImageService {
         return image;
     }
 
-    @Transactional()
+    @Transactional
     public ProductImageResponse reorderImages(Long productId, ProductImageChangeRequest request) {
-
         ensureProductExists(productId);
         List<ProductImageEntity> allImages = imageRepository.findByProductId(productId);
         validator.validateImageIds(request, allImages);
-
-        Map<Long, List<ProductImageEntity>> groupById = allImages.stream()
-                .collect(Collectors.groupingBy(ProductImageEntity::getId));
-
-        Map<Integer, Long> positionToId = allImages.stream()
-                .collect(Collectors.toMap(ProductImageEntity::getPosition,
-                        ProductImageEntity::getId));
-
-        Set<ProductImageEntity> toSave = new HashSet<>();
-        resolvePositionConflicts(request.images(), groupById, positionToId, toSave);
-        applyNewPositions(request.images(), groupById, positionToId, toSave);
-        List<ProductImageEntity> updatedImages = imageRepository.saveAll(toSave);
+        imageRepository.shiftPositions(productId);
+        applyNewPositionsAfterShift(productId, request);
+        List<ProductImageEntity> updated = imageRepository.findByProductId(productId);
 
         return ProductImageResponse.builder()
-                .images(imageMapper.toProductImageDtoList(updatedImages))
+                .images(imageMapper.toProductImageDtoList(updated))
                 .build();
     }
 
-    private void resolvePositionConflicts(List<ProductImageChangeRequest.ChangeImageInfo> requestImages,
-                                          Map<Long, List<ProductImageEntity>> imagesById,
-                                          Map<Integer, Long> currentPositions,
-                                          Set<ProductImageEntity> toSave) {
-        for (ProductImageChangeRequest.ChangeImageInfo requestImage : requestImages) {
-            Long id = requestImage.id();
-            int newPosition = requestImage.position();
-            Long conflictId = currentPositions.get(newPosition);
-            if (conflictId != null && !conflictId.equals(id)) {
-                for (ProductImageEntity e : imagesById.get(conflictId)) {
-                    int oldPos = e.getPosition();
-                    int tempPos = oldPos + TEMP_POSITION_OFFSET;
-                    e.setPosition(tempPos);
-                    currentPositions.remove(oldPos);
-                    currentPositions.put(tempPos, e.getId());
-
-                    toSave.add(e);
-                }
-            }
-        }
-    }
-
-    private void applyNewPositions(List<ProductImageChangeRequest.ChangeImageInfo> requestImages,
-                                   Map<Long, List<ProductImageEntity>> grouped,
-                                   Map<Integer, Long> currentPositions,
-                                   Set<ProductImageEntity> toSave) {
-        for (ProductImageChangeRequest.ChangeImageInfo requestImage : requestImages) {
-            Long id = requestImage.id();
-            int newPosition = requestImage.position();
-
-            List<ProductImageEntity> list = grouped.get(id);
-            if (list == null) continue;
-
-            for (ProductImageEntity e : list) {
-                int oldPos = e.getPosition();
-                e.setPosition(newPosition);
-                toSave.add(e);
-
-                currentPositions.remove(oldPos);
-                currentPositions.put(newPosition, id);
-            }
-        }
+    private void applyNewPositionsAfterShift(Long productId, ProductImageChangeRequest request) {
+        request.images().forEach(img ->
+                imageRepository.updatePosition(productId, img.id(), img.position())
+        );
     }
 
     @Transactional(readOnly = true)
