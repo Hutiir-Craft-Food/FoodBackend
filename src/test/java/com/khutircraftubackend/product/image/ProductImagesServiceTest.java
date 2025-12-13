@@ -92,9 +92,9 @@ class ProductImagesServiceTest {
         );
     }
 
-    private List<ProductImageVariant> createVariants(String baseLink) {
+    private List<ProductImageVariantEntity> createVariants(String baseLink) {
         return Arrays.stream(ImageSize.values())
-                .map(size -> ProductImageVariant.builder()
+                .map(size -> ProductImageVariantEntity.builder()
                         .tsSize(size)
                         .link(baseLink + "_" + size.name().toLowerCase())
                         .build())

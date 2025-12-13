@@ -1,6 +1,5 @@
-INSERT INTO product_images (id, product_id, position)
+INSERT INTO product_images (product_id, position)
 SELECT
-    nextval('product_images_seq'),
     p.id,
     1
 FROM products p

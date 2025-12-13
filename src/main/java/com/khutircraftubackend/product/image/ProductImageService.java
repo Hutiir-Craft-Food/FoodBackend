@@ -3,15 +3,18 @@ package com.khutircraftubackend.product.image;
 import com.khutircraftubackend.exception.FileReadingException;
 import com.khutircraftubackend.product.ProductEntity;
 import com.khutircraftubackend.product.ProductService;
+import com.khutircraftubackend.product.image.exception.ImageConflictException;
 import com.khutircraftubackend.product.image.request.ProductImageUploadRequest;
 import com.khutircraftubackend.product.image.request.ProductImageChangeRequest;
 import com.khutircraftubackend.product.image.response.ProductImageResponse;
+import com.khutircraftubackend.product.image.response.ProductImageResponseMessages;
 import com.khutircraftubackend.storage.StorageResponseMessage;
 import com.khutircraftubackend.storage.StorageService;
 import com.khutircraftubackend.storage.exception.StorageException;
 import com.khutircraftubackend.validated.ImageMimeValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -44,7 +47,13 @@ public class ProductImageService {
         mimeValidator.validateMimeTypes(files, allowedMimeTypes);
 
         List<ProductImageEntity> createdImages = createImagesInternal(product, request, files);
-        List<ProductImageEntity> saved = imageRepository.saveAll(createdImages);
+        List<ProductImageEntity> saved;
+        try {
+            saved = imageRepository.saveAll(createdImages);
+        } catch (DataIntegrityViolationException e) {
+            throw new ImageConflictException(ProductImageResponseMessages.ERROR_UNIQUE_POSITION);
+        }
+
         existingImages.addAll(saved);
 
         return ProductImageResponse.builder()
@@ -78,7 +87,7 @@ public class ProductImageService {
                 .position(position)
                 .build();
 
-        List<ProductImageVariant> variants = new ArrayList<>();
+        List<ProductImageVariantEntity> variants = new ArrayList<>();
 
         for (ImageSize size : ImageSize.values()) {
             // TODO [SCRUM-210] need to implement for image resizing
@@ -91,7 +100,7 @@ public class ProductImageService {
                 throw new StorageException(StorageResponseMessage.ERROR_SAVE);
             }
 
-            ProductImageVariant variant = ProductImageVariant.builder()
+            ProductImageVariantEntity variant = ProductImageVariantEntity.builder()
                     .image(image)
                     .tsSize(size)
                     .link(url)

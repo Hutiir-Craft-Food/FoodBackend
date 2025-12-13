@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS product_image_variants (
     updated_at TIMESTAMPTZ
     );
 
-CREATE SEQUENCE product_image_variants_seq START WITH 1 INCREMENT BY 20;
+CREATE SEQUENCE product_image_variants_seq START WITH 1 INCREMENT BY 4;
 
 CREATE INDEX idx_product_image_variants_image_id ON product_image_variants (image_id);
 CREATE INDEX idx_product_image_variants_size ON product_image_variants (ts_size);

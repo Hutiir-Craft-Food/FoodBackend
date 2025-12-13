@@ -11,7 +11,7 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 @Table(name = "product_image_variants")
-public class ProductImageVariant extends Auditable {
+public class ProductImageVariantEntity extends Auditable {
 
     @Id
     @GeneratedValue(
@@ -20,7 +20,7 @@ public class ProductImageVariant extends Auditable {
     @SequenceGenerator(
             name = "product_image_variants_seq",
             sequenceName = "product_image_variants_seq",
-            allocationSize = 20)
+            allocationSize = 4)
     private Long id;
 
     @ManyToOne

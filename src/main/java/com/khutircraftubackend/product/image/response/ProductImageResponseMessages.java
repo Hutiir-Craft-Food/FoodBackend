@@ -15,4 +15,6 @@ public final class ProductImageResponseMessages {
             "Кількість переданих зображень %d не відповідає очікуваним %d.";
     public static final String ERROR_INVALID_POSITION = "Неприпустимі позиції зображень: %s. Допустимий діапазон: 0–4.";
     public static final String ERROR_NOT_FOUND_POSITION = "Продукт не має зображень за позиціями: %s.";
+    public static final String ERROR_UNIQUE_POSITION = "Позиція вже зайнята для цього продукту";
+    public static final String ERROR_UNIQUE_CONFLICT = "Список варіантів має містити записи лише для одного зображення.";
 }

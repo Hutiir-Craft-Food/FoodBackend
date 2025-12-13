@@ -21,21 +21,16 @@ import java.util.List;
 public class ProductImageEntity extends Auditable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE,
-    generator = "product_images_seq")
-    @SequenceGenerator( name = "product_images_seq",
-    sequenceName = "product_images_seq",
-    allocationSize = 5)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
     @JoinColumn(name = "product_id")
     private ProductEntity product;
 
-
     @Column(name = "position", nullable = false)
     private int position;
 
     @OneToMany(mappedBy = "image", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ProductImageVariant> variants;
+    private List<ProductImageVariantEntity> variants;
 }
