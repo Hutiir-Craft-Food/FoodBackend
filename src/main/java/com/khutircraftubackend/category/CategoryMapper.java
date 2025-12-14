@@ -1,8 +1,8 @@
 package com.khutircraftubackend.category;
 
 import com.khutircraftubackend.category.request.CategoryRequest;
-import com.khutircraftubackend.category.response.CategoryNameNormalizer;
 import com.khutircraftubackend.category.response.CategoryResponse;
+import com.khutircraftubackend.category.util.CategoryNameNormalizer;
 import com.khutircraftubackend.product.ProductMapper;
 import com.khutircraftubackend.search.exception.InvalidSearchQueryException;
 import org.apache.commons.lang3.StringUtils;
@@ -63,7 +63,7 @@ public interface CategoryMapper {
 						
 						.replaceAll("[^\\p{L}\\d\\-]+", "")
 						
-						.replaceAll("[" +CategoryNameNormalizer.APOSTROPHE_CHARS + "]", "")
+						.replaceAll("[" + CategoryNameNormalizer.APOSTROPHE_CHARS + "]", "")
 						
 						.toLowerCase()
 						
