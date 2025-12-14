@@ -10,11 +10,11 @@ public interface ProductImageRepository extends JpaRepository<ProductImageEntity
 
     List<ProductImageEntity> findByProductId(Long productId);
 
-    @Modifying
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE ProductImageEntity p SET p.position = p.position + 1000 WHERE p.product.id = :productId")
     void shiftPositions(Long productId);
 
-    @Modifying
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
         UPDATE ProductImageEntity p
         SET p.position = :position
