@@ -1,6 +1,6 @@
 package com.khutircraftubackend.category.request;
 
-import com.khutircraftubackend.category.response.CategoryNameNormalizer;
+import com.khutircraftubackend.category.util.CategoryNameNormalizer;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
