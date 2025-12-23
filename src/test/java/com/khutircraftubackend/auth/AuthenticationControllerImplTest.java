@@ -158,7 +158,4 @@ class AuthenticationControllerImplTest {
             assertNotNull(((Map<?, ?>) errorResponse.data()).get("email"));
         }
     }
-
-    @Test
-    void testTestCiCR(){}
 }

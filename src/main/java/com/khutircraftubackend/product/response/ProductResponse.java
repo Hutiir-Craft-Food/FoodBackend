@@ -1,6 +1,9 @@
 package com.khutircraftubackend.product.response;
 
 import com.khutircraftubackend.category.response.CategoryResponse;
+import com.khutircraftubackend.product.image.response.PublicProductImageDTO;
+import com.khutircraftubackend.product.price.response.ProductPriceResponse;
+import com.khutircraftubackend.product.image.response.ProductImageDTO;
 import com.khutircraftubackend.product.price.entity.ProductUnitEntity;
 import com.khutircraftubackend.product.price.request.ProductPriceDTO;
 import com.khutircraftubackend.seller.SellerResponse;
@@ -21,6 +24,7 @@ public record ProductResponse(
         String allergens,
         SellerResponse seller,
         CategoryResponse category,
+        List<PublicProductImageDTO> images,
         List<ProductPriceDTO> prices,
         List<ProductUnitEntity> units
 ) {

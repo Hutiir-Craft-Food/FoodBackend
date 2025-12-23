@@ -27,7 +27,7 @@ import static com.khutircraftubackend.product.exception.ProductResponseMessage.*
 public class ProductService {
 	
 	private static final int FEATURED_MAX_LIMIT = 16;
-	
+
 	private final ProductRepository productRepository;
 	private final SellerService sellerService;
 	private final CategoryService categoryService;
@@ -90,12 +90,12 @@ public class ProductService {
 
 	@Transactional(readOnly = true)
 	public Map<String, Object> getProducts(int offset, int limit) {
-		
+
 		Pageable pageable = PageRequest.of(offset, limit);
 		Page<ProductEntity> productEntities = productRepository.findAllBy(pageable);
-		
+
 		Collection<ProductResponse> products = productMapper.toProductResponse(productEntities);
-		
+
 		long total = productRepository.count();
 		
 		return Map.of(
@@ -105,22 +105,28 @@ public class ProductService {
 				"limit", limit
 		);
 	}
-	
+
+	@Transactional(readOnly = true)
+	public ProductResponse getProductById(Long productId){
+		ProductEntity product = findProductById(productId);
+		return productMapper.toProductResponse(product);
+	}
+
 	@Transactional(readOnly = true)
 	public Collection<ProductResponse> getLatestProducts(int limit) {
-		
+
 		if (limit <= 0) {
 			throw new InvalidPaginationParameterException(LIMIT_EXCEEDED);
 		}
-		
+
 		int size = Math.min(limit, FEATURED_MAX_LIMIT);
-		
+
 		Pageable pageable = PageRequest.of(0, size,
 				Sort.by("createdAt").descending());
-		
+
 		Page<ProductEntity> productPage = productRepository.findAll(pageable);
-		
+
 		return productMapper.toProductResponse(productPage.getContent());
 	}
-	
+
 }
