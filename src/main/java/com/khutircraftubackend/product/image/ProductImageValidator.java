@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 @Component
 public class ProductImageValidator {
 
-    private static final Set<Integer> VALID_POSITIONS = Set.of(0, 1, 2, 3, 4);
+    private static final Set<Integer> VALID_POSITIONS = Set.of(1, 2, 3, 4, 5);
     private static final Long MAX_UPLOAD_FILE_COUNT = 5L;
 
     public void validateDeletePositions(List<Integer> positions, List<ProductImageEntity> images) {

@@ -29,9 +29,9 @@ class ProductImageValidatorTest {
         validator = new ProductImageValidator();
         
         existingImages = List.of(
-            ProductImageEntity.builder().id(1L).position(0).build(),
-            ProductImageEntity.builder().id(2L).position(1).build(),
-            ProductImageEntity.builder().id(3L).position(2).build()
+            ProductImageEntity.builder().id(1L).position(1).build(),
+            ProductImageEntity.builder().id(2L).position(2).build(),
+            ProductImageEntity.builder().id(3L).position(3).build()
         );
     }
 
@@ -42,13 +42,13 @@ class ProductImageValidatorTest {
         @Test
         void validateDeletePositions_WhenEmptyImages_ThrowsException() {
             List<ProductImageEntity> emptyImages = Collections.emptyList();
-            List<Integer> positions = List.of(0);
+            List<Integer> positions = List.of(1);
 
             ImageNotFoundException ex = assertThrows(ImageNotFoundException.class,
                 () -> validator.validateDeletePositions(positions, emptyImages));
 
             String msg = ex.getMessage();
-            List<String> expected = List.of("0", "1", "2", "3", "4");
+            List<String> expected = List.of("1", "2", "3", "4", "5");
             expected.forEach(id -> assertTrue(msg.contains(id)));
         }
 
@@ -86,7 +86,7 @@ class ProductImageValidatorTest {
 
         @Test
         void validateDeletePositions_WhenValidPositions_ShouldNotThrow() {
-            List<Integer> validPositions = List.of(0, 1);
+            List<Integer> validPositions = List.of(1, 2);
 
             assertDoesNotThrow(() -> 
                 validator.validateDeletePositions(validPositions, existingImages));
@@ -101,9 +101,9 @@ class ProductImageValidatorTest {
         void validateImageIds_WhenAllIdsExist_ShouldNotThrow() {
             ProductImageChangeRequest request = new ProductImageChangeRequest(
                 List.of(
-                    new ProductImageChangeRequest.ChangeImageInfo(1L, 0),
-                    new ProductImageChangeRequest.ChangeImageInfo(2L, 1),
-                    new ProductImageChangeRequest.ChangeImageInfo(3L, 2)
+                    new ProductImageChangeRequest.ChangeImageInfo(1L, 1),
+                    new ProductImageChangeRequest.ChangeImageInfo(2L, 2),
+                    new ProductImageChangeRequest.ChangeImageInfo(3L, 3)
                 )
             );
 
@@ -115,8 +115,8 @@ class ProductImageValidatorTest {
         void validateImageIds_WhenMissingIds_ThrowsException() {
             ProductImageChangeRequest request = new ProductImageChangeRequest(
                 List.of(
-                    new ProductImageChangeRequest.ChangeImageInfo(1L, 0),
-                    new ProductImageChangeRequest.ChangeImageInfo(999L, 1)
+                    new ProductImageChangeRequest.ChangeImageInfo(1L, 1),
+                    new ProductImageChangeRequest.ChangeImageInfo(999L, 2)
                 )
             );
 
@@ -130,7 +130,7 @@ class ProductImageValidatorTest {
         void validateImageIds_WhenCountMismatch_ThrowsException() {
             ProductImageChangeRequest request = new ProductImageChangeRequest(
                 List.of(
-                    new ProductImageChangeRequest.ChangeImageInfo(1L, 0)
+                    new ProductImageChangeRequest.ChangeImageInfo(1L, 1)
                 )
             );
 
@@ -189,7 +189,7 @@ class ProductImageValidatorTest {
         @Test
         void validateUploadRequest_WhenValidRequest_ShouldNotThrow() {
             ProductImageUploadRequest request = new ProductImageUploadRequest(
-                List.of(new ProductImageUploadRequest.UploadImageInfo(3))
+                List.of(new ProductImageUploadRequest.UploadImageInfo(4))
             );
             List<MultipartFile> files = List.of(mock(MultipartFile.class));
 

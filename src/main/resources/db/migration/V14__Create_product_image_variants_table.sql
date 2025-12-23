@@ -1,11 +1,19 @@
 CREATE SEQUENCE product_image_variants_seq START WITH 1 INCREMENT BY 4;
 
+CREATE TYPE TS_SIZE AS
+    ENUM (
+    'THUMBNAIL',
+    'SMALL',
+    'MEDIUM',
+    'LARGE'
+  );
+
 CREATE TABLE IF NOT EXISTS product_image_variants (
     id BIGINT PRIMARY KEY
         DEFAULT nextval('product_image_variants_seq'),
     image_id BIGINT NOT NULL,
     link TEXT NOT NULL,
-    ts_size VARCHAR NOT NULL,
+    ts_size TS_SIZE NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ
     );

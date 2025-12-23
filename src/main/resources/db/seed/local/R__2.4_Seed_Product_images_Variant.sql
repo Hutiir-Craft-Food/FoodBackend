@@ -36,12 +36,12 @@ SELECT
         ELSE 'https://images.unsplash.com/photo-1587336768918-ca17c127c2e5?w=500&auto=format&fit=crop&q=60'
         END AS link,
 
-    sz.size
+    sz.ts_size
 FROM product_images s
          JOIN products p ON p.id = s.product_id
          CROSS JOIN (VALUES
-             ('THUMBNAIL'),
-             ('SMALL'),
-             ('MEDIUM'),
-             ('LARGE')
-         ) AS sz(size);
+             ('THUMBNAIL'::TS_SIZE),
+             ('SMALL'::TS_SIZE),
+             ('MEDIUM'::TS_SIZE),
+             ('LARGE'::TS_SIZE)
+         ) AS sz(ts_size);
