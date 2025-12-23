@@ -1,8 +1,8 @@
 package com.khutircraftubackend.product.response;
 
-import com.khutircraftubackend.category.response.CategoryResponse;
+import com.khutircraftubackend.category.response.CategoryDto;
+import com.khutircraftubackend.product.price.response.ProductPriceResponse;
 import com.khutircraftubackend.product.price.entity.ProductUnitEntity;
-import com.khutircraftubackend.product.price.request.ProductPriceDTO;
 import com.khutircraftubackend.seller.SellerResponse;
 import lombok.Builder;
 
@@ -20,8 +20,8 @@ public record ProductResponse(
         String storage,
         String allergens,
         SellerResponse seller,
-        CategoryResponse category,
-        List<ProductPriceDTO> prices,
+        CategoryDto category,
+        List<ProductPriceResponse> prices,
         List<ProductUnitEntity> units
 ) {
 }
