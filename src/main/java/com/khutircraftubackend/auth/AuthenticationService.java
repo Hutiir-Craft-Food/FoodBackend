@@ -1,6 +1,6 @@
 package com.khutircraftubackend.auth;
 
-import com.khutircraftubackend.auth.exception.AuthenticationException;
+import com.khutircraftubackend.auth.exception.RegistrationException;
 import com.khutircraftubackend.auth.exception.UserBlockedException;
 import com.khutircraftubackend.auth.request.LoginRequest;
 import com.khutircraftubackend.auth.request.RegisterRequest;
@@ -45,12 +45,12 @@ public class AuthenticationService {
         
         if (user == null || !passwordEncoder.matches(request.password(), user.getPassword())) {
             log.warn("Authentication failed: invalid credentials, email={}", request.email());
-            throw new BadCredentialsException(INVALID_CREDENTIALS_PUBLIC);
+            throw new BadCredentialsException(AUTH_INVALID_CREDENTIALS);
         }
         
         if (Boolean.FALSE.equals(user.isEnabled())) {
             log.warn("Access denied for blocked user, email={}", request.email());
-            throw new UserBlockedException(USER_BLOCKED_PUBLIC);
+            throw new UserBlockedException(AUTH_USER_BLOCKED);
         }
         
         return AuthResponse.builder()
@@ -66,10 +66,9 @@ public class AuthenticationService {
         
         if (userRepository.existsByEmail(request.email())) {
             emailSender.sendSimpleMessage(request.email(),
-                    AuthResponseMessages.AUTH_CODE_SUBJECT,
-                    String.format(
-                            AuthResponseMessages.AUTH_CODE_TEXT));
-            throw new AuthenticationException(USER_EXISTS);
+                    AUTH_CODE_SUBJECT,
+                    AUTH_CODE_TEXT);
+            throw new RegistrationException(REGISTRATION_INVALID_REQUEST);
         }
         
         UserEntity user = userService.createdUser(request);

@@ -1,17 +1,18 @@
 package com.khutircraftubackend.exception;
 
+import com.khutircraftubackend.auth.exception.RegistrationException;
 import com.khutircraftubackend.auth.exception.UserBlockedException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
 
-import static com.khutircraftubackend.auth.AuthResponseMessages.INVALID_CREDENTIALS_PUBLIC;
-import static com.khutircraftubackend.auth.AuthResponseMessages.USER_BLOCKED_PUBLIC;
+import static com.khutircraftubackend.auth.AuthResponseMessages.*;
 import static org.springframework.http.HttpStatus.*;
 
 @Component
@@ -32,36 +33,46 @@ public class UnknownExceptionResolver implements HandlerExceptionResolver {
                                          @NonNull Exception ex) {
         
         GlobalErrorResponse errorResponse;
-        int status;
+        HttpStatus status;
         
         if (ex instanceof BadCredentialsException) {
-            status = HttpServletResponse.SC_UNAUTHORIZED;
+            status = UNAUTHORIZED;
             errorResponse = GlobalErrorResponse.builder()
-                    .status(status)
-                    .error(UNAUTHORIZED.getReasonPhrase())
-                    .message(INVALID_CREDENTIALS_PUBLIC)
+                    .status(status.value())
+                    .error(status.getReasonPhrase())
+                    .message(AUTH_INVALID_CREDENTIALS)
                     .path(request.getRequestURI())
                     .build();
             
         } else if (ex instanceof UserBlockedException) {
-            status = HttpServletResponse.SC_FORBIDDEN;
+            status = FORBIDDEN;
             errorResponse = GlobalErrorResponse.builder()
-                    .status(status)
-                    .error(FORBIDDEN.getReasonPhrase())
-                    .message(USER_BLOCKED_PUBLIC)
+                    .status(status.value())
+                    .error(status.getReasonPhrase())
+                    .message(AUTH_USER_BLOCKED)
+                    .path(request.getRequestURI())
+                    .build();
+            
+        } else if (ex instanceof RegistrationException) {
+            status = UNPROCESSABLE_ENTITY;
+            errorResponse = GlobalErrorResponse.builder()
+                    .status(status.value())
+                    .error(status.getReasonPhrase())
+                    .message(REGISTRATION_INVALID_REQUEST)
                     .path(request.getRequestURI())
                     .build();
             
         } else {
-            status = INTERNAL_SERVER_ERROR.value();
+            status = INTERNAL_SERVER_ERROR;
             errorResponse = GlobalErrorResponse.builder()
-                    .status(status)
-                    .error(INTERNAL_SERVER_ERROR.getReasonPhrase())
+                    .status(status.value())
+                    .error(status.getReasonPhrase())
                     .message(ERROR_SERVER)
                     .path(request.getRequestURI())
                     .build();
         }
-        response.setStatus(status);
+        
+        response.setStatus(status.value());
         ModelAndView mv = new ModelAndView(jsonView);
         mv.addObject("error", errorResponse);
         
