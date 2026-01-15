@@ -5,7 +5,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.ModelAndView;
@@ -34,16 +33,7 @@ public class UnknownExceptionResolver implements HandlerExceptionResolver {
         GlobalErrorResponse errorResponse;
         HttpStatus status;
         
-        if (ex instanceof BadCredentialsException) {
-            status = UNAUTHORIZED;
-            errorResponse = GlobalErrorResponse.builder()
-                    .status(status.value())
-                    .error(status.getReasonPhrase())
-                    .message(AUTH_INVALID_CREDENTIALS)
-                    .path(request.getRequestURI())
-                    .build();
-            
-        } else if (ex instanceof UserBlockedException) {
+        if (ex instanceof UserBlockedException) {
             status = FORBIDDEN;
             errorResponse = GlobalErrorResponse.builder()
                     .status(status.value())
