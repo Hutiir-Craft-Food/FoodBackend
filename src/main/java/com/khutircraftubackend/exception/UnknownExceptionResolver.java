@@ -1,17 +1,14 @@
 package com.khutircraftubackend.exception;
 
-import com.khutircraftubackend.auth.exception.UserBlockedException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
 
-import static com.khutircraftubackend.auth.AuthResponseMessages.*;
-import static org.springframework.http.HttpStatus.*;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
 @Component
 public class UnknownExceptionResolver implements HandlerExceptionResolver {
@@ -30,29 +27,14 @@ public class UnknownExceptionResolver implements HandlerExceptionResolver {
                                          Object handler,
                                          @NonNull Exception ex) {
         
-        GlobalErrorResponse errorResponse;
-        HttpStatus status;
-        
-        if (ex instanceof UserBlockedException) {
-            status = FORBIDDEN;
-            errorResponse = GlobalErrorResponse.builder()
-                    .status(status.value())
-                    .error(status.getReasonPhrase())
-                    .message(AUTH_USER_BLOCKED)
-                    .path(request.getRequestURI())
-                    .build();
-            
-        } else {
-            status = INTERNAL_SERVER_ERROR;
-            errorResponse = GlobalErrorResponse.builder()
-                    .status(status.value())
-                    .error(status.getReasonPhrase())
-                    .message(ERROR_SERVER)
-                    .path(request.getRequestURI())
-                    .build();
-        }
-        
-        response.setStatus(status.value());
+        GlobalErrorResponse errorResponse = GlobalErrorResponse.builder()
+                .status(INTERNAL_SERVER_ERROR.value())
+                .error(INTERNAL_SERVER_ERROR.getReasonPhrase())
+                .message(ERROR_SERVER)
+                .path(request.getRequestURI())
+                .build();
+
+        response.setStatus(INTERNAL_SERVER_ERROR.value());
         ModelAndView mv = new ModelAndView(jsonView);
         mv.addObject("error", errorResponse);
         
