@@ -1,6 +1,5 @@
 package com.khutircraftubackend.exception;
 
-import com.khutircraftubackend.auth.exception.RegistrationException;
 import com.khutircraftubackend.auth.exception.UserBlockedException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -50,15 +49,6 @@ public class UnknownExceptionResolver implements HandlerExceptionResolver {
                     .status(status.value())
                     .error(status.getReasonPhrase())
                     .message(AUTH_USER_BLOCKED)
-                    .path(request.getRequestURI())
-                    .build();
-            
-        } else if (ex instanceof RegistrationException) {
-            status = UNPROCESSABLE_ENTITY;
-            errorResponse = GlobalErrorResponse.builder()
-                    .status(status.value())
-                    .error(status.getReasonPhrase())
-                    .message(REGISTRATION_INVALID_REQUEST)
                     .path(request.getRequestURI())
                     .build();
             
