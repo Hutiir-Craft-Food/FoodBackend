@@ -1,6 +1,5 @@
 package com.khutircraftubackend.product.image;
 
-import com.khutircraftubackend.product.image.request.ProductImageChangeRequest;
 import com.khutircraftubackend.product.image.request.ProductImageUploadRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
@@ -17,33 +16,16 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
-class UniqueUidAndPositionInListValidatorTest {
+class UniquePositionInListValidatorTest {
 
     private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-
-    @Test
-    void shouldFailValidation_whenDuplicateUidExists() {
-        ProductImageChangeRequest request = new ProductImageChangeRequest(
-                List.of(
-                        new ProductImageChangeRequest.Image("uid1", 0),
-                        new ProductImageChangeRequest.Image("uid1", 1)));
-
-        Set<ConstraintViolation<ProductImageChangeRequest>> violations = validator.validate(request);
-
-        assertFalse(violations.isEmpty());
-
-        boolean containsUidError = violations.stream()
-                .anyMatch(v -> v.getMessage().contains("UID мають бути унікальними."));
-
-        assertTrue(containsUidError);
-    }
 
     @Test
     void shouldFailValidation_whenDuplicatePositionExists() {
         ProductImageUploadRequest request = new ProductImageUploadRequest(
                 List.of(
-                        new ProductImageUploadRequest.Image(0),
-                        new ProductImageUploadRequest.Image( 0)));
+                        new ProductImageUploadRequest.UploadImageInfo(1),
+                        new ProductImageUploadRequest.UploadImageInfo( 1)));
 
         Set<ConstraintViolation<ProductImageUploadRequest>> violations = validator.validate(request);
 
@@ -56,23 +38,11 @@ class UniqueUidAndPositionInListValidatorTest {
     }
 
     @Test
-    void shouldPassValidation_whenUidsAndPositionsUnique() {
-        ProductImageChangeRequest request = new ProductImageChangeRequest(
-                List.of(
-                        new ProductImageChangeRequest.Image("uid1", 0),
-                        new ProductImageChangeRequest.Image("uid2", 1)));
-
-        Set<ConstraintViolation<ProductImageChangeRequest>> violations = validator.validate(request);
-
-        assertTrue(violations.isEmpty());
-    }
-
-    @Test
     void shouldPassValidation_whenPositionsUnique() {
         ProductImageUploadRequest request = new ProductImageUploadRequest(
                 List.of(
-                        new ProductImageUploadRequest.Image(0),
-                        new ProductImageUploadRequest.Image(1)));
+                        new ProductImageUploadRequest.UploadImageInfo(1),
+                        new ProductImageUploadRequest.UploadImageInfo(2)));
 
         Set<ConstraintViolation<ProductImageUploadRequest>> violations = validator.validate(request);
 
