@@ -1,5 +1,6 @@
 package com.khutircraftubackend.auth;
 
+import com.khutircraftubackend.auth.exception.InvalidCredentialsException;
 import com.khutircraftubackend.auth.exception.RegistrationException;
 import com.khutircraftubackend.auth.exception.UserBlockedException;
 import com.khutircraftubackend.auth.request.LoginRequest;
@@ -17,11 +18,12 @@ import jakarta.persistence.PostUpdate;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
 
-import static com.khutircraftubackend.auth.AuthResponseMessages.*;
+import static com.khutircraftubackend.auth.exception.AuthResponseMessages.*;
 
 @Service
 @RequiredArgsConstructor
@@ -35,7 +37,7 @@ public class AuthenticationService {
     private final ConfirmationService confirmationService;
     private final SellerService sellerService;
     private final EmailSender emailSender;
-    private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
     
     
     @Transactional
@@ -43,9 +45,11 @@ public class AuthenticationService {
         
         UserEntity user = userService.findByEmail(request.email());
         
-        if (user == null || !passwordEncoder.matches(request.password(), user.getPassword())) {
-            log.warn("Authentication failed: invalid credentials, email={}", request.email());
-            throw new BadCredentialsException(AUTH_INVALID_CREDENTIALS);
+        try {
+            authenticateUser(request.email(), request.password());
+        } catch (BadCredentialsException ex) {
+            log.warn("Authentication failed: bad credentials, email={}", request.email());
+            throw new InvalidCredentialsException(AUTH_INVALID_CREDENTIALS);
         }
         
         if (Boolean.FALSE.equals(user.isEnabled())) {
@@ -58,6 +62,12 @@ public class AuthenticationService {
                 .role(user.getRole())
                 .confirmed(user.isConfirmed())
                 .build();
+    }
+    
+    private void authenticateUser(String email, String password) {
+        UsernamePasswordAuthenticationToken authenticationToken =
+                new UsernamePasswordAuthenticationToken(email, password);
+        authenticationManager.authenticate(authenticationToken);
     }
     
     @Transactional
