@@ -51,3 +51,7 @@ FROM (
              ('Йогурти', 'йогурти', 'Натуральні та фруктові йогурти')
      ) AS sub(name, slug, description)
         JOIN  categories c ON c.name = 'Молочні продукти' AND c.parent_id IS NULL;
+
+UPDATE categories
+SET keywords = name
+WHERE keywords IS NULL OR trim(keywords) = '';
