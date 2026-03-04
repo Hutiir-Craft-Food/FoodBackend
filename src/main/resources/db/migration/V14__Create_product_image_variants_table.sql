@@ -20,6 +20,8 @@ CREATE TABLE IF NOT EXISTS product_image_variants (
 
 CREATE INDEX idx_product_image_variants_image_id ON product_image_variants (image_id);
 CREATE INDEX idx_product_image_variants_size ON product_image_variants (ts_size);
+CREATE UNIQUE INDEX idx_product_image_variant_unique
+    ON product_image_variants (image_id, ts_size);
 
 ALTER TABLE product_image_variants
     ADD CONSTRAINT fk_product_image_variants_image

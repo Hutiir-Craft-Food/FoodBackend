@@ -21,7 +21,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.khutircraftubackend.product.exception.ProductResponseMessage.PRODUCT_NOT_FOUND;
 import static org.junit.jupiter.api.Assertions.*;
@@ -43,6 +45,8 @@ class ProductImagesServiceTest {
     private ImageMimeValidator mimeValidator;
     @Mock
     private ProductImageValidator validator;
+    @Mock
+    private ImageProcessing imageProcessing;
 
     @InjectMocks
     private ProductImageService imagesService;
@@ -136,7 +140,7 @@ class ProductImagesServiceTest {
     class UploadImages {
 
         @Test
-        void uploadImagesSuccess() {
+        void uploadImagesSuccess() throws IOException {
             // Given
             ProductImageUploadRequest request = new ProductImageUploadRequest(
                     List.of(new ProductImageUploadRequest.UploadImageInfo(2))
@@ -162,6 +166,20 @@ class ProductImagesServiceTest {
             List<ProductImageEntity> allImagesAfterUpload = new ArrayList<>(imagesList);
             allImagesAfterUpload.add(newImage);
 
+            when(file.getBytes()).thenReturn("test".getBytes());
+    
+            Map<ImageSize, byte[]> fakeMap =
+                    Arrays.stream(ImageSize.values())
+                            .collect(Collectors.toMap(
+                                    size -> size,
+                                    size -> "img".getBytes(),
+                                    (a,b) -> a,
+                                    () -> new EnumMap<>(ImageSize.class)
+                            ));
+            
+            when(imageProcessing.process(any())).thenReturn(fakeMap);
+            when(storageService.upload(any(), any())).thenReturn("url");
+            
             when(imageRepository.findByProductId(1L)).thenReturn(imagesList);
             doNothing().when(validator).validateUploadRequest(imagesList, request, files);
             when(imageRepository.saveAll(anyList())).thenReturn(List.of(newImage));
