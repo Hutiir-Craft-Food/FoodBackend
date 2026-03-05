@@ -167,6 +167,31 @@
                     </excludes>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-maven-plugin</artifactId>
+                <version>11.17.0</version>
+                <configuration>
+                    <url>jdbc:postgresql://localhost:5432/khutir_craft</url>
+                    <user>postgres</user>
+                    <password>postgres</password>
+                    <schemas>
+                        <schema>public</schema>
+                    </schemas>
+                    <placeholders>
+                        <email>admin@example.com</email>
+                        <password>admin</password>
+                        <enabled>true</enabled>
+                        <confirmed>true</confirmed>
+                    </placeholders>
+                    <locations>
+                        <location>filesystem:src/main/resources/db/migration</location>
+                        <location>filesystem:src/main/resources/db/seed/common</location>
+                        <location>filesystem:src/main/resources/db/seed/local</location>
+                    </locations>
+                    <cleanDisabled>false</cleanDisabled>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
