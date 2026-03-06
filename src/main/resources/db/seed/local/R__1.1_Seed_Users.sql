@@ -8,9 +8,9 @@ VALUES
 ON CONFLICT (email) DO NOTHING;
 
 INSERT INTO sellers (seller_name, user_id)
-SELECT 'Seller' as seller_name, id as user_id
+SELECT 'Seller' as seller_name, users.id as user_id
 FROM users
-WHERE email = 'seller@example.com'
+WHERE users.email = 'seller@example.com'
 AND NOT EXISTS (
     SELECT 1
     FROM sellers
