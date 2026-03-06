@@ -11,6 +11,7 @@ import com.khutircraftubackend.product.image.response.ProductImageResponse;
 import com.khutircraftubackend.product.image.response.ProductImageResponseMessages;
 import com.khutircraftubackend.storage.StorageService;
 import com.khutircraftubackend.validated.ImageMimeValidator;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -140,7 +141,8 @@ class ProductImagesServiceTest {
     class UploadImages {
 
         @Test
-        void uploadImagesSuccess() throws IOException {
+        @SneakyThrows
+        void uploadImagesSuccess() {
             // Given
             ProductImageUploadRequest request = new ProductImageUploadRequest(
                     List.of(new ProductImageUploadRequest.UploadImageInfo(2))

@@ -1,15 +1,12 @@
 package com.khutircraftubackend.product.image;
 
-import com.drew.imaging.ImageMetadataReader;
-import com.drew.metadata.Metadata;
-import com.drew.metadata.exif.ExifDirectoryBase;
-import com.drew.metadata.exif.ExifIFD0Directory;
+import com.khutircraftubackend.product.image.exception.ImageProcessingException;
 import net.coobird.thumbnailator.Thumbnails;
 import net.coobird.thumbnailator.geometry.Positions;
+import org.apache.tika.Tika;
 import org.springframework.stereotype.Component;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -21,150 +18,96 @@ import java.util.Map;
 @Component
 public class ImageProcessing {
 
-    private static final int ORIGIN_W = 1080;
-    private static final int ORIGIN_H = 1920;
-    private static final double SMALL_RATIO = 324.0 / 257.0;
+    private static final int MAX_WIDTH = 1920;
+    private static final int MAX_HEIGHT = 1080;
+    private static final Tika TIKA = new Tika();
 
-    public Map<ImageSize, byte[]> process(InputStream inputStream) throws IOException {
+    public Map<ImageSize, byte[]> process(byte[] bytes) throws ImageProcessingException {
 
-        byte[] bytes = inputStream.readAllBytes();
+        BufferedImage normalizedImage = normalize(bytes);
 
-        BufferedImage origin = readWithOrientation(bytes);
-        origin = normalizeToOrigin(origin);
-
-        BufferedImage square = cropToSquare(origin);
-        BufferedImage smallBase = cropToSmallRatio(origin);
+        BufferedImage mediumImage = cropToSize(normalizedImage, 438, 438);
+        BufferedImage smallImage = cropToSize(mediumImage, 324, 257);
+        BufferedImage thumbnailImage = cropToSize(mediumImage, 64, 64);
 
         return new EnumMap<>(Map.of(
-                ImageSize.LARGE, toJpegBytes(origin),
-                ImageSize.MEDIUM, toJpegBytes(resize(square, 438, 438)),
-                ImageSize.SMALL, toJpegBytes(resize(smallBase, 324, 257)),
-                ImageSize.THUMBNAIL, toJpegBytes(resize(square, 64, 64))
+                ImageSize.LARGE, toByteArray(normalizedImage),
+                ImageSize.MEDIUM, toByteArray(mediumImage),
+                ImageSize.SMALL, toByteArray(smallImage),
+                ImageSize.THUMBNAIL, toByteArray(thumbnailImage)
         ));
     }
 
-    private BufferedImage normalizeToOrigin(BufferedImage raw) throws IOException {
-
-        boolean isPortrait = raw.getHeight() > raw.getWidth();
-
-        return Thumbnails.of(raw)
-                .size(isPortrait ? ORIGIN_W : ORIGIN_H,
-                        isPortrait ? ORIGIN_H : ORIGIN_W)
-                .keepAspectRatio(true)
-                .asBufferedImage();
-    }
-
-    private BufferedImage cropToSquare(BufferedImage source) throws IOException {
-
-        int side = Math.min(source.getWidth(), source.getHeight());
-
-        return Thumbnails.of(source)
-                .sourceRegion(Positions.CENTER, side, side)
-                .scale(1.0)
-                .asBufferedImage();
-    }
-
-    private BufferedImage cropToSmallRatio(BufferedImage src) throws IOException {
-
-        int w = src.getWidth();
-        int h = src.getHeight();
-        int cropW;
-        int cropH;
-
-        if ((double) w / h > SMALL_RATIO) {
-            // зображення "ширше" за цільове співвідношення — обрізаємо по ширині
-            cropH = h;
-            cropW = (int) Math.round(h * SMALL_RATIO);
-        } else {
-            // зображення "вужче" — обрізаємо по висоті
-            cropW = w;
-            cropH = (int) Math.round(w * SMALL_RATIO);
-        }
-
-        return Thumbnails.of(src)
-                .sourceRegion(Positions.CENTER, cropW, cropH)
-                .scale(1.0)
-                .asBufferedImage();
-    }
-
-    private BufferedImage resize(BufferedImage src, int w, int h) throws IOException {
-
-        return Thumbnails.of(src)
-                .size(w, h)
-                .asBufferedImage();
-    }
-
-    private BufferedImage readWithOrientation(byte[] bytes) throws IOException {
-
-        int rotation = readRotation(bytes);
-
-        return Thumbnails.of(new ByteArrayInputStream(bytes))
-                .rotate(rotation)
-                .scale(1.0)
-                .asBufferedImage();
-    }
-
-    private int readRotation(byte[] bytes) {
+    private BufferedImage normalize(byte[] rawImage) throws ImageProcessingException {
 
         try {
-            Metadata metadata = ImageMetadataReader.readMetadata(new ByteArrayInputStream(bytes));
+            InputStream is = new ByteArrayInputStream(rawImage);
+            BufferedImage originalImage = ImageIO.read(is);
 
-            ExifIFD0Directory directory = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
+            // TODO:
+            //  String detectedMimeType = TIKA.detect(is);
+            //  if (detectedMimeType == "image/png" && originalImage.getColorModel().hasAlpha()):
+            //      then convert to jpeg (because of the alpha channel).
+            //  do it before resizing, to avoid quality loss
 
-            if (directory == null || !directory.containsTag(ExifDirectoryBase.TAG_ORIENTATION)) {
-                return 0;
+            int width = originalImage.getWidth();
+            int height = originalImage.getHeight();
+
+            if (Math.min(width, height) < 438) {
+                throw new ImageProcessingException("Image is too small for processing");
             }
 
-            int orientation = directory.getInt(ExifDirectoryBase.TAG_ORIENTATION);
+            if (height <= MAX_HEIGHT && width <= MAX_WIDTH) {
+                return originalImage;
+            }
 
-            return switch (orientation) {
-                case 3 -> 180;
-                case 6 -> 90;
-                case 8 -> 270;
-                default -> 0;
-            };
-
-        } catch (Exception e) {
-
-            return 0;
+            return Thumbnails.of(originalImage)
+                    .size(MAX_WIDTH, MAX_HEIGHT)
+                    .keepAspectRatio(true)
+                    .asBufferedImage();
+        } catch (IOException ex) {
+            throw new ImageProcessingException("Failed to normalize image", ex);
         }
     }
 
-    private BufferedImage removeAlphaChannel(BufferedImage image) {
-
-        if (!image.getColorModel().hasAlpha()) {
-
-            return image;
+    private BufferedImage cropToSize(BufferedImage sourceImage, int width, int height) throws ImageProcessingException {
+        if (width > sourceImage.getWidth() || height > sourceImage.getHeight()) {
+            throw new ImageProcessingException("Crop dimensions exceed source image dimensions");
         }
 
-        BufferedImage newImage = new BufferedImage(
-                image.getWidth(),
-                image.getHeight(),
-                BufferedImage.TYPE_INT_RGB
-        );
+        int minSourceDimension = Math.min(sourceImage.getWidth(), sourceImage.getHeight());
+        int maxTargetDimension = Math.max(width, height);
 
-        Graphics2D g = newImage.createGraphics();
-        g.setColor(Color.WHITE);
-        g.fillRect(0, 0, image.getWidth(), image.getHeight());
-        g.drawImage(image, 0, 0, null);
-        g.dispose();
+        // TODO: make sure it works the same way for both portrait and landscape images
+        double scale = (double) maxTargetDimension / minSourceDimension;
 
-        return newImage;
+        try {
+            BufferedImage resizedImage = Thumbnails.of(sourceImage)
+                    .scale(scale)
+                    .asBufferedImage();
+
+            if (width == resizedImage.getWidth() && height == resizedImage.getHeight()) {
+                return resizedImage;
+            }
+
+            return Thumbnails.of(resizedImage)
+                    .sourceRegion(Positions.CENTER, width, height)
+                    .size(width, height)
+                    .asBufferedImage();
+        } catch (IOException e) {
+            throw new ImageProcessingException("Failed to crop image", e);
+        }
     }
 
-    private byte[] toJpegBytes(BufferedImage image) throws IOException {
-
-        BufferedImage rgb = removeAlphaChannel(image);
-
+    public byte[] toByteArray(BufferedImage image) throws ImageProcessingException {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-
-            boolean written = ImageIO.write(rgb, "jpg", baos);
-
-            if (!written) {
-                throw new IllegalArgumentException("No JPEG writer available");
-            }
-
+            Thumbnails.of(image)
+                    .scale(1.0)
+                    .outputFormat("jpg")
+                    .toOutputStream(baos);
             return baos.toByteArray();
+        } catch (IOException e) {
+            throw new ImageProcessingException("Failed to convert image to byte array", e);
         }
     }
 

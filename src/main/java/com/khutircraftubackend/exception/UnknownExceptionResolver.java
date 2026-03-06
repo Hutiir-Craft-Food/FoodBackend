@@ -3,6 +3,7 @@ package com.khutircraftubackend.exception;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.ModelAndView;
@@ -10,6 +11,7 @@ import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
 
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
+@Slf4j
 @Component
 public class UnknownExceptionResolver implements HandlerExceptionResolver {
     
@@ -37,7 +39,8 @@ public class UnknownExceptionResolver implements HandlerExceptionResolver {
         response.setStatus(INTERNAL_SERVER_ERROR.value());
         ModelAndView mv = new ModelAndView(jsonView);
         mv.addObject("error", errorResponse);
-        
+
+        log.error("Unexpected exception has been caught:", ex);
         return mv;
     }
     

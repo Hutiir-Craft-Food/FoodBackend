@@ -1,5 +1,6 @@
 package com.khutircraftubackend.product.image;
 
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,7 @@ class ImageProcessingTest {
         imageProcessing = new ImageProcessing();
     }
 
+    @SneakyThrows
     @DisplayName("Helper method to create a test image and process it")
     private Map<ImageSize, byte[]> processImage(int width, int height, String format) throws IOException {
 
@@ -34,9 +36,7 @@ class ImageProcessingTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ImageIO.write(image, format, baos);
 
-        InputStream input = new ByteArrayInputStream(baos.toByteArray());
-
-        return imageProcessing.process(input);
+        return imageProcessing.process(baos.toByteArray());
     }
 
     @Test
