@@ -4,23 +4,25 @@ import com.khutircraftubackend.exception.FileReadingException;
 import com.khutircraftubackend.product.ProductEntity;
 import com.khutircraftubackend.product.ProductService;
 import com.khutircraftubackend.product.image.exception.DuplicateImagePositionException;
-import com.khutircraftubackend.product.image.request.ProductImageUploadRequest;
+import com.khutircraftubackend.product.image.exception.ImageCreationException;
 import com.khutircraftubackend.product.image.request.ProductImageChangeRequest;
+import com.khutircraftubackend.product.image.request.ProductImageUploadRequest;
 import com.khutircraftubackend.product.image.response.ProductImageResponse;
 import com.khutircraftubackend.product.image.response.ProductImageResponseMessages;
-import com.khutircraftubackend.storage.StorageResponseMessage;
 import com.khutircraftubackend.storage.StorageService;
-import com.khutircraftubackend.storage.exception.StorageException;
 import com.khutircraftubackend.validated.ImageMimeValidator;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ProductImageService {
@@ -31,6 +33,7 @@ public class ProductImageService {
     private final StorageService storageService;
     private final ImageMimeValidator mimeValidator;
     private final ProductImageValidator validator;
+    private final ImageProcessing imageProcessing;
 
     @Value("${allowed.mime.types}")
     private Set<String> allowedMimeTypes;
@@ -43,7 +46,7 @@ public class ProductImageService {
         validator.validateUploadRequest(existingImages, request, files);
         mimeValidator.validateMimeTypes(files, allowedMimeTypes);
 
-        List<ProductImageEntity> createdImages = createImagesInternal(product, request, files);
+        List<ProductImageEntity> createdImages = createImagesInternally(product, request, files);
         List<ProductImageEntity> saved;
         try {
             saved = imageRepository.saveAll(createdImages);
@@ -62,53 +65,76 @@ public class ProductImageService {
         return productService.findProductById(productId);
     }
 
-    private List<ProductImageEntity> createImagesInternal(ProductEntity product,
-                                                          ProductImageUploadRequest meta,
-                                                          List<MultipartFile> files) {
-        List<ProductImageEntity> entities = new ArrayList<>();
+    // TODO: revert access modifier back to `private` after testing SCRUM-210
+    public List<ProductImageEntity> createImagesInternally(ProductEntity product,
+                                                            ProductImageUploadRequest meta,
+                                                            List<MultipartFile> files) {
+        List<ProductImageEntity> productImages = new ArrayList<>();
 
         for (int i = 0; i < files.size(); i++) {
             MultipartFile file = files.get(i);
             int position = meta.images().get(i).position();
-            entities.add(createImageForAllSizes(product, file, position));
+            productImages.add(createImagesForAllSizes(product, file, position));
         }
 
-        return entities;
+        return productImages;
     }
 
-    private ProductImageEntity createImageForAllSizes(ProductEntity product,
-                                                      MultipartFile file,
-                                                      int position) {
-        ProductImageEntity image = ProductImageEntity.builder()
+    private ProductImageEntity createImagesForAllSizes(ProductEntity product,
+                                                       MultipartFile file,
+                                                       int position) {
+        ProductImageEntity productImageEntity = ProductImageEntity.builder()
                 .product(product)
                 .position(position)
                 .build();
 
-        List<ProductImageVariantEntity> variants = new ArrayList<>();
+        byte[] originalImageBytes;
 
-        for (ImageSize size : ImageSize.values()) {
-            // TODO [SCRUM-210] need to implement for image resizing
-            //  result of resized image will be array of bytes.
-            //  example of java dependency for image resizing: net.coobird
-            String url;
-            try {
-                url = storageService.upload(file);
-            } catch (FileReadingException ex) {
-                throw new StorageException(StorageResponseMessage.ERROR_SAVE);
-            }
-
-            ProductImageVariantEntity variant = ProductImageVariantEntity.builder()
-                    .image(image)
-                    .tsSize(size)
-                    .link(url)
-                    .build();
-
-
-            variants.add(variant);
+        try {
+            originalImageBytes = file.getBytes();
+        } catch (IOException ex) {
+            throw new FileReadingException(ex.getMessage());
         }
 
-        image.setVariants(variants);
-        return image;
+        try {
+            Map<ImageSize, byte[]> processedImages = imageProcessing.process(originalImageBytes);
+
+            List<ProductImageVariantEntity> variants = new ArrayList<>();
+
+            for (Map.Entry<ImageSize, byte[]> entry : processedImages.entrySet()) {
+                ImageSize size = entry.getKey();
+
+                byte[] imageBytes = entry.getValue();
+
+                // TODO: maybe we should put `product id` into fileName first. or product article.
+                String fileName = size.name().toLowerCase() + "_" + UUID.randomUUID() + ".jpg";
+
+                String url = storageService.upload(imageBytes, fileName);
+
+                ProductImageVariantEntity imageVariant = ProductImageVariantEntity.builder()
+                        .image(productImageEntity)
+                        .tsSize(size)
+                        .link(url)
+                        .build();
+
+
+                variants.add(imageVariant);
+            }
+
+            productImageEntity.setVariants(variants);
+
+            return productImageEntity;
+        } catch (Exception e) {
+            // we are catching generic Exception class here, coz
+            //  it could be ImageProcessingException, StorageException,
+            //  or any other exception that might occur during processing or uploading
+            log.error("failed to process image at position {}: {}", position, e.getMessage());
+
+            // TODO: exceptionsMessage.
+            String exceptionsMessage = String.format("На жаль, ми не змогли обробити зображення " +
+                    "під номером %s. Будь ласка, спробуйте інше зображення.", position);
+            throw new ImageCreationException(exceptionsMessage);
+        }
     }
 
     @Transactional
