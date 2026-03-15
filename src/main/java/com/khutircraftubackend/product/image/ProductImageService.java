@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.*;
 
@@ -84,14 +83,13 @@ public class ProductImageService {
                 .position(position)
                 .build();
         
-        byte[] bytes = file.getBytes();
-        Map<ImageSize, byte[]> processed = imageProcessing.process(new ByteArrayInputStream(bytes));
+        Map<ImageSize, byte[]> processed = imageProcessing.process(file.getInputStream());
         
-        List<ProductImageVariantEntity> variants = new ArrayList<>();
+        List<ProductImageVariantEntity> variants = new ArrayList<>(processed.size());
         
         for (Map.Entry<ImageSize, byte[]> entry : processed.entrySet()) {
-            ImageSize size = entry.getKey();
             
+            ImageSize size = entry.getKey();
             byte[] imageBytes = entry.getValue();
             
             String fileName = size.name().toLowerCase() + "_" + UUID.randomUUID() + ".jpg";
@@ -104,10 +102,8 @@ public class ProductImageService {
                     .link(url)
                     .build();
             
-            
             variants.add(variant);
         }
-        
         image.setVariants(variants);
         
         return image;

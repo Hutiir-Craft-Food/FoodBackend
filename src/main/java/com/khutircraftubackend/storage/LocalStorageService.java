@@ -41,7 +41,7 @@ public class LocalStorageService implements StorageService {
         Path filePath = uploadPath.resolve(safeName);
         
         try {
-            Files.copy(new ByteArrayInputStream(fileBytes), filePath, StandardCopyOption.REPLACE_EXISTING);//Захист від overwrite, але може бути проблемою при одночасних завантаженнях з однаковими іменами файлів
+            Files.copy(new ByteArrayInputStream(fileBytes), filePath, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             throw new StorageException(StorageResponseMessage.ERROR_SAVE);
         }
@@ -50,7 +50,7 @@ public class LocalStorageService implements StorageService {
                 Objects.requireNonNull(RequestContextHolder.getRequestAttributes()))
                 .getRequest();
         String relativeUriStr = API_PREFIX + uploadPath
-                .relativize(filePath).normalize();//relativize?
+                .relativize(filePath).normalize();
 
         return UriComponentsBuilder.newInstance()
                 .scheme(request.getScheme())

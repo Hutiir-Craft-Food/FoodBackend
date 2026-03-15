@@ -156,18 +156,16 @@ class ProductImagesServiceTest {
                     .build();
 
             ProductImageDTO newDtoList = ProductImageDTO.builder()
-                    .id(2L)
-                    .productId(1L)
-                    .position(1)
+                    .id(newImage.getId())
+                    .productId(product.getId())
+                    .position(newImage.getPosition())
                     .links(null)
                     .build();
 
             dtoList.add(newDtoList);
             List<ProductImageEntity> allImagesAfterUpload = new ArrayList<>(imagesList);
             allImagesAfterUpload.add(newImage);
-
-            when(file.getBytes()).thenReturn("test".getBytes());
-    
+            
             Map<ImageSize, byte[]> fakeMap =
                     Arrays.stream(ImageSize.values())
                             .collect(Collectors.toMap(

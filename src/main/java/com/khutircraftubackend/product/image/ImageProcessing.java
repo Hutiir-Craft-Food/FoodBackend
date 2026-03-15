@@ -1,9 +1,12 @@
 package com.khutircraftubackend.product.image;
 
 import com.drew.imaging.ImageMetadataReader;
+import com.drew.imaging.ImageProcessingException;
 import com.drew.metadata.Metadata;
+import com.drew.metadata.MetadataException;
 import com.drew.metadata.exif.ExifDirectoryBase;
 import com.drew.metadata.exif.ExifIFD0Directory;
+import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
 import net.coobird.thumbnailator.geometry.Positions;
 import org.springframework.stereotype.Component;
@@ -19,6 +22,7 @@ import java.util.EnumMap;
 import java.util.Map;
 
 @Component
+@Slf4j
 public class ImageProcessing {
     
     private static final int ORIGIN_W = 1080;
@@ -27,34 +31,44 @@ public class ImageProcessing {
     
     public Map<ImageSize, byte[]> process(InputStream inputStream) throws IOException {
         
-        byte[] bytes = inputStream.readAllBytes();
+        byte[] bytes;
+        try (inputStream) {
+            bytes = inputStream.readAllBytes();
+        }
         
         BufferedImage origin = readWithOrientation(bytes);
-        origin = normalizeToOrigin(origin);
+        origin = createOrigin(origin);
         
-        BufferedImage square = cropToSquare(origin);
-        BufferedImage smallBase = cropToSmallRatio(origin);
+        BufferedImage square = createSquareCrop(origin);
+        BufferedImage smallBase = createSmallRatioCrop(origin);
         
-        return new EnumMap<>(Map.of(
-                ImageSize.LARGE, toJpegBytes(origin),
-                ImageSize.MEDIUM, toJpegBytes(resize(square, 438, 438)),
-                ImageSize.SMALL, toJpegBytes(resize(smallBase, 324, 257)),
-                ImageSize.THUMBNAIL, toJpegBytes(resize(square, 64, 64))
-        ));
+        BufferedImage medium = resize(square, ImageSize.MEDIUM.width, ImageSize.MEDIUM.height);
+        BufferedImage thumbnail = resize(medium, ImageSize.THUMBNAIL.width, ImageSize.THUMBNAIL.height);
+        BufferedImage small = resize(smallBase, ImageSize.SMALL.width, ImageSize.SMALL.height);
+        
+        Map<ImageSize, byte[]> result = new EnumMap<>(ImageSize.class);
+        
+        result.put(ImageSize.LARGE, toJpegBytes(origin));
+        result.put(ImageSize.MEDIUM, toJpegBytes(medium));
+        result.put(ImageSize.SMALL, toJpegBytes(small));
+        result.put(ImageSize.THUMBNAIL, toJpegBytes(thumbnail));
+        
+        return result;
     }
     
-    private BufferedImage normalizeToOrigin(BufferedImage raw) throws IOException {
+    private BufferedImage createOrigin(BufferedImage raw) throws IOException {
         
         boolean isPortrait = raw.getHeight() > raw.getWidth();
+        int targetWidth = isPortrait ? ORIGIN_W : ORIGIN_H;
+        int targetHeight = isPortrait ? ORIGIN_H : ORIGIN_W;
         
         return Thumbnails.of(raw)
-                .size(isPortrait ? ORIGIN_W : ORIGIN_H,
-                        isPortrait ? ORIGIN_H : ORIGIN_W)
+                .size(targetWidth, targetHeight)
                 .keepAspectRatio(true)
                 .asBufferedImage();
     }
     
-    private BufferedImage cropToSquare(BufferedImage source) throws IOException {
+    private BufferedImage createSquareCrop(BufferedImage source) throws IOException {
         
         int side = Math.min(source.getWidth(), source.getHeight());
         
@@ -64,7 +78,7 @@ public class ImageProcessing {
                 .asBufferedImage();
     }
     
-    private BufferedImage cropToSmallRatio(BufferedImage src) throws IOException {
+    private BufferedImage createSmallRatioCrop(BufferedImage src) throws IOException {
         
         int w = src.getWidth();
         int h = src.getHeight();
@@ -124,7 +138,8 @@ public class ImageProcessing {
                 default -> 0;
             };
             
-        } catch (Exception e) {
+        } catch (ImageProcessingException | IOException | MetadataException e) {
+            log.debug("Could not extract EXIF orientation: {}", e.getMessage());
             
             return 0;
         }
@@ -158,10 +173,10 @@ public class ImageProcessing {
         
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             
-            boolean written = ImageIO.write(rgb, "jpg", baos);
+            boolean written = ImageIO.write(rgb, "jpeg", baos);
             
             if (!written) {
-                throw new IllegalArgumentException("No JPEG writer available");
+                throw new IllegalStateException("JPEG writer is not available in current runtime");
             }
             
             return baos.toByteArray();
