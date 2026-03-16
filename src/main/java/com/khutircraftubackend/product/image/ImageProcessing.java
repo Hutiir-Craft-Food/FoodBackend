@@ -7,6 +7,7 @@ import org.apache.tika.Tika;
 import org.springframework.stereotype.Component;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -20,7 +21,6 @@ public class ImageProcessing {
 
     private static final int MAX_WIDTH = 1920;
     private static final int MAX_HEIGHT = 1080;
-    private static final Tika TIKA = new Tika();
 
     public Map<ImageSize, byte[]> process(byte[] bytes) throws ImageProcessingException {
 
@@ -44,17 +44,15 @@ public class ImageProcessing {
             InputStream is = new ByteArrayInputStream(rawImage);
             BufferedImage originalImage = ImageIO.read(is);
 
-            // TODO:
-            //  String detectedMimeType = TIKA.detect(is);
-            //  if (detectedMimeType == "image/png" && originalImage.getColorModel().hasAlpha()):
-            //      then convert to jpeg (because of the alpha channel).
-            //  do it before resizing, to avoid quality loss
-
             int width = originalImage.getWidth();
             int height = originalImage.getHeight();
 
             if (Math.min(width, height) < 438) {
                 throw new ImageProcessingException("Image is too small for processing");
+            }
+
+            if (originalImage.getColorModel().hasAlpha()) {
+                originalImage = removeAlphaChannel(originalImage);
             }
 
             if (height <= MAX_HEIGHT && width <= MAX_WIDTH) {
@@ -124,6 +122,22 @@ public class ImageProcessing {
         } catch (IOException e) {
             throw new ImageProcessingException("Failed to convert image to byte array", e);
         }
+    }
+
+    private BufferedImage removeAlphaChannel(BufferedImage sourceImage) {
+
+        BufferedImage targetImage = new BufferedImage(
+                sourceImage.getWidth(),
+                sourceImage.getHeight(),
+                BufferedImage.TYPE_INT_RGB
+        );
+
+        Graphics2D g = targetImage.createGraphics();
+        g.setColor(Color.WHITE);
+        g.fillRect(0, 0, sourceImage.getWidth(), sourceImage.getHeight());
+        g.drawImage(sourceImage, 0, 0, null);
+        g.dispose();
+        return targetImage;
     }
 
 }
