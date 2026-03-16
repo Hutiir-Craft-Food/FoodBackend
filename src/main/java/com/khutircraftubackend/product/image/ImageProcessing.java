@@ -61,10 +61,7 @@ public class ImageProcessing {
                 return originalImage;
             }
 
-            return Thumbnails.of(originalImage)
-                    .size(MAX_WIDTH, MAX_HEIGHT)
-                    .keepAspectRatio(true)
-                    .asBufferedImage();
+            return resize(originalImage, MAX_WIDTH, MAX_HEIGHT);
         } catch (IOException ex) {
             throw new ImageProcessingException("Failed to normalize image", ex);
         }
@@ -82,10 +79,7 @@ public class ImageProcessing {
         double scale = (double) maxTargetDimension / minSourceDimension;
 
         try {
-            BufferedImage resizedImage = Thumbnails.of(sourceImage)
-                    .scale(scale)
-                    .asBufferedImage();
-
+            BufferedImage resizedImage = resize(sourceImage, scale);
             if (width == resizedImage.getWidth() && height == resizedImage.getHeight()) {
                 return resizedImage;
             }
@@ -96,6 +90,27 @@ public class ImageProcessing {
                     .asBufferedImage();
         } catch (IOException e) {
             throw new ImageProcessingException("Failed to crop image", e);
+        }
+    }
+
+    private BufferedImage resize(BufferedImage sourceImage, double scale) throws ImageProcessingException {
+        try {
+            return Thumbnails.of(sourceImage)
+                    .scale(scale)
+                    .asBufferedImage();
+        } catch (IOException e) {
+            throw new ImageProcessingException("Failed to resize image", e);
+        }
+    }
+
+    private BufferedImage resize(BufferedImage sourceImage, int width, int height) throws ImageProcessingException {
+        try {
+            return Thumbnails.of(sourceImage)
+                .size(width, height)
+                .keepAspectRatio(true)
+                .asBufferedImage();
+        } catch (IOException ex) {
+            throw new ImageProcessingException("Failed to resize image", ex);
         }
     }
 
