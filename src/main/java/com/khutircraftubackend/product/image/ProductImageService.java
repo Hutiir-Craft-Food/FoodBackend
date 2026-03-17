@@ -3,6 +3,7 @@ package com.khutircraftubackend.product.image;
 import com.khutircraftubackend.product.ProductEntity;
 import com.khutircraftubackend.product.ProductService;
 import com.khutircraftubackend.product.image.exception.DuplicateImagePositionException;
+import com.khutircraftubackend.product.image.exception.ImageProcessingException;
 import com.khutircraftubackend.product.image.request.ProductImageChangeRequest;
 import com.khutircraftubackend.product.image.request.ProductImageUploadRequest;
 import com.khutircraftubackend.product.image.response.ProductImageResponse;
@@ -10,6 +11,7 @@ import com.khutircraftubackend.product.image.response.ProductImageResponseMessag
 import com.khutircraftubackend.storage.StorageService;
 import com.khutircraftubackend.validated.ImageMimeValidator;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -17,10 +19,15 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
+
+import static com.khutircraftubackend.product.image.response.ProductImageResponseMessages.ERROR_READ_INPUT_STREAM;
+import static com.khutircraftubackend.product.image.response.ProductImageResponseMessages.ERROR_UPLOAD_IMAGE_VARIANTS;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ProductImageService {
     
     private final ProductImageRepository imageRepository;
@@ -36,7 +43,7 @@ public class ProductImageService {
     
     @Transactional()
     public ProductImageResponse uploadImages(Long productId, ProductImageUploadRequest request,
-                                             List<MultipartFile> files) throws IOException {
+                                             List<MultipartFile> files) {
         ProductEntity product = ensureProductExists(productId);
         List<ProductImageEntity> existingImages = imageRepository.findByProductId(productId);
         validator.validateUploadRequest(existingImages, request, files);
@@ -63,7 +70,7 @@ public class ProductImageService {
     
     private List<ProductImageEntity> createImagesInternal(ProductEntity product,
                                                           ProductImageUploadRequest meta,
-                                                          List<MultipartFile> files) throws IOException {
+                                                          List<MultipartFile> files) {
         List<ProductImageEntity> entities = new ArrayList<>();
         
         for (int i = 0; i < files.size(); i++) {
@@ -77,37 +84,65 @@ public class ProductImageService {
     
     private ProductImageEntity createImageForAllSizes(ProductEntity product,
                                                       MultipartFile file,
-                                                      int position) throws IOException {
-        ProductImageEntity image = ProductImageEntity.builder()
+                                                      int position) {
+        ProductImageEntity productImageEntity = ProductImageEntity.builder()
                 .product(product)
                 .position(position)
                 .build();
         
-        Map<ImageSize, byte[]> processed = imageProcessing.process(file.getInputStream());
+        List<String> uploadedUrls = new ArrayList<>();
+        
+        InputStream inputStream;
+        try {
+            inputStream = file.getInputStream();
+        } catch (IOException e) {
+            log.error("Failed to process image at position {}", position, e);
+            throw new ImageProcessingException(ERROR_READ_INPUT_STREAM, e);
+        }
+        
+        Map<ImageSize, byte[]> processed = imageProcessing.process(inputStream);
         
         List<ProductImageVariantEntity> variants = new ArrayList<>(processed.size());
         
-        for (Map.Entry<ImageSize, byte[]> entry : processed.entrySet()) {
+        try {
+            for (Map.Entry<ImageSize, byte[]> entry : processed.entrySet()) {
+                
+                ImageSize size = entry.getKey();
+                byte[] imageBytes = entry.getValue();
+                
+                String fileName = size.name().toLowerCase() + "_" + UUID.randomUUID() + ".jpg";
+                
+                String url = storageService.upload(imageBytes, fileName);
+                
+                uploadedUrls.add(url);
+                
+                ProductImageVariantEntity variant = ProductImageVariantEntity.builder()
+                        .image(productImageEntity)
+                        .tsSize(size)
+                        .link(url)
+                        .build();
+                
+                variants.add(variant);
+            }
+            productImageEntity.setVariants(variants);
             
-            ImageSize size = entry.getKey();
-            byte[] imageBytes = entry.getValue();
+            return productImageEntity;
             
-            String fileName = size.name().toLowerCase() + "_" + UUID.randomUUID() + ".jpg";
+        } catch (Exception e) {
+            log.error("Failed to upload image variants for position {}", position, e);
+    
+            uploadedUrls.forEach(url -> {
+                try {
+                    storageService.deleteByUrl(url);
+                } catch (Exception ex) {
+                    log.error("Failed to rollback file: {}", url, ex);
+                }
+            });
             
-            String url = storageService.upload(imageBytes, fileName);
-            
-            ProductImageVariantEntity variant = ProductImageVariantEntity.builder()
-                    .image(image)
-                    .tsSize(size)
-                    .link(url)
-                    .build();
-            
-            variants.add(variant);
+            throw new ImageProcessingException(ERROR_UPLOAD_IMAGE_VARIANTS, e);
         }
-        image.setVariants(variants);
-        
-        return image;
     }
+    
     
     @Transactional
     public ProductImageResponse reorderImages(Long productId, ProductImageChangeRequest request) {
