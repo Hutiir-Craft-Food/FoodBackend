@@ -62,10 +62,11 @@ class ImageProcessingTest {
     @ParameterizedTest
     @CsvSource({
             "2000, 3000, MEDIUM, 438, 438",
-            "3000, 2000, SMALL, 324, 257",
             "3000, 1000, MEDIUM, 438, 438",
             "1000, 3000, MEDIUM, 438, 438",
             "200, 200, MEDIUM, 438, 438",
+            "2000, 3000, SMALL, 257, 324",
+            "3000, 2000, SMALL, 324, 257",
             "2000, 3000, THUMBNAIL, 64, 64"
     })
     @DisplayName("Should resize and crop images to expected dimensions")
@@ -94,6 +95,140 @@ class ImageProcessingTest {
         
         // then
         assertNotNull(result);
+    }
+    
+    @DisplayName("Should have large image with correct dimensions")
+    @Test
+    void largeShouldHaveExactDimensions() throws IOException {
+        
+        // given
+        BufferedImage image = new BufferedImage(4000, 3000, BufferedImage.TYPE_INT_RGB);
+        
+        // when
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(image, "jpg", baos);
+        
+        // then
+        Map<ImageSize, byte[]> result =
+                imageProcessing.process(new ByteArrayInputStream(baos.toByteArray()));
+        
+        // and
+        BufferedImage large = ImageIO.read(
+                new ByteArrayInputStream(result.get(ImageSize.LARGE))
+        );
+        
+        // assert
+        assertEquals(1920, large.getWidth());
+        assertEquals(1080, large.getHeight());
+    }
+    
+    @DisplayName("Should crop to exact ratio")
+    @Test
+    void shouldCropToExactRatio() throws IOException {
+        
+        // given
+        Map<ImageSize, byte[]> result = processImage(4000, 3000, "jpg");
+        
+        // then
+        BufferedImage large = ImageIO.read(new ByteArrayInputStream(
+                result.get(ImageSize.LARGE)
+        ));
+        
+        double ratio = (double) large.getWidth() / large.getHeight();
+        
+        boolean isLandscape = large.getWidth() > large.getHeight();
+        
+        // assert
+        if (isLandscape) {
+            assertTrue(Math.abs(ratio - (16.0 / 9.0)) < 0.001);
+        } else {
+            assertTrue(Math.abs(ratio - (9.0 / 16.0)) < 0.001);
+        }
+    }
+    
+    @DisplayName("Should create small portrait image with correct dimensions and orientation")
+    @Test
+    void shouldCreateSmallPortraitCorrectly() throws IOException {
+        
+        // given
+        Map<ImageSize, byte[]> result = processImage(3000, 4000, "jpg");
+        
+        // then
+        BufferedImage small = ImageIO.read(new ByteArrayInputStream(
+                result.get(ImageSize.SMALL)
+        ));
+        
+        // assert
+        assertEquals(257, small.getWidth());
+        assertEquals(324, small.getHeight());
+    }
+    
+    @DisplayName("Should create small landscape image with correct dimensions and orientation")
+    @Test
+    void shouldCreateSmallLandscapeCorrectly() throws IOException {
+        
+        // given
+        Map<ImageSize, byte[]> result = processImage(4000, 3000, "jpg");
+        
+        // then
+        BufferedImage small = ImageIO.read(new ByteArrayInputStream(
+                result.get(ImageSize.SMALL)
+        ));
+        
+        // assert
+        assertEquals(324, small.getWidth());
+        assertEquals(257, small.getHeight());
+    }
+    
+    @DisplayName("Should handle very wide image and produce correct small variant")
+    @Test
+    void shouldHandleVeryWideImage() throws IOException {
+        
+        // given
+        Map<ImageSize, byte[]> result = processImage(4000, 500, "jpg");
+        
+        // then
+        BufferedImage small = ImageIO.read(new ByteArrayInputStream(
+                result.get(ImageSize.SMALL)
+        ));
+        
+        // assert
+        assertEquals(324, small.getWidth());
+        assertEquals(257, small.getHeight());
+    }
+    
+    @DisplayName("Should handle very tall image and produce correct small variant")
+    @Test
+    void shouldHandleVeryTallImage() throws IOException {
+        
+        // given
+        Map<ImageSize, byte[]> result = processImage(500, 4000, "jpg");
+        
+        // then
+        BufferedImage small = ImageIO.read(new ByteArrayInputStream(
+                result.get(ImageSize.SMALL)
+        ));
+        
+        // assert
+        assertEquals(257, small.getWidth());
+        assertEquals(324, small.getHeight());
+    }
+    
+    @DisplayName("Should handle small image that is smaller than target sizes and not upscale")
+    @Test
+    void shouldHandleSquareImage() throws IOException {
+        
+        // given
+        Map<ImageSize, byte[]> result = processImage(100, 100, "jpg");
+        
+        // then
+        BufferedImage small = ImageIO.read(new ByteArrayInputStream(
+                result.get(ImageSize.SMALL)
+        ));
+        
+        // assert
+        assertEquals(324, small.getWidth());
+        assertEquals(257, small.getHeight());
     }
     
 }

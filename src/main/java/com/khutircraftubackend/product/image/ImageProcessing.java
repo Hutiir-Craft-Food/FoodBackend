@@ -29,131 +29,129 @@ public class ImageProcessing {
     
     private static final int ORIGIN_W = 1080;
     private static final int ORIGIN_H = 1920;
-    private static final double SMALL_RATIO = 324.0 / 257.0;
     
     public Map<ImageSize, byte[]> process(InputStream inputStream) {
         
         byte[] bytes;
-        try (inputStream) {
+        try {
             bytes = inputStream.readAllBytes();
+            
+            BufferedImage origin = readWithOrientation(bytes);
+            origin = createOrigin(origin);
+            
+            BufferedImage square = createSquare(origin);
+            BufferedImage smallBase = createSmall(origin);
+            
+            BufferedImage medium = resize(square, ImageSize.MEDIUM.width, ImageSize.MEDIUM.height);
+            BufferedImage thumbnail = resize(medium, ImageSize.THUMBNAIL.width, ImageSize.THUMBNAIL.height);
+            
+            Map<ImageSize, byte[]> result = new EnumMap<>(ImageSize.class);
+            
+            result.put(ImageSize.LARGE, toJpegBytes(origin));
+            result.put(ImageSize.MEDIUM, toJpegBytes(medium));
+            result.put(ImageSize.SMALL, toJpegBytes(smallBase));
+            result.put(ImageSize.THUMBNAIL, toJpegBytes(thumbnail));
+            
+            return result;
+            
         } catch (IOException e) {
-            throw new ImageProcessingException(ERROR_READ_INPUT_STREAM, e);
+            log.error("Failed to process image", e);
+            throw new ImageProcessingException(ERROR_IMAGE_PROCESSING, e);
+        } catch (RuntimeException e) {
+            log.error("Unexpected error during image processing", e);
+            throw new ImageProcessingException(UNEXPECTED_IMAGE_PROCESSING, e);
         }
-        
-        BufferedImage origin = readWithOrientation(bytes);
-        origin = createOrigin(origin);
-        
-        BufferedImage square = createSquareCrop(origin);
-        BufferedImage smallBase = createSmallRatioCrop(origin);
-        
-        BufferedImage medium = resize(square, ImageSize.MEDIUM.width, ImageSize.MEDIUM.height);
-        BufferedImage thumbnail = resize(medium, ImageSize.THUMBNAIL.width, ImageSize.THUMBNAIL.height);
-        BufferedImage small = resize(smallBase, ImageSize.SMALL.width, ImageSize.SMALL.height);
-        
-        Map<ImageSize, byte[]> result = new EnumMap<>(ImageSize.class);
-        
-        result.put(ImageSize.LARGE, toJpegBytes(origin));
-        result.put(ImageSize.MEDIUM, toJpegBytes(medium));
-        result.put(ImageSize.SMALL, toJpegBytes(small));
-        result.put(ImageSize.THUMBNAIL, toJpegBytes(thumbnail));
-        
-        return result;
     }
     
-    private BufferedImage createOrigin(BufferedImage raw) {
+    private BufferedImage createOrigin(BufferedImage raw) throws IOException {
         
         boolean isPortrait = raw.getHeight() > raw.getWidth();
+        
         int targetWidth = isPortrait ? ORIGIN_W : ORIGIN_H;
         int targetHeight = isPortrait ? ORIGIN_H : ORIGIN_W;
         
-        try {
-            return Thumbnails.of(raw)
-                    .size(targetWidth, targetHeight)
-                    .keepAspectRatio(true)
-                    .asBufferedImage();
-        } catch (IOException e) {
-            throw new ImageProcessingException(ERROR_CREATE_ORIGIN_IMAGE, e);
-        }
+        double targetRatio = (double) targetWidth / targetHeight;
+        
+        BufferedImage cropped = cropToRatio(raw, targetRatio);
+        
+        return Thumbnails.of(cropped)
+                .size(targetWidth, targetHeight)
+                .asBufferedImage();
     }
     
-    private BufferedImage createSquareCrop(BufferedImage source) {
+    private BufferedImage createSquare(BufferedImage source) throws IOException {
         
         int side = Math.min(source.getWidth(), source.getHeight());
         
-        try {
-            return Thumbnails.of(source)
-                    .sourceRegion(Positions.CENTER, side, side)
-                    .scale(1.0)
-                    .asBufferedImage();
-        } catch (IOException e) {
-            throw new ImageProcessingException(ERROR_CREATE_SQUARE_IMAGE, e);
-        }
+        return Thumbnails.of(source)
+                .sourceRegion(Positions.CENTER, side, side)
+                .scale(1.0)
+                .asBufferedImage();
     }
     
-    private BufferedImage createSmallRatioCrop(BufferedImage src) {
+    private BufferedImage createSmall(BufferedImage src) throws IOException {
+        
+        boolean isPortrait = src.getHeight() > src.getWidth();
+        
+        int targetWidth = isPortrait ? ImageSize.SMALL.width : ImageSize.SMALL.height;
+        int targetHeight = isPortrait ? ImageSize.SMALL.height : ImageSize.SMALL.width;
+        
+        double targetRatio = (double) targetWidth / targetHeight;
+        
+        BufferedImage small = cropToRatio(src, targetRatio);
+        
+        return Thumbnails.of(small)
+                .size(targetWidth, targetHeight)
+                .asBufferedImage();
+    }
+    
+    private BufferedImage cropToRatio(BufferedImage src, double ratio) throws IOException {
         
         int w = src.getWidth();
         int h = src.getHeight();
+        
         int cropW;
         int cropH;
         
-        if ((double) w / h > SMALL_RATIO) {
-            // зображення "ширше" за цільове співвідношення — обрізаємо по ширині
+        if ((double) w / h > ratio) {
             cropH = h;
-            cropW = (int) Math.round(h * SMALL_RATIO);
+            cropW = (int) Math.round(h * ratio);
         } else {
-            // зображення "вужче" — обрізаємо по висоті
             cropW = w;
-            cropH = (int) Math.round(w * SMALL_RATIO);
-        }
-        try {
-            return Thumbnails.of(src)
-                    .sourceRegion(Positions.CENTER, cropW, cropH)
-                    .scale(1.0)
-                    .asBufferedImage();
-        } catch (IOException e) {
-            throw new ImageProcessingException(ERROR_IMAGE_TOO_SMALL, e);
+            cropH = (int) Math.round(w / ratio);
         }
         
+        return Thumbnails.of(src)
+                .sourceRegion(Positions.CENTER, cropW, cropH)
+                .scale(1.0)
+                .asBufferedImage();
     }
     
-    private BufferedImage resize(BufferedImage src, int w, int h) {
+    private BufferedImage resize(BufferedImage src, int w, int h) throws IOException {
         
-        try {
-            return Thumbnails.of(src)
-                    .size(w, h)
-                    .asBufferedImage();
-        } catch (IOException e) {
-            throw new ImageProcessingException(ERROR_RESIZE_IMAGE, e);
-        }
+        return Thumbnails.of(src)
+                .size(w, h)
+                .keepAspectRatio(true)
+                .asBufferedImage();
     }
     
-    private BufferedImage readWithOrientation(byte[] bytes) {
+    private BufferedImage readWithOrientation(byte[] bytes) throws IOException {
         
-        BufferedImage image;
-        try {
-            image = ImageIO.read(new ByteArrayInputStream(bytes));
-        } catch (IOException e) {
-            throw new ImageProcessingException(ERROR_READ_INPUT_STREAM, e);
+        BufferedImage image = ImageIO.read(new ByteArrayInputStream(bytes));
+        
+        if (image == null) {
+            throw new ImageProcessingException(ERROR_IMAGE_READ);
         }
         
         int rotation = readRotation(bytes);
         
-        try {
-            if(image == null) {
-                throw new ImageProcessingException(ERROR_READ_INPUT_STREAM);
-            }
-            
-            return Thumbnails.of(image)
-                    .rotate(rotation)
-                    .scale(1.0)
-                    .asBufferedImage();
-        } catch (IOException e) {
-            throw new ImageProcessingException(ERROR_READ_ORIENT_IMAGE, e);
-        }
+        return Thumbnails.of(image)
+                .rotate(rotation)
+                .scale(1.0)
+                .asBufferedImage();
     }
     
-    private int readRotation(byte[] bytes) {
+    private int readRotation(byte[] bytes) throws IOException {
         
         try {
             Metadata metadata = ImageMetadataReader.readMetadata(new ByteArrayInputStream(bytes));
@@ -171,13 +169,10 @@ public class ImageProcessing {
                 case 8 -> 270;
                 default -> 0;
             };
-            
-        } catch (IOException | MetadataException e) {
-            throw new ImageProcessingException(ERROR_METADATA_READ, e);
-        } catch (com.drew.imaging.ImageProcessingException e) {
-            throw new ImageProcessingException(ERROR_PROCESSING_METADATA, e);
+        } catch (com.drew.imaging.ImageProcessingException | MetadataException e) {
+            log.warn("Failed to read image metadata for orientation, defaulting to 0 rotation", e);
+            return 0;
         }
-        
     }
     
     
@@ -202,20 +197,17 @@ public class ImageProcessing {
         return newImage;
     }
     
-    private byte[] toJpegBytes(BufferedImage image) {
+    private byte[] toJpegBytes(BufferedImage image) throws IOException {
         
         BufferedImage rgb = removeAlphaChannel(image);
         
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            Thumbnails.of(rgb)
-                    .scale(1.0)
-                    .outputFormat("jpg")
-                    .toOutputStream(baos);
-            
-            return baos.toByteArray();
-        } catch (IOException e) {
-            throw new ImageProcessingException(ERROR_TO_JPEG_CONVERSION, e);
-        }
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        Thumbnails.of(rgb)
+                .scale(1.0)
+                .outputFormat("jpg")
+                .toOutputStream(baos);
+        
+        return baos.toByteArray();
     }
     
 }

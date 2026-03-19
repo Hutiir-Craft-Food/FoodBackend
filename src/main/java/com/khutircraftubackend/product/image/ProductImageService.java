@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 
-import static com.khutircraftubackend.product.image.response.ProductImageResponseMessages.ERROR_READ_INPUT_STREAM;
+import static com.khutircraftubackend.product.image.response.ProductImageResponseMessages.ERROR_IMAGE_READ_STREAM;
 import static com.khutircraftubackend.product.image.response.ProductImageResponseMessages.ERROR_UPLOAD_IMAGE_VARIANTS;
 
 @Service
@@ -37,7 +37,6 @@ public class ProductImageService {
     private final ImageMimeValidator mimeValidator;
     private final ProductImageValidator validator;
     private final ImageProcessing imageProcessing;
-    
     @Value("${allowed.mime.types}")
     private Set<String> allowedMimeTypes;
     
@@ -92,18 +91,16 @@ public class ProductImageService {
         
         List<String> uploadedUrls = new ArrayList<>();
         
-        InputStream inputStream;
-        try {
-            inputStream = file.getInputStream();
+        Map<ImageSize, byte[]> processed;
+        
+        try (InputStream inputStream = file.getInputStream()) {
+            processed = imageProcessing.process(inputStream);
         } catch (IOException e) {
             log.error("Failed to process image at position {}", position, e);
-            throw new ImageProcessingException(ERROR_READ_INPUT_STREAM, e);
+            throw new ImageProcessingException(ERROR_IMAGE_READ_STREAM, e);
         }
         
-        Map<ImageSize, byte[]> processed = imageProcessing.process(inputStream);
-        
         List<ProductImageVariantEntity> variants = new ArrayList<>(processed.size());
-        
         try {
             for (Map.Entry<ImageSize, byte[]> entry : processed.entrySet()) {
                 
@@ -128,18 +125,21 @@ public class ProductImageService {
             
             return productImageEntity;
             
-        } catch (Exception e) {
-            log.error("Failed to upload image variants for position {}", position, e);
-    
-            uploadedUrls.forEach(url -> {
-                try {
-                    storageService.deleteByUrl(url);
-                } catch (Exception ex) {
-                    log.error("Failed to rollback file: {}", url, ex);
-                }
-            });
-            
+        } catch (RuntimeException e) {
+            log.error("Failed to upload image variants for position {}. Starting rollback...", position, e);
+            rollback(uploadedUrls);
             throw new ImageProcessingException(ERROR_UPLOAD_IMAGE_VARIANTS, e);
+        }
+    }
+    
+    private void rollback(List<String> urls) {
+        
+        for(String url : urls) {
+            try {
+                storageService.deleteByUrl(url);
+            } catch (RuntimeException ex) {
+                log.error("Failed to rollback file: {}", url, ex);
+            }
         }
     }
     

@@ -1,5 +1,6 @@
 package com.khutircraftubackend.exception;
 
+import com.khutircraftubackend.product.image.exception.ImageProcessingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -20,7 +21,6 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -163,9 +163,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .build();
     }
     
-    @ExceptionHandler(IOException.class)
+    @ExceptionHandler(ImageProcessingException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public Object handleIOException(IOException ex, HttpServletRequest request) {
+    public Object handleImageProcessingException(ImageProcessingException ex, HttpServletRequest request) {
         return GlobalErrorResponse.builder()
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
