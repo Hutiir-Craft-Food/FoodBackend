@@ -1,6 +1,9 @@
 package com.khutircraftubackend.storage;
 
-import com.khutircraftubackend.storage.exception.*;
+import com.khutircraftubackend.storage.exception.DirectoryCreationException;
+import com.khutircraftubackend.storage.exception.FileNotFoundException;
+import com.khutircraftubackend.storage.exception.InvalidArgumentException;
+import com.khutircraftubackend.storage.exception.StorageException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,8 +18,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Objects;
-import java.util.UUID;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -34,17 +37,11 @@ public class LocalStorageService implements StorageService {
                     String.format(StorageResponseMessage.ERROR_CREATE_DIRECTORY, uploadPath));
         }
 
-        String extension = "";
-
-        if (originalFileName != null && originalFileName.contains(".")) {
-            extension = originalFileName.substring(originalFileName.lastIndexOf("."));
-        }
-
-        String newFileName = UUID.randomUUID() + extension;
-
-        Path filePath = uploadPath.resolve(newFileName);
+        String safeName = Paths.get(originalFileName).getFileName().toString();
+        Path filePath = uploadPath.resolve(safeName);
+        
         try {
-            Files.copy(new ByteArrayInputStream(fileBytes), filePath);
+            Files.copy(new ByteArrayInputStream(fileBytes), filePath, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             throw new StorageException(StorageResponseMessage.ERROR_SAVE);
         }

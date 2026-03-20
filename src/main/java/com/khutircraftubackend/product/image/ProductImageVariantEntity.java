@@ -3,6 +3,8 @@ package com.khutircraftubackend.product.image;
 import com.khutircraftubackend.audit.Auditable;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Getter
@@ -32,5 +34,6 @@ public class ProductImageVariantEntity extends Auditable {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "ts_size", nullable = false)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private ImageSize tsSize;
 }

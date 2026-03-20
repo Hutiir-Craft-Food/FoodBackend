@@ -4,7 +4,7 @@ import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public final class ProductImageResponseMessages {
-
+    
     public static final String ERROR_TOO_MANY_IMAGES =
             "Завантажено забагато зображень. Максимальна кількість - %d файлів.";
     public static final String ERROR_POSITION_ALREADY_EXISTS =
@@ -17,4 +17,11 @@ public final class ProductImageResponseMessages {
     public static final String ERROR_NOT_FOUND_POSITION = "Продукт не має зображень за позиціями: %s.";
     public static final String ERROR_UNIQUE_POSITION = "Позиція вже зайнята для цього продукту";
     public static final String ERROR_UNIQUE_CONFLICT = "Список варіантів має містити записи лише для одного зображення.";
+    
+    public static final String ERROR_IMAGE_READ_STREAM = "Cannot read input stream";
+    public static final String ERROR_IMAGE_READ = "Failed to read image for orientation due to null";
+    public static final String UNEXPECTED_IMAGE_PROCESSING = "Unexpected image processing error";
+    public static final String ERROR_UPLOAD_IMAGE_VARIANTS = "Failed to upload image variants";
+    public static final String ERROR_IMAGE_PROCESSING = "Failed to process image";
+    
 }

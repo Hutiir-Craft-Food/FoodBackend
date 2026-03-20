@@ -4,8 +4,8 @@ import com.khutircraftubackend.product.ProductEntity;
 import com.khutircraftubackend.product.ProductService;
 import com.khutircraftubackend.product.exception.ProductNotFoundException;
 import com.khutircraftubackend.product.image.exception.*;
-import com.khutircraftubackend.product.image.request.ProductImageUploadRequest;
 import com.khutircraftubackend.product.image.request.ProductImageChangeRequest;
+import com.khutircraftubackend.product.image.request.ProductImageUploadRequest;
 import com.khutircraftubackend.product.image.response.ProductImageDTO;
 import com.khutircraftubackend.product.image.response.ProductImageResponse;
 import com.khutircraftubackend.product.image.response.ProductImageResponseMessages;
@@ -21,7 +21,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.khutircraftubackend.product.exception.ProductResponseMessage.PRODUCT_NOT_FOUND;
 import static org.junit.jupiter.api.Assertions.*;
@@ -30,7 +33,10 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ProductImagesServiceTest {
-
+    
+    private static final Long MAX_COUNT_FILES = 5L;
+    private final List<ProductImageEntity> imagesList = new ArrayList<>();
+    private final List<ProductImageDTO> dtoList = new ArrayList<>();
     @Mock
     private ProductImageRepository imageRepository;
     @Mock
@@ -43,39 +49,36 @@ class ProductImagesServiceTest {
     private ImageMimeValidator mimeValidator;
     @Mock
     private ProductImageValidator validator;
-
+    @Mock
+    private ImageProcessing imageProcessing;
     @InjectMocks
     private ProductImageService imagesService;
-
     private ProductEntity product;
-    private final List<ProductImageEntity> imagesList = new ArrayList<>();
-    private final List<ProductImageDTO> dtoList = new ArrayList<>();
-    private static final Long MAX_COUNT_FILES = 5L;
-
+    
     @BeforeEach
     void setup() {
         product = ProductEntity.builder()
                 .id(1L)
                 .name("Test Product")
                 .build();
-
+        
         ProductImageEntity image1 = ProductImageEntity.builder()
                 .id(1L)
                 .position(0)
                 .product(product)
                 .variants(createVariants("link1"))
                 .build();
-
+        
         ProductImageEntity image2 = ProductImageEntity.builder()
                 .id(2L)
                 .position(1)
                 .product(product)
                 .variants(createVariants("link2"))
                 .build();
-
+        
         imagesList.add(image1);
         imagesList.add(image2);
-
+        
         dtoList.add(
                 ProductImageDTO.builder()
                         .id(1L)
@@ -84,14 +87,14 @@ class ProductImagesServiceTest {
                         .links(null)
                         .build());
         dtoList.add(ProductImageDTO.builder()
-                        .id(2L)
-                        .productId(1L)
-                        .position(1)
-                        .links(null)
-                        .build()
+                .id(2L)
+                .productId(1L)
+                .position(1)
+                .links(null)
+                .build()
         );
     }
-
+    
     private List<ProductImageVariantEntity> createVariants(String baseLink) {
         return Arrays.stream(ImageSize.values())
                 .map(size -> ProductImageVariantEntity.builder()
@@ -100,41 +103,84 @@ class ProductImagesServiceTest {
                         .build())
                 .toList();
     }
-
+    
+    @Test
+    void shouldThrowException_whenInputStreamFails() throws Exception {
+        
+        MultipartFile file = mock(MultipartFile.class);
+        when(file.getInputStream()).thenThrow(new IOException("fail"));
+        
+        ProductImageUploadRequest request =
+                new ProductImageUploadRequest(List.of(
+                        new ProductImageUploadRequest.UploadImageInfo(2)
+                ));
+        
+        when(imageRepository.findByProductId(1L)).thenReturn(imagesList);
+        doNothing().when(validator).validateUploadRequest(anyList(), any(), any());
+        
+        assertThrows(ImageProcessingException.class, () ->
+                imagesService.uploadImages(1L, request, List.of(file))
+        );
+        
+        verify(storageService, never()).upload(any(), any());
+    }
+    
+    @Test
+    void shouldThrowException_whenProcessingFails() {
+        
+        MultipartFile file = mock(MultipartFile.class);
+        ProductImageUploadRequest request =
+                new ProductImageUploadRequest(List.of(
+                        new ProductImageUploadRequest.UploadImageInfo(2)
+                ));
+        
+        when(imageRepository.findByProductId(1L)).thenReturn(imagesList);
+        doNothing().when(validator).validateUploadRequest(anyList(), any(), any());
+        
+        when(imageProcessing.process(any()))
+                .thenThrow(new ImageProcessingException("processing fail"));
+        
+        assertThrows(ImageProcessingException.class, () ->
+                imagesService.uploadImages(1L, request, List.of(file))
+        );
+        
+        verify(storageService, never()).upload(any(), any());
+    }
+    
     @Nested
     @DisplayName("Product image viewing tests")
     class ViewImages {
-
+        
         @Test
         void productImagesViewSuccess() {
             when(imageRepository.findByProductId(1L)).thenReturn(imagesList);
             when(imageMapper.toProductImageDtoList(imagesList)).thenReturn(dtoList);
-
+            
             ProductImageResponse actual = imagesService.getImages(1L);
-
+            
             assertEquals(dtoList, actual.images());
             verify(productService).findProductById(1L);
             verify(imageRepository).findByProductId(1L);
             verify(imageMapper).toProductImageDtoList(imagesList);
         }
-
+        
         @Test
         void shouldThrowNotFoundWhenProductDoesNotExist() {
             Long productId = 2L;
             when(productService.findProductById(productId))
                     .thenThrow(new ProductNotFoundException(String.format(PRODUCT_NOT_FOUND, productId)));
-
+            
             ProductNotFoundException ex = assertThrows(ProductNotFoundException.class,
                     () -> imagesService.getImages(2L));
-
+            
             assertEquals(String.format(PRODUCT_NOT_FOUND, productId), ex.getMessage());
         }
     }
-
+    
     @Nested
     @DisplayName("Product image upload tests")
     class UploadImages {
-
+        
         @Test
         void uploadImagesSuccess() {
             // Given
@@ -143,58 +189,70 @@ class ProductImagesServiceTest {
             );
             MultipartFile file = mock(MultipartFile.class);
             List<MultipartFile> files = List.of(file);
-
+            
             ProductImageEntity newImage = ProductImageEntity.builder()
                     .id(3L)
                     .position(2)
                     .product(product)
                     .variants(createVariants("link3"))
                     .build();
-
+            
             ProductImageDTO newDtoList = ProductImageDTO.builder()
-                    .id(2L)
-                    .productId(1L)
-                    .position(1)
+                    .id(newImage.getId())
+                    .productId(product.getId())
+                    .position(newImage.getPosition())
                     .links(null)
                     .build();
-
+            
             dtoList.add(newDtoList);
             List<ProductImageEntity> allImagesAfterUpload = new ArrayList<>(imagesList);
             allImagesAfterUpload.add(newImage);
-
+            
+            Map<ImageSize, byte[]> fakeMap =
+                    Arrays.stream(ImageSize.values())
+                            .collect(Collectors.toMap(
+                                    size -> size,
+                                    size -> "img".getBytes(),
+                                    (a, b) -> a,
+                                    () -> new EnumMap<>(ImageSize.class)
+                            ));
+            
+            when(imageProcessing.process(any())).thenReturn(fakeMap);
+            when(storageService.upload(any(), any())).thenReturn("url");
+            
             when(imageRepository.findByProductId(1L)).thenReturn(imagesList);
             doNothing().when(validator).validateUploadRequest(imagesList, request, files);
             when(imageRepository.saveAll(anyList())).thenReturn(List.of(newImage));
             when(imageMapper.toProductImageDtoList(allImagesAfterUpload)).thenReturn(dtoList);
-
+            
             ProductImageResponse actual = imagesService.uploadImages(1L, request, files);
-
+            
             assertNotNull(actual);
             verify(validator).validateUploadRequest(imagesList, request, files);
             verify(imageRepository).saveAll(anyList());
         }
-
+        
         @Test
         void upload_WhenFilesExceedMaxCount_ThrowsTooManyImagesException() {
             ProductImageUploadRequest request = new ProductImageUploadRequest(
                     List.of(new ProductImageUploadRequest.UploadImageInfo(2))
             );
-
+            
             List<MultipartFile> files = new ArrayList<>();
             for (int i = 0; i < 6; i++) {
                 files.add(mock(MultipartFile.class));
             }
-
+            
             doThrow(new TooManyImagesException(String.format(
                     ProductImageResponseMessages.ERROR_TOO_MANY_IMAGES, MAX_COUNT_FILES)))
                     .when(validator).validateUploadRequest(anyList(), eq(request), eq(files));
-
+            
             TooManyImagesException ex = assertThrows(TooManyImagesException.class,
                     () -> imagesService.uploadImages(1L, request, files));
-
+            
             assertTrue(ex.getMessage().contains("5"));
         }
-
+        
         @Test
         void upload_WhenDuplicatePosition_ThrowsPositionAlreadyExistsException() {
             ProductImageUploadRequest request = new ProductImageUploadRequest(
@@ -202,22 +260,22 @@ class ProductImagesServiceTest {
             );
             MultipartFile file = mock(MultipartFile.class);
             List<MultipartFile> files = List.of(file);
-
+            
             when(imageRepository.findByProductId(1L)).thenReturn(imagesList);
             doThrow(new PositionAlreadyExistsException(ProductImageResponseMessages.ERROR_POSITION_ALREADY_EXISTS))
                     .when(validator).validateUploadRequest(imagesList, request, files);
-
+            
             PositionAlreadyExistsException ex = assertThrows(PositionAlreadyExistsException.class,
                     () -> imagesService.uploadImages(1L, request, files));
-
+            
             assertEquals(ProductImageResponseMessages.ERROR_POSITION_ALREADY_EXISTS, ex.getMessage());
         }
     }
-
+    
     @Nested
     @DisplayName("Product image reorder tests")
     class ReorderImages {
-
+        
         @Test
         void reorderImagesSuccess() {
             ProductImageChangeRequest request = new ProductImageChangeRequest(
@@ -226,81 +284,177 @@ class ProductImagesServiceTest {
                             new ProductImageChangeRequest.ChangeImageInfo(2L, 0)
                     )
             );
-
+            
             when(imageRepository.findByProductId(1L)).thenReturn(imagesList);
             doNothing().when(validator).validateImageIds(request, imagesList);
-
+            
             ProductImageResponse actual = imagesService.reorderImages(1L, request);
-
+            
             assertNotNull(actual);
             verify(validator).validateImageIds(request, imagesList);
         }
-
+        
         @Test
         void reorder_WhenImageNotFound_ThrowsImageNotFoundException() {
             ProductImageChangeRequest request = new ProductImageChangeRequest(
                     List.of(new ProductImageChangeRequest.ChangeImageInfo(999L, 0))
             );
-
+            
             when(imageRepository.findByProductId(1L)).thenReturn(imagesList);
             doThrow(new ImageNotFoundException(
                     String.format(ProductImageResponseMessages.ERROR_IMAGE_NOT_FOUND_BY_ID, 999L)))
                     .when(validator).validateImageIds(request, imagesList);
-
+            
             ImageNotFoundException ex = assertThrows(ImageNotFoundException.class,
                     () -> imagesService.reorderImages(1L, request));
-
+            
             assertNotNull(ex.getMessage());
         }
     }
-
+    
     @Nested
     @DisplayName("Product image deletion tests")
     class DeleteImages {
-
+        
         @Test
         void deleteAllImagesSuccess() {
             List<Integer> emptyList = Collections.emptyList();
-
+            
             when(imageRepository.findByProductId(1L)).thenReturn(imagesList);
             doNothing().when(validator).validateDeletePositions(emptyList, imagesList);
             doNothing().when(storageService).deleteByUrl(anyString());
-
+            
             imagesService.deleteImages(1L, emptyList);
-
+            
             verify(storageService,
                     times(imagesList.size() * ImageSize.values().length)).deleteByUrl(anyString());
             verify(imageRepository).deleteAll(imagesList);
         }
-
+        
         @Test
         void deletePositionImagesSuccess() {
             List<Integer> positions = List.of(1);
-
+            
             when(imageRepository.findByProductId(1L)).thenReturn(imagesList);
             doNothing().when(validator).validateDeletePositions(positions, imagesList);
             doNothing().when(storageService).deleteByUrl(anyString());
-
+            
             imagesService.deleteImages(1L, positions);
-
+            
             verify(storageService, times(ImageSize.values().length)).deleteByUrl(anyString());
             verify(imageRepository).deleteAll(List.of(imagesList.get(1)));
         }
-
+        
         @Test
         void delete_WhenInvalidPosition_ThrowsImageValidationException() {
             List<Integer> invalidPositions = List.of(999);
-
+            
             when(productService.findProductById(1L)).thenReturn(product);
             when(imageRepository.findByProductId(1L)).thenReturn(imagesList);
             doThrow(new ImageValidationException(
                     String.format(ProductImageResponseMessages.ERROR_NOT_FOUND_POSITION, invalidPositions)))
                     .when(validator).validateDeletePositions(invalidPositions, imagesList);
-
+            
             ImageValidationException ex = assertThrows(ImageValidationException.class,
                     () -> imagesService.deleteImages(1L, invalidPositions));
-
+            
             assertNotNull(ex.getMessage());
         }
     }
+    
+    @Nested
+    @DisplayName("Create image for all sizes tests")
+    class CreateImageForAllSizes {
+    
+        @Test
+        void shouldRollbackUploadedFiles_whenUploadFailsMidway() throws IOException {
+        
+            MultipartFile file = mock(MultipartFile.class);
+            when(file.getInputStream())
+                    .thenReturn(new ByteArrayInputStream("test".getBytes()));
+            List<MultipartFile> files = List.of(file);
+            
+            ProductImageUploadRequest request =
+                    new ProductImageUploadRequest(List.of(
+                            new ProductImageUploadRequest.UploadImageInfo(2)
+                    ));
+        
+            Map<ImageSize, byte[]> fakeMap =
+                    Arrays.stream(ImageSize.values())
+                            .collect(Collectors.toMap(
+                                    size -> size,
+                                    size -> "img".getBytes(),
+                                    (a, b) -> a,
+                                    () -> new EnumMap<>(ImageSize.class)
+                            ));
+
+            when(imageRepository.findByProductId(1L)).thenReturn(imagesList);
+            doNothing().when(validator)
+                    .validateUploadRequest(eq(imagesList), eq(request), eq(files));
+            when(imageProcessing.process(any())).thenReturn(fakeMap);
+        
+            // перші 2 upload ок, потім падіння
+            when(storageService.upload(any(), any()))
+                    .thenReturn("url1")
+                    .thenReturn("url2")
+                    .thenThrow(new RuntimeException("S3 down"));
+        
+            assertThrows(ImageProcessingException.class, () ->
+                    imagesService.uploadImages(1L, request, files)
+            );
+        
+            // ✔ rollback для вже завантажених
+            verify(storageService).deleteByUrl("url1");
+            verify(storageService).deleteByUrl("url2");
+            verify(storageService, times(2)).deleteByUrl(anyString());
+            verify(imageRepository, never()).saveAll(anyList());
+        }
+    
+        @Test
+        void shouldThrowException_whenInputStreamFails() throws Exception {
+        
+            MultipartFile file = mock(MultipartFile.class);
+            when(file.getInputStream()).thenThrow(new IOException("fail"));
+        
+            ProductImageUploadRequest request =
+                    new ProductImageUploadRequest(List.of(
+                            new ProductImageUploadRequest.UploadImageInfo(2)
+                    ));
+        
+            when(imageRepository.findByProductId(1L)).thenReturn(imagesList);
+            doNothing().when(validator).validateUploadRequest(anyList(), any(), any());
+        
+            assertThrows(ImageProcessingException.class, () ->
+                    imagesService.uploadImages(1L, request, List.of(file))
+            );
+        
+            verify(storageService, never()).upload(any(), any());
+        }
+    
+        @Test
+        void shouldThrowException_whenProcessingFails() throws IOException {
+        
+            MultipartFile file = mock(MultipartFile.class);
+            when(file.getInputStream())
+                    .thenReturn(new ByteArrayInputStream("test".getBytes()));
+    
+            ProductImageUploadRequest request =
+                    new ProductImageUploadRequest(List.of(
+                            new ProductImageUploadRequest.UploadImageInfo(2)
+                    ));
+        
+            when(imageRepository.findByProductId(1L)).thenReturn(imagesList);
+            doNothing().when(validator).validateUploadRequest(anyList(), any(), any());
+        
+            when(imageProcessing.process(any()))
+                    .thenThrow(new ImageProcessingException("processing fail"));
+        
+            assertThrows(ImageProcessingException.class, () ->
+                    imagesService.uploadImages(1L, request, List.of(file))
+            );
+        
+            verify(storageService, never()).upload(any(), any());
+        }
+    }
+    
 }

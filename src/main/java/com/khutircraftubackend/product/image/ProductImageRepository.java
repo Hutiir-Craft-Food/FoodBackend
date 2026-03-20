@@ -1,13 +1,17 @@
 package com.khutircraftubackend.product.image;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
+import static jakarta.persistence.LockModeType.PESSIMISTIC_WRITE;
+
 public interface ProductImageRepository extends JpaRepository<ProductImageEntity, Long> {
 
+    @Lock(PESSIMISTIC_WRITE)
     List<ProductImageEntity> findByProductId(Long productId);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
