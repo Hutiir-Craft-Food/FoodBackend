@@ -58,7 +58,18 @@ public class ProductService {
 		CategoryEntity categoryEntity = categoryService.findCategoryById(request.categoryId());
 		productEntity.setCategory(categoryEntity);
 		productEntity.setSeller(currentSeller);
+		productRepository.save(productEntity);
+
+
+
+		productEntity.setArticle(generateArticle(currentSeller.getId(), productEntity.getId()));
+
 		return productRepository.save(productEntity);
+	}
+
+	private String generateArticle(Long sellerId, Long productId) {
+
+		return "%04d%06d".formatted(sellerId, productId);
 	}
 
 

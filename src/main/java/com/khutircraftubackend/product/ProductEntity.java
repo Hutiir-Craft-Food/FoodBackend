@@ -29,6 +29,9 @@ public class ProductEntity extends Auditable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "article")
+    private String article;
+
     @Column(name = "name")
     private String name;
 

@@ -219,13 +219,20 @@ class ProductServiceTest {
 		void createProduct_Success() {
 
 			SellerEntity currentSeller = SellerEntity.builder()
+					.id(1L)
 					.sellerName("Test c")
 					.build();
 
 			Long categoryId = 2L;
 
 			when(sellerService.getCurrentSeller()).thenReturn(currentSeller);
-			when(productRepository.save(any(ProductEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
+			when(productRepository.save(any(ProductEntity.class))).thenAnswer(invocation -> {
+				ProductEntity productEntity = invocation.getArgument(0);
+				if (productEntity.getId() == null) {
+					productEntity.setId(9L);
+			}
+				return productEntity;
+			});
 
 			CategoryEntity mockCategory = CategoryEntity.builder()
 					.id(categoryId)
@@ -244,8 +251,9 @@ class ProductServiceTest {
 
 			assertNotNull(createdProduct);
 			assertEquals("Test product", createdProduct.getName());
+			assertEquals("0001000009", createdProduct.getArticle());
 
-			verify(productRepository).save(any(ProductEntity.class));
+			verify(productRepository, times(2)).save(any(ProductEntity.class));
 			verify(categoryService).findCategoryById(anyLong());
 		}
 
