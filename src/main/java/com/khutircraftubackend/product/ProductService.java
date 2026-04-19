@@ -25,7 +25,7 @@ import static com.khutircraftubackend.product.exception.ProductResponseMessage.*
 @Service
 @RequiredArgsConstructor
 public class ProductService {
-	
+
 	private static final int FEATURED_MAX_LIMIT = 16;
 
 	private final ProductRepository productRepository;
@@ -53,17 +53,23 @@ public class ProductService {
 
 	@Transactional
 	public ProductEntity createProduct(ProductRequest request) {
+
 		SellerEntity currentSeller = sellerService.getCurrentSeller();
 		ProductEntity productEntity = productMapper.toProductEntity(request);
 		CategoryEntity categoryEntity = categoryService.findCategoryById(request.categoryId());
 		productEntity.setCategory(categoryEntity);
 		productEntity.setSeller(currentSeller);
+		productRepository.save(productEntity);
+
+		String article = "%04d%06d".formatted(currentSeller.getId(), productEntity.getId());
+		productEntity.setArticle(article);
+
 		return productRepository.save(productEntity);
 	}
 
-
 	@Transactional
 	public ProductEntity updateProduct(Long productId, ProductRequest request) {
+
 		ProductEntity existingProduct = findProductById(productId);
 		productMapper.updateProductFromRequest(existingProduct, request);
 		CategoryEntity categoryToUse;
@@ -78,6 +84,7 @@ public class ProductService {
 
 	@Transactional
 	public void deleteProduct(Long productId) {
+
 		ProductEntity existingProduct = findProductById(productId);
 		productRepository.delete(existingProduct);
 	}
@@ -97,7 +104,7 @@ public class ProductService {
 		Collection<ProductResponse> products = productMapper.toProductResponse(productEntities);
 
 		long total = productRepository.count();
-		
+
 		return Map.of(
 				"products", products,
 				"total", total,
@@ -107,8 +114,10 @@ public class ProductService {
 	}
 
 	@Transactional(readOnly = true)
-	public ProductResponse getProductById(Long productId){
+	public ProductResponse getProductById(Long productId) {
+
 		ProductEntity product = findProductById(productId);
+
 		return productMapper.toProductResponse(product);
 	}
 
