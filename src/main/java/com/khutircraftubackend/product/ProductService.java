@@ -60,16 +60,14 @@ public class ProductService {
 		productEntity.setSeller(currentSeller);
 		productRepository.save(productEntity);
 
+        // note, if we do not reuse and do not test the logic with
+        // creating product's article, then no need to externalize it
+        // into a separate method, it wouldn't make readability better
+        // just declare string variable here, and assign it as bellow:
+        String article = "%04d%06d".formatted(currentSeller.getId(), productEntity.getId());
+        productEntity.setArticle(article);
 
-
-		productEntity.setArticle(generateArticle(currentSeller.getId(), productEntity.getId()));
-
-		return productRepository.save(productEntity);
-	}
-
-	private String generateArticle(Long sellerId, Long productId) {
-
-		return "%04d%06d".formatted(sellerId, productId);
+        return productRepository.save(productEntity);
 	}
 
 

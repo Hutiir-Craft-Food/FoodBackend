@@ -1,3 +1,5 @@
+truncate table products restart identity cascade;
+
 -- Курка
 INSERT INTO products (name, available, description, category_id, seller_id)
 SELECT
