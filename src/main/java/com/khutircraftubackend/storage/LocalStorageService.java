@@ -4,14 +4,10 @@ import com.khutircraftubackend.storage.exception.DirectoryCreationException;
 import com.khutircraftubackend.storage.exception.FileNotFoundException;
 import com.khutircraftubackend.storage.exception.InvalidArgumentException;
 import com.khutircraftubackend.storage.exception.StorageException;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -19,13 +15,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.Objects;
 
 @RequiredArgsConstructor
 @Slf4j
 public class LocalStorageService implements StorageService {
     private final String basePath;
-    private static final String API_PREFIX = LocalStorageController.API_PATH + "/";
+    private final String publicBaseUrl;
 
     @Override
     public String upload(byte[] fileBytes, String originalFileName) {
@@ -46,19 +41,8 @@ public class LocalStorageService implements StorageService {
             throw new StorageException(StorageResponseMessage.ERROR_SAVE);
         }
 
-        HttpServletRequest request = ((ServletRequestAttributes)
-                Objects.requireNonNull(RequestContextHolder.getRequestAttributes()))
-                .getRequest();
-        String relativeUriStr = API_PREFIX + uploadPath
-                .relativize(filePath).normalize();
-
-        return UriComponentsBuilder.newInstance()
-                .scheme(request.getScheme())
-                .host(request.getServerName())
-                .port(request.getServerPort())
-                .path(relativeUriStr)
-                .build()
-                .toUriString();
+        String relativePath = uploadPath.relativize(filePath).normalize().toString();
+        return publicBaseUrl + "/" + relativePath;
     }
 
     public Resource getResource(String fileName) {
@@ -75,15 +59,17 @@ public class LocalStorageService implements StorageService {
     @Override
     public void deleteByUrl(String fileUrl) {
 
-        if (!fileUrl.contains(API_PREFIX)) {
-            throw new InvalidArgumentException(String.format(StorageResponseMessage.INVALID_ARGUMENT, fileUrl));
+        if (!fileUrl.startsWith(publicBaseUrl)) {
+            throw new InvalidArgumentException(
+                    String.format(StorageResponseMessage.INVALID_ARGUMENT, fileUrl));
         }
 
-        String relativePath = extractRelativePath(fileUrl);
+        String relativePath = fileUrl.substring(publicBaseUrl.length() + 1);
         Path filePath = Paths.get(basePath).resolve(relativePath);
 
         if (Files.notExists(filePath)) {
-            throw new FileNotFoundException(String.format(StorageResponseMessage.FILE_NOT_FOUND, relativePath));
+            throw new FileNotFoundException(
+                    String.format(StorageResponseMessage.FILE_NOT_FOUND, relativePath));
         }
         try {
             Files.delete(filePath);
@@ -92,13 +78,4 @@ public class LocalStorageService implements StorageService {
         }
     }
 
-    private String extractRelativePath(String fileUrl) {
-        int index = fileUrl.indexOf(LocalStorageService.API_PREFIX);
-        if (index == -1) {
-            throw new InvalidArgumentException(
-                    String.format(StorageResponseMessage.INVALID_ARGUMENT, fileUrl)
-            );
-        }
-        return fileUrl.substring(index + LocalStorageService.API_PREFIX.length());
-    }
 }

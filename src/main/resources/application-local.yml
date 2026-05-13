@@ -47,3 +47,9 @@ logging:
 storage:
   local:
     base-path: ${LOCAL_STORAGE_BASEPATH:./uploads}
+    public-base-url: ${LOCAL_STORAGE_PUBLIC_BASE_URL:http://localhost:8080/v1/resources}
+
+seed:
+  images:
+    location: bootstrap/image
+    enabled: true

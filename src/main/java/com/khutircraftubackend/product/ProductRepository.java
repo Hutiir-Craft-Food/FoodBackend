@@ -18,6 +18,8 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
     Optional<ProductEntity> findProductById(Long id);
     
     void deleteBySeller(SellerEntity seller);
+
+    Optional<ProductEntity> findByName(String name);
     
 }
 

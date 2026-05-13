@@ -17,16 +17,18 @@ public class StorageConfig {
     
     @Bean
     @Profile("!local")
-    public CloudinaryService cloudinaryService(Cloudinary cloudinary) {
-
+    public CloudinaryService cloudinaryService(Cloudinary cloudinary
+    ) {
         return new CloudinaryService(cloudinary);
     }
 
     @Bean
     @Profile("local")
-    public LocalStorageService localStorageService(@Value("${storage.local.base-path}") String basePath) {
-        
-        return new LocalStorageService(basePath);
+    public LocalStorageService localStorageService(
+            @Value("${storage.local.base-path}") String basePath,
+            @Value("${storage.local.public-base-url}") String publicBaseUrl
+    ) {
+        return new LocalStorageService(basePath, publicBaseUrl);
     }
     
 }
