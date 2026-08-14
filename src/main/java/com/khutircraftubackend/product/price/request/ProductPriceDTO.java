@@ -5,7 +5,9 @@ import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 
 public record ProductPriceDTO(
-        
+
+        Long id,
+
         @DecimalMin(value = "0.01", message = "Ціна повинна бути більшою за 0.01")
         @DecimalMax(value = "100000.00", message = "Ціна не повинна бути більшою за 100000.00")
         BigDecimal price,
