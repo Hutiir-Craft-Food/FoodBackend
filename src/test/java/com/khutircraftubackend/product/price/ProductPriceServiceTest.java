@@ -75,7 +75,7 @@ class ProductPriceServiceTest {
         void shouldCreateNewPrices_WhenValidRequest() {
             
             // Arrange
-            ProductPriceDTO dto = new ProductPriceDTO(new BigDecimal("1.00"), 10, 1L);
+            ProductPriceDTO dto = new ProductPriceDTO(null, new BigDecimal("1.00"), 10, 1L);
             ProductPriceRequest request = new ProductPriceRequest(List.of(dto));
             ProductUnitEntity unit = new ProductUnitEntity();
             
@@ -84,6 +84,12 @@ class ProductPriceServiceTest {
             
             when(productRepository.findById(1L)).thenReturn(Optional.of(productEntity));
             when(productUnitRepository.findById(1L)).thenReturn(Optional.of(unit));
+            when(productPriceRepository.saveAll(anyList()))
+                    .thenAnswer(invocation -> {
+                                List<ProductPriceEntity> entities = invocation.getArgument(0);
+                                entities.forEach(e -> e.setId(1L));//emulation IDENTITY generation
+                                return  entities;
+                            });
             
             // Act
             ProductPriceResponse responses = productPriceService.syncProductPrices(1L, request);
@@ -92,10 +98,10 @@ class ProductPriceServiceTest {
             assertEquals(1, responses.prices().size());
             
             ProductPriceDTO response = responses.prices().get(0);
-            
+
+            assertEquals(1L, response.id());
             assertEquals(new BigDecimal("1.00"), response.price());
             assertEquals(10, response.qty());
-            
             assertEquals(1L, response.unitId());
             
             verify(productPriceRepository, times(1)).deleteByProductId(1L);
@@ -120,7 +126,7 @@ class ProductPriceServiceTest {
         @DisplayName("should throw UnitNotFoundException when unit missing")
         void shouldThrowUnitNotFound_WhenUnitMissing() {
             
-            ProductPriceDTO dto = new ProductPriceDTO(new BigDecimal("1.00"), 10, 1L);
+            ProductPriceDTO dto = new ProductPriceDTO(null, new BigDecimal("1.00"), 10, 1L);
             ProductPriceRequest request = new ProductPriceRequest(List.of(dto));
             
             when(productRepository.findById(1L)).thenReturn(Optional.of(productEntity));
@@ -166,14 +172,16 @@ class ProductPriceServiceTest {
             when(productRepository.findById(1L)).thenReturn(Optional.of(productEntity));
             
             ProductPriceResponse responses = productPriceService.getProductPrices(1L);
-            
+
             assertEquals(2, responses.prices().size());
+
+            assertEquals(1L, responses.prices().get(0).id());
             assertEquals(1L, responses.prices().get(0).unitId());
-            assertEquals(2L, responses.prices().get(1).unitId());
-            
             assertEquals(new BigDecimal("5.00"), responses.prices().get(0).price());
             assertEquals(5, responses.prices().get(0).qty());
-            
+
+            assertEquals(2L, responses.prices().get(1).id());
+            assertEquals(2L, responses.prices().get(1).unitId());
             assertEquals(new BigDecimal("10.00"), responses.prices().get(1).price());
             assertEquals(10, responses.prices().get(1).qty());
         }

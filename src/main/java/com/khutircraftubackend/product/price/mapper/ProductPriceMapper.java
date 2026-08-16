@@ -16,7 +16,8 @@ import static org.mapstruct.ReportingPolicy.IGNORE;
 @Mapper(componentModel = SPRING, unmappedTargetPolicy = IGNORE,
         uses = {ProductUnitMapper.class, ProductMapper.class})
 public interface ProductPriceMapper {
-    
+
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "unit.id", source = "unitId")
     @Mapping(target = "product", ignore = true)
     @Mapping(target = "price", source = "price", qualifiedByName = "normalizePrice")

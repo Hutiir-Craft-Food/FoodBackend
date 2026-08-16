@@ -52,9 +52,9 @@ public class ProductPriceService {
         
         productPriceRepository.deleteByProductId(productId);
         productPriceRepository.flush();
-        productPriceRepository.saveAll(newPrices);
+        List<ProductPriceEntity> saved = productPriceRepository.saveAll(newPrices);
         
-        List<ProductPriceDTO> prices = newPrices.stream()
+        List<ProductPriceDTO> prices = saved.stream()
                 .map(productPriceMapper::toProductPriceDTO)
                 .toList();
         
