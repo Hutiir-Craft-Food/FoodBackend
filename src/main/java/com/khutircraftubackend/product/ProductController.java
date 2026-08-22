@@ -2,25 +2,35 @@ package com.khutircraftubackend.product;
 
 import com.khutircraftubackend.product.request.ProductRequest;
 import com.khutircraftubackend.product.response.ProductResponse;
+import com.khutircraftubackend.product.variant.response.ProductVariantDTO;
+import com.khutircraftubackend.product.variant.ProductVariantService;
 import com.khutircraftubackend.seller.SellerEntity;
 import com.khutircraftubackend.seller.SellerService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 @RestController
+@Validated
 @RequestMapping("/v1/products")
 @Slf4j
 @RequiredArgsConstructor
 public class ProductController {
 	private final ProductService productService;
+	private final ProductVariantService productVariantService;
 	private final ProductMapper productMapper;
 	private final SellerService sellerService;
 	
@@ -90,6 +100,19 @@ public class ProductController {
 			@RequestParam(defaultValue = "16") int limit) {
 		
 		return productService.getLatestProducts(limit);
+	}
+
+	@GetMapping("/variants")
+	@ResponseStatus(HttpStatus.OK)
+	public List<ProductVariantDTO> getVariants(
+			@RequestParam
+			@NotEmpty(message = "priceIds must not be empty")
+			@Size(max = ProductVariantService.MAX_PRICE_IDS,
+					message = "priceIds must contain no more than "
+							+ ProductVariantService.MAX_PRICE_IDS + " IDs")
+			List<@NotNull @Positive Long> priceIds) {
+
+		return productVariantService.getVariants(priceIds);
 	}
 	
 
