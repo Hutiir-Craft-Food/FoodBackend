@@ -20,6 +20,7 @@ import java.util.Map;
 @Slf4j
 @RequiredArgsConstructor
 public class ProductController {
+
 	private final ProductService productService;
 	private final ProductMapper productMapper;
 	private final SellerService sellerService;
@@ -91,7 +92,6 @@ public class ProductController {
 		
 		return productService.getLatestProducts(limit);
 	}
-	
 
 	@GetMapping(value = "/{productId}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.OK)

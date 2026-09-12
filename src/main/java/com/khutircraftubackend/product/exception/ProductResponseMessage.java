@@ -11,4 +11,5 @@ public class ProductResponseMessage {
     public static final String UNIT_INVALID_NAME = "Одиниця виміру з таким ім'ям: %s вже існує.";
     public static final String UNIT_NOT_BLANK = "Одиниця виміру не може бути порожньою.";
     public static final String LIMIT_EXCEEDED = "Ліміт повинен бути більшим за нуль.";
+    public static final String AT_LEAST_ONE_PRICE_ID_REQUIRED = "Потрібен принаймні один ідентифікатор ціни";
 }

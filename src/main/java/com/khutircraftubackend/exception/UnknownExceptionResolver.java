@@ -15,7 +15,7 @@ public class UnknownExceptionResolver implements HandlerExceptionResolver {
     
     private static final MappingJackson2JsonView jsonView;
     private static final String ERROR_SERVER = "Тимчасова помилка сервера, зверніться до адміністрації сайту";
-    
+
     static {
         jsonView = new MappingJackson2JsonView();
         jsonView.setExtractValueFromSingleKeyModel(true);
