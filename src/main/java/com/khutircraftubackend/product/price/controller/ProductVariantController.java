@@ -28,10 +28,10 @@ public class ProductVariantController {
 	@ResponseStatus(HttpStatus.OK)
 	public List<ProductVariantResponse> getVariants(
 			@RequestParam
-			@NotEmpty(message = "priceIds must not be empty")
+			@NotEmpty(message = "priceIds не повинні бути порожніми")
 			@Size(max = MAX_PRICE_IDS,
-					message = "priceIds must contain no more than "
-							+ MAX_PRICE_IDS + " IDs")
+					message = "priceIds не повинні містити більше ніж "
+							+ MAX_PRICE_IDS + " ідентифікаторів")
 			List<@NotNull @Positive Long> priceIds) {
 
 		return productVariantService.getVariants(priceIds);

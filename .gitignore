@@ -39,3 +39,5 @@ build/
 # Market Place local
 uploads/
 logs/
+/plan/
+/.codegraph/
