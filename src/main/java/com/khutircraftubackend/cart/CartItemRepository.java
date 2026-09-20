@@ -10,20 +10,6 @@ import java.util.Optional;
 
 @Repository
 public interface CartItemRepository extends JpaRepository<CartItemEntity, Long> {
-
-    @Query("""
-            select item.productPrice.id as productPriceId, item.quantity as quantity
-            from CartItemEntity item
-            where item.user.id = :userId
-            order by item.id
-            """)
-    List<CartItemProjection> findItemsByUserId(@Param("userId") Long userId);
-
-    Optional<CartItemEntity> findByUser_IdAndProductPrice_Id(Long userId, Long productPriceId);
-
-    interface CartItemProjection {
-        Long getProductPriceId();
-
-        int getQuantity();
-    }
+    List<CartItemEntity> findByUserId(Long userId);
+    Optional<CartItemEntity> findByUserIdAndProductPriceId(Long userId, Long productPriceId);
 }
