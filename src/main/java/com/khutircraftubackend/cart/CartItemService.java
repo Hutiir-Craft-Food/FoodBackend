@@ -1,8 +1,7 @@
 package com.khutircraftubackend.cart;
 
 import com.khutircraftubackend.user.UserEntity;
-import com.khutircraftubackend.user.UserRepository;
-import com.khutircraftubackend.user.exception.UserNotFoundException;
+import com.khutircraftubackend.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -10,7 +9,6 @@ import java.security.Principal;
 import java.util.Collection;
 
 import static com.khutircraftubackend.cart.CartItemResponseMessage.CART_ITEM_NOT_FOUND;
-import static com.khutircraftubackend.user.exception.UserResponseMessage.USER_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
@@ -18,13 +16,11 @@ public class CartItemService {
 
 	private final CartItemRepository cartItemRepository;
 	private final CartItemMapper cartItemMapper;
-	private final UserRepository userRepository;
+	private final UserService userService;
 
 	private UserEntity getUserByEmail(Principal principal) {
 
-		return userRepository.findByEmail(principal.getName())
-				.orElseThrow(() -> new UserNotFoundException(
-						USER_NOT_FOUND));
+		return userService.findByPrincipal(principal);
 	}
 
 	public Collection<CartItemResponse> getCartItems(Principal principal) {
