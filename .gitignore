@@ -41,3 +41,5 @@ uploads/
 logs/
 plan/
 .codegraph/
+.DS_Store
+
