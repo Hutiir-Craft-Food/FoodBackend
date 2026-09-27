@@ -1,10 +1,8 @@
 package com.khutircraftubackend.cart;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.Collection;
@@ -27,6 +25,18 @@ public class CartItemController {
 												  @PathVariable Long productPriceId) {
 
 		return cartItemService.getCartItemByPriceId(principal, productPriceId);
+	}
+
+	@PutMapping("/items/{productPriceId}")
+	public CartItemResponse createOrUpdateCartItem(Principal principal,
+												   @PathVariable Long productPriceId,
+												   @Valid @RequestBody CartItemRequest request) {
+
+		return cartItemService.createOrUpdateCartItem(
+				principal,
+				productPriceId,
+				request
+		);
 	}
 
 }
