@@ -2,6 +2,7 @@ package com.khutircraftubackend.cart;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -37,6 +38,14 @@ public class CartItemController {
 				productPriceId,
 				request
 		);
+	}
+
+	@DeleteMapping("/items/{productPriceId}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void removeCartItem(Principal principal,
+							   @PathVariable Long productPriceId) {
+
+		cartItemService.removeCartItem(principal, productPriceId);
 	}
 
 }
