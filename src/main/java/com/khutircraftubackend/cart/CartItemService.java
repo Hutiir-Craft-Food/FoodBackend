@@ -63,4 +63,18 @@ public class CartItemService {
 		return cartItemMapper.toCartItemResponse(cartItem);
 	}
 
+	@Transactional
+	public void removeCartItem(Principal principal, Long productPriceId) {
+
+		UserEntity user = userService.findByPrincipal(principal);
+
+		productPriceService.assertProductPriceExists(productPriceId);
+
+		int deleted = cartItemRepository.deleteByUserIdAndProductPriceId(user.getId(), productPriceId);
+
+		if (deleted == 0) {
+			throw new CartItemNotFoundException(
+					String.format(CART_ITEM_NOT_FOUND, productPriceId));
+		}
+	}
 }
