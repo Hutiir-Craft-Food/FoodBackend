@@ -21,8 +21,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static com.khutircraftubackend.user.Role.BUYER;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.assertj.core.api.AssertionsForClassTypes.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -133,6 +132,37 @@ class CartItemServiceTest {
 			verify(cartItemRepository).upsertCartItem(user.getId(), productPriceId, 3);
 			verify(cartItemMapper, never()).toCartItemResponse(any(CartItemEntity.class));
 
+		}
+	}
+
+	@Nested
+	@DisplayName("removeCartItem")
+	class RemoveCartItem {
+
+		@Test
+		@DisplayName("scoping: userId береться з Principal")
+		void deletesOnlyForAuthenticatedUser() {
+
+			Long productPriceId = 2L;
+			when(userService.findByPrincipal(principal)).thenReturn(user);
+			when(cartItemRepository.deleteByUserIdAndProductPriceId(user.getId(), productPriceId)).thenReturn(1);
+
+			cartItemService.removeCartItem(principal, productPriceId);
+
+			verify(cartItemRepository).deleteByUserIdAndProductPriceId(user.getId(), productPriceId);
+			verifyNoMoreInteractions(cartItemRepository);
+		}
+
+		@Test
+		@DisplayName("не існуюча позиція: CartItemNotFoundException")
+		void throwsCartItemNotFound_whenItemAbsent() {
+
+			when(userService.findByPrincipal(principal)).thenReturn(user);
+			when(cartItemRepository.deleteByUserIdAndProductPriceId(user.getId(), 99L)).thenReturn(0);
+
+			assertThatThrownBy(() -> cartItemService.removeCartItem(principal, 99L))
+					.isInstanceOf(CartItemNotFoundException.class)
+					.hasMessageContaining("99");
 		}
 	}
 
