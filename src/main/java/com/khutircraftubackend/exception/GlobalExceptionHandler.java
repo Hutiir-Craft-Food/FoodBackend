@@ -152,6 +152,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      * Заборонений доступ
      */
     @ExceptionHandler(AccessDeniedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
     public GlobalErrorResponse handleAccessDeniedException(
             AccessDeniedException ex,
             HttpServletRequest request) {

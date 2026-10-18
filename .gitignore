@@ -45,4 +45,4 @@ plan/
 .github/agents
 .github/prompts
 .github/skills
-/openspec/
+openspec/
