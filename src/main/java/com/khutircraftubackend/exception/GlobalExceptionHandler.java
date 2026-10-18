@@ -126,6 +126,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      * Порожній query
      */
     @ExceptionHandler(ConstraintViolationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public GlobalErrorResponse handleConstraintViolationException (
             ConstraintViolationException ex,
             HttpServletRequest request) {
