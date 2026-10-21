@@ -42,4 +42,7 @@ logs/
 plan/
 .codegraph/
 .DS_Store
-
+.github/agents
+.github/prompts
+.github/skills
+/openspec/
