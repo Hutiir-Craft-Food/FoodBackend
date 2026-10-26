@@ -53,6 +53,9 @@ class CartItemServiceTest {
 
 			when(userService.findByPrincipal(principal)).thenReturn(user);
 			doNothing().when(productPriceService).assertProductPriceExists(productPriceId);
+			when(cartItemRepository.findByUserIdAndProductPriceId(user.getId(), productPriceId))
+					.thenReturn(Optional.empty());
+			when(cartItemRepository.countDistinctProductPriceIdsByUserId(user.getId())).thenReturn(10L);
 			doNothing().when(cartItemRepository).upsertCartItem(user.getId(), productPriceId, 5);
 
 			ProductPriceEntity price = new ProductPriceEntity();
@@ -72,6 +75,51 @@ class CartItemServiceTest {
 			InOrder order = inOrder(productPriceService, cartItemRepository);
 			order.verify(productPriceService).assertProductPriceExists(productPriceId);
 			order.verify(cartItemRepository).upsertCartItem(user.getId(), productPriceId, 5);
+		}
+
+		@Test
+		@DisplayName("insert branch: rejects when unique items count is already at the cap")
+		void throwsCartLimitExceeded_whenInsertingAtOrAboveUniqueCap() {
+			Long productPriceId = 99L;
+			CartItemRequest request = new CartItemRequest(1);
+
+			when(userService.findByPrincipal(principal)).thenReturn(user);
+			doNothing().when(productPriceService).assertProductPriceExists(productPriceId);
+			when(cartItemRepository.existsByUserIdAndProductPriceId(user.getId(), productPriceId)).thenReturn(Boolean.FALSE);
+			when(cartItemRepository.countDistinctProductPriceIdsByUserId(user.getId())).thenReturn(49L);
+
+			assertThatThrownBy(() -> cartItemService.createOrUpdateCartItem(principal, productPriceId, request))
+					.isInstanceOf(CartLimitExceededException.class)
+					.hasMessageContaining("49")
+					.hasMessageContaining("49");
+
+			verify(cartItemRepository, never()).upsertCartItem(anyLong(), anyLong(), anyInt());
+		}
+
+		@Test
+		@DisplayName("update branch: existing item is allowed even when cart is at limit")
+		void allowsExistingItemUpdate_evenWhenUniqueCountAtLimit() {
+			Long productPriceId = 7L;
+			CartItemRequest request = new CartItemRequest(12);
+
+			when(userService.findByPrincipal(principal)).thenReturn(user);
+			doNothing().when(productPriceService).assertProductPriceExists(productPriceId);
+			when(cartItemRepository.existsByUserIdAndProductPriceId(user.getId(), productPriceId)).thenReturn(Boolean.TRUE);
+			doNothing().when(cartItemRepository).upsertCartItem(user.getId(), productPriceId, 12);
+
+			ProductPriceEntity price = new ProductPriceEntity();
+			price.setId(productPriceId);
+			CartItemEntity persisted = new CartItemEntity();
+			persisted.setProductPrice(price);
+			persisted.setQuantity(12);
+			when(cartItemRepository.findByUserIdAndProductPriceId(user.getId(), productPriceId))
+					.thenReturn(Optional.of(persisted));
+
+			CartItemResponse response = cartItemService.createOrUpdateCartItem(principal, productPriceId, request);
+
+			assertThat(response.productPriceId()).isEqualTo(productPriceId);
+			assertThat(response.quantity()).isEqualTo(12);
+			verify(cartItemRepository, never()).countDistinctProductPriceIdsByUserId(anyLong());
 		}
 
 		@Test

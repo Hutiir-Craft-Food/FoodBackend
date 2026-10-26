@@ -11,6 +11,7 @@ import java.security.Principal;
 import java.util.Collection;
 
 import static com.khutircraftubackend.cart.CartItemResponseMessage.CART_ITEM_NOT_FOUND;
+import static com.khutircraftubackend.cart.CartItemResponseMessage.CART_LIMIT_EXCEEDED;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +21,8 @@ public class CartItemService {
 	private final CartItemMapper cartItemMapper;
 	private final UserService userService;
 	private final ProductPriceService productPriceService;
+
+	private static final int MAX_UNIQUE_ITEMS = 49;
 
 	public Collection<CartItemResponse> getCartItems(Principal principal) {
 
@@ -51,6 +54,18 @@ public class CartItemService {
 		UserEntity user = userService.findByPrincipal(principal);
 
 		productPriceService.assertProductPriceExists(productPriceId);
+
+		boolean itemExists = cartItemRepository.existsByUserIdAndProductPriceId(user.getId(), productPriceId);
+
+		if (!itemExists) {
+			long currentUniqueCount = cartItemRepository.countDistinctProductPriceIdsByUserId(user.getId());
+			if (currentUniqueCount >= MAX_UNIQUE_ITEMS) {
+				throw new CartLimitExceededException(
+						String.format(CART_LIMIT_EXCEEDED, MAX_UNIQUE_ITEMS, currentUniqueCount),
+						currentUniqueCount
+				);
+			}
+		}
 
 		cartItemRepository.upsertCartItem(user.getId(), productPriceId, request.quantity());
 

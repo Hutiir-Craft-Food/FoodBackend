@@ -1,5 +1,7 @@
 package com.khutircraftubackend.exception;
 
+import com.khutircraftubackend.cart.CartLimitExceededException;
+import com.khutircraftubackend.cart.CartLimitExceededResponse;
 import com.khutircraftubackend.product.image.exception.ImageProcessingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
@@ -168,12 +170,24 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(ImageProcessingException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public Object handleImageProcessingException(ImageProcessingException ex, HttpServletRequest request) {
+
         return GlobalErrorResponse.builder()
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
                 .message(ex.getMessage())
                 .path(request.getRequestURI())
                 .build();
+    }
+
+    @ExceptionHandler(CartLimitExceededException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public CartLimitExceededResponse handleCartLimitExceededException(CartLimitExceededException ex) {
+
+        return new CartLimitExceededResponse(
+                "CART_LIMIT_EXCEEDED",
+                ex.getMessage(),
+                ex.getCurrentUniqueCount()
+        );
     }
     
 }

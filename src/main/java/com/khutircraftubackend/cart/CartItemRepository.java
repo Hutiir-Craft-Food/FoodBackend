@@ -16,6 +16,8 @@ public interface CartItemRepository extends JpaRepository<CartItemEntity, Long> 
 
     Optional<CartItemEntity> findByUserIdAndProductPriceId(Long userId, Long productPriceId);
 
+    boolean existsByUserIdAndProductPriceId(Long userId, Long productPriceId);
+
     @Modifying
     @Query(value = """
         INSERT INTO cart_items (user_id, product_price_id, quantity, created_at, updated_at)
@@ -26,6 +28,13 @@ public interface CartItemRepository extends JpaRepository<CartItemEntity, Long> 
     void upsertCartItem(@Param("userId") Long userId,
                         @Param("productPriceId") Long productPriceId,
                         @Param("quantity") int quantity);
+
+    @Query("""
+        SELECT COUNT(DISTINCT c.productPrice.id)
+        FROM CartItemEntity c
+        WHERE c.user.id = :userId
+        """)
+    long countDistinctProductPriceIdsByUserId(@Param("userId") Long userId);
 
     @Modifying
     @Query("""
