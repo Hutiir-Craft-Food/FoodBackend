@@ -1,17 +1,24 @@
 package com.khutircraftubackend.cart;
 
+import com.khutircraftubackend.cart.exception.CartBusyException;
+import com.khutircraftubackend.cart.exception.CartItemNotFoundException;
+import com.khutircraftubackend.cart.exception.CartLimitExceededException;
+import com.khutircraftubackend.cart.request.CartItemRequest;
+import com.khutircraftubackend.cart.request.CartMergeItemRequest;
+import com.khutircraftubackend.cart.response.CartItemResponse;
 import com.khutircraftubackend.product.price.service.ProductPriceService;
 import com.khutircraftubackend.user.UserEntity;
 import com.khutircraftubackend.user.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
-import java.util.Collection;
+import java.util.*;
+import java.util.stream.Collectors;
 
-import static com.khutircraftubackend.cart.CartItemResponseMessage.CART_ITEM_NOT_FOUND;
-import static com.khutircraftubackend.cart.CartItemResponseMessage.CART_LIMIT_EXCEEDED;
+import static com.khutircraftubackend.cart.exception.CartItemResponseMessage.*;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +38,42 @@ public class CartItemService {
 		Collection<CartItemEntity> cartItems = cartItemRepository.findByUserId(user.getId());
 
 		return cartItemMapper.toCartItemResponse(cartItems);
+	}
+
+	@Transactional
+	public Collection<CartItemResponse> mergeCartItems(Principal principal,
+													   List<CartMergeItemRequest> request) {
+
+		UserEntity user;
+		try {
+			user = userService.findByPrincipalForUpdate(principal);
+		} catch (PessimisticLockingFailureException e) {
+			throw new CartBusyException(CART_BEING_UPDATE, e);
+		}
+
+		Map<Long, Integer> requestedQuantities = request.stream()
+				.collect(Collectors.toMap(
+						CartMergeItemRequest::productPriceId,
+						CartMergeItemRequest::quantity,
+						Math::max,
+						LinkedHashMap::new
+				));
+
+		if (!requestedQuantities.isEmpty()) {
+			Set<Long> existingPriceIds = Set.copyOf(
+					productPriceService.findExistingPriceIds(new ArrayList<>(requestedQuantities.keySet())));
+
+			requestedQuantities.forEach((productPriceId, quantity) -> {
+
+				if (existingPriceIds.contains(productPriceId)) {
+					cartItemRepository.mergeCartItem(user.getId(), productPriceId, quantity);
+				}
+			});
+		}
+
+		Collection<CartItemEntity> mergedCart = cartItemRepository.findByUserId(user.getId());
+
+		return cartItemMapper.toCartItemResponse(mergedCart);
 	}
 
 	public CartItemResponse getCartItemByPriceId(Principal principal,
@@ -59,6 +102,7 @@ public class CartItemService {
 
 		if (!itemExists) {
 			long currentUniqueCount = cartItemRepository.countDistinctProductPriceIdsByUserId(user.getId());
+
 			if (currentUniqueCount >= MAX_UNIQUE_ITEMS) {
 				throw new CartLimitExceededException(
 						String.format(CART_LIMIT_EXCEEDED, MAX_UNIQUE_ITEMS, currentUniqueCount),
@@ -92,4 +136,5 @@ public class CartItemService {
 					String.format(CART_ITEM_NOT_FOUND, productPriceId));
 		}
 	}
+
 }

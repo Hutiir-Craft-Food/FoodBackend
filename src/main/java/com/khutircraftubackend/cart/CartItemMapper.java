@@ -1,5 +1,6 @@
 package com.khutircraftubackend.cart;
 
+import com.khutircraftubackend.cart.response.CartItemResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

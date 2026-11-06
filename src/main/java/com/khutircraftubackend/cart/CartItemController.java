@@ -1,5 +1,8 @@
 package com.khutircraftubackend.cart;
 
+import com.khutircraftubackend.cart.request.CartItemRequest;
+import com.khutircraftubackend.cart.request.CartMergeRequest;
+import com.khutircraftubackend.cart.response.CartItemResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,6 +29,13 @@ public class CartItemController {
 												  @PathVariable Long productPriceId) {
 
 		return cartItemService.getCartItemByPriceId(principal, productPriceId);
+	}
+
+	@PostMapping("/merge")
+	public Collection<CartItemResponse> mergeCartItems(Principal principal,
+													   @Valid @RequestBody CartMergeRequest request) {
+
+		return cartItemService.mergeCartItems(principal, request.items());
 	}
 
 	@PutMapping("/items/{productPriceId}")
