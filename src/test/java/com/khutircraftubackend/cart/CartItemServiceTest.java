@@ -1,6 +1,5 @@
 package com.khutircraftubackend.cart;
 
-import com.khutircraftubackend.cart.exception.CartBusyException;
 import com.khutircraftubackend.cart.exception.CartItemNotFoundException;
 import com.khutircraftubackend.cart.exception.CartLimitExceededException;
 import com.khutircraftubackend.cart.request.CartItemRequest;
@@ -22,7 +21,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.dao.CannotAcquireLockException;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
@@ -72,7 +70,7 @@ class CartItemServiceTest {
 			unavailableProduct.setAvailable(false);
 			newItem.getProductPrice().setProduct(unavailableProduct);
 
-			when(userService.findByPrincipalForUpdate(principal)).thenReturn(user);
+			when(userService.findByPrincipal(principal)).thenReturn(user);
 			when(productPriceService.findExistingPriceIds(List.of(2L, 3L, 99L)))
 					.thenReturn(List.of(2L, 3L));
 			doNothing().when(cartItemRepository).mergeCartItem(user.getId(), 2L, 7);
@@ -95,7 +93,7 @@ class CartItemServiceTest {
 		@Test
 		void emptyGuestCartReturnsCurrentCartAndStillLocksUser() {
 			CartItemEntity existingItem = cartItem(2L, 4);
-			when(userService.findByPrincipalForUpdate(principal)).thenReturn(user);
+			when(userService.findByPrincipal(principal)).thenReturn(user);
 			when(cartItemRepository.findByUserId(user.getId())).thenReturn(List.of(existingItem));
 
 			Collection<CartItemResponse> response = cartItemService.mergeCartItems(principal, List.of());
@@ -103,7 +101,7 @@ class CartItemServiceTest {
 			assertEquals(List.of(2L), response.stream()
 					.map(CartItemResponse::productPriceId)
 					.toList());
-			verify(userService).findByPrincipalForUpdate(principal);
+			verify(userService).findByPrincipal(principal);
 			verifyNoInteractions(productPriceService);
 			verify(cartItemRepository, never()).mergeCartItem(anyLong(), anyLong(), anyInt());
 		}
@@ -113,7 +111,7 @@ class CartItemServiceTest {
 			List<CartItemEntity> overCapCart = java.util.stream.IntStream.rangeClosed(1, 50)
 					.mapToObj(id -> cartItem((long) id, 1))
 					.toList();
-			when(userService.findByPrincipalForUpdate(principal)).thenReturn(user);
+			when(userService.findByPrincipal(principal)).thenReturn(user);
 			when(cartItemRepository.findByUserId(user.getId())).thenReturn(overCapCart);
 
 			Collection<CartItemResponse> response = cartItemService.mergeCartItems(principal, List.of());
@@ -124,7 +122,7 @@ class CartItemServiceTest {
 		@Test
 		void retryingSameMergeDoesNotIncreaseRequestedQuantity() {
 			List<CartMergeItemRequest> request = List.of(new CartMergeItemRequest(2L, 5));
-			when(userService.findByPrincipalForUpdate(principal)).thenReturn(user);
+			when(userService.findByPrincipal(principal)).thenReturn(user);
 			when(productPriceService.findExistingPriceIds(List.of(2L))).thenReturn(List.of(2L));
 			doNothing().when(cartItemRepository).mergeCartItem(user.getId(), 2L, 5);
 			when(cartItemRepository.findByUserId(user.getId())).thenReturn(List.of(cartItem(2L, 5)));
@@ -138,7 +136,7 @@ class CartItemServiceTest {
 
 		@Test
 		void persistenceFailurePropagatesForTransactionalRollback() {
-			when(userService.findByPrincipalForUpdate(principal)).thenReturn(user);
+			when(userService.findByPrincipal(principal)).thenReturn(user);
 			when(productPriceService.findExistingPriceIds(List.of(2L))).thenReturn(List.of(2L));
 			doThrow(new IllegalStateException("persistence failed"))
 					.when(cartItemRepository).mergeCartItem(user.getId(), 2L, 5);
@@ -150,19 +148,6 @@ class CartItemServiceTest {
 
 			verify(cartItemRepository, never()).findByUserId(user.getId());
 		}
-
-		@Test
-		void lockTimeoutIsTranslatedToCartBusy() {
-			when(userService.findByPrincipalForUpdate(principal))
-					.thenThrow(new CannotAcquireLockException("lock timeout"));
-
-			assertThatThrownBy(() -> cartItemService.mergeCartItems(
-					principal, List.of(new CartMergeItemRequest(2L, 5))))
-					.isInstanceOf(CartBusyException.class);
-
-			verifyNoInteractions(cartItemRepository);
-		}
-
 
 		private CartItemEntity cartItem(Long productPriceId, int quantity) {
 			ProductPriceEntity price = new ProductPriceEntity();

@@ -1,6 +1,5 @@
 package com.khutircraftubackend.cart;
 
-import com.khutircraftubackend.cart.exception.CartBusyException;
 import com.khutircraftubackend.cart.exception.CartItemNotFoundException;
 import com.khutircraftubackend.cart.exception.CartLimitExceededException;
 import com.khutircraftubackend.cart.request.CartItemRequest;
@@ -10,7 +9,6 @@ import com.khutircraftubackend.product.price.service.ProductPriceService;
 import com.khutircraftubackend.user.UserEntity;
 import com.khutircraftubackend.user.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,7 +16,8 @@ import java.security.Principal;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.khutircraftubackend.cart.exception.CartItemResponseMessage.*;
+import static com.khutircraftubackend.cart.exception.CartItemResponseMessage.CART_ITEM_NOT_FOUND;
+import static com.khutircraftubackend.cart.exception.CartItemResponseMessage.CART_LIMIT_EXCEEDED;
 
 @Service
 @RequiredArgsConstructor
@@ -44,19 +43,14 @@ public class CartItemService {
 	public Collection<CartItemResponse> mergeCartItems(Principal principal,
 													   List<CartMergeItemRequest> request) {
 
-		UserEntity user;
-		try {
-			user = userService.findByPrincipalForUpdate(principal);
-		} catch (PessimisticLockingFailureException e) {
-			throw new CartBusyException(CART_BEING_UPDATE, e);
-		}
+		UserEntity user = userService.findByPrincipal(principal);
 
 		Map<Long, Integer> requestedQuantities = request.stream()
 				.collect(Collectors.toMap(
 						CartMergeItemRequest::productPriceId,
 						CartMergeItemRequest::quantity,
 						Math::max,
-						LinkedHashMap::new
+						TreeMap::new
 				));
 
 		if (!requestedQuantities.isEmpty()) {

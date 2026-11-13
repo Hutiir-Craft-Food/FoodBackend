@@ -1,6 +1,5 @@
 package com.khutircraftubackend.exception;
 
-import com.khutircraftubackend.cart.exception.CartBusyException;
 import com.khutircraftubackend.cart.exception.CartLimitExceededException;
 import com.khutircraftubackend.cart.response.CartLimitExceededResponse;
 import com.khutircraftubackend.product.image.exception.ImageProcessingException;
@@ -191,23 +190,4 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         );
     }
 
-    @ExceptionHandler(CartBusyException.class)
-    public ResponseEntity<GlobalErrorResponse> handleCartBusyException(CartBusyException ex,
-                                                                       HttpServletRequest request) {
-
-        log.warn("Cart is busy ({} {}): {}", request.getMethod(), request.getRequestURI(),
-                ex.getCause() != null ? ex.getCause().getClass().getSimpleName() : "no cause");
-
-        GlobalErrorResponse body = GlobalErrorResponse.builder()
-                .status(HttpStatus.SERVICE_UNAVAILABLE.value())
-                .error(HttpStatus.SERVICE_UNAVAILABLE.getReasonPhrase())
-                .message(ex.getMessage())
-                .path(determineRequestPath(request))
-                .build();
-
-        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
-                .header(HttpHeaders.RETRY_AFTER, "1")
-                .body(body);
-    }
-    
 }

@@ -5,8 +5,6 @@ import com.khutircraftubackend.user.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 
@@ -48,17 +46,6 @@ public class UserService {
 		String email = principal.getName();
 
 		return findByEmail(email);
-	}
-
-	@Transactional(propagation = Propagation.MANDATORY)
-	public UserEntity findByPrincipalForUpdate(Principal principal) {
-
-		userRepository.setLocalLockTimeout();
-
-		String email = principal.getName();
-
-		return userRepository.findByEmailForUpdate(email)
-				.orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND));
 	}
 
 	public UserEntity findByEmail(String email) {
