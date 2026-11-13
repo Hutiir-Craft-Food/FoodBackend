@@ -1,7 +1,7 @@
 package com.khutircraftubackend.exception;
 
-import com.khutircraftubackend.cart.CartLimitExceededException;
-import com.khutircraftubackend.cart.CartLimitExceededResponse;
+import com.khutircraftubackend.cart.exception.CartLimitExceededException;
+import com.khutircraftubackend.cart.response.CartLimitExceededResponse;
 import com.khutircraftubackend.product.image.exception.ImageProcessingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
@@ -189,5 +189,5 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 ex.getCurrentUniqueCount()
         );
     }
-    
+
 }

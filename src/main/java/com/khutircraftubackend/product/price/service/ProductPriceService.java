@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Collection;
 
 import static com.khutircraftubackend.product.exception.ProductResponseMessage.*;
 
@@ -93,6 +94,14 @@ public class ProductPriceService {
 			throw new ProductPriceNotFoundException(
 					String.format(PRODUCT_PRICE_NOT_FOUND, productPriceId));
 		}
+	}
+
+	public List<Long> findExistingPriceIds(Collection<Long> productPriceIds) {
+		if (productPriceIds.isEmpty()) {
+			return List.of();
+		}
+
+		return productPriceRepository.findExistingIdsByIdIn(productPriceIds);
 	}
 
 }
