@@ -1,4 +1,4 @@
-package com.khutircraftubackend.cart;
+package com.khutircraftubackend.cart.exception;
 
 import lombok.experimental.UtilityClass;
 

@@ -15,26 +15,26 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "cart_items",
-        uniqueConstraints = @UniqueConstraint(
-                name = "uq_cart_items_user_product_price",
-                columnNames = {"user_id", "product_price_id"}
-        )
+		uniqueConstraints = @UniqueConstraint(
+				name = "uq_cart_items_user_product_price",
+				columnNames = {"user_id", "product_price_id"}
+		)
 )
 public class CartItemEntity extends Auditable {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private UserEntity user;
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@JoinColumn(name = "user_id", nullable = false)
+	private UserEntity user;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "product_price_id", nullable = false)
-    private ProductPriceEntity productPrice;
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@JoinColumn(name = "product_price_id", nullable = false)
+	private ProductPriceEntity productPrice;
 
-    @Column(name = "quantity", nullable = false)
-    private int quantity;
+	@Column(name = "quantity", nullable = false)
+	private int quantity;
 
 }

@@ -1,4 +1,4 @@
-package com.khutircraftubackend.cart;
+package com.khutircraftubackend.cart.request;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;

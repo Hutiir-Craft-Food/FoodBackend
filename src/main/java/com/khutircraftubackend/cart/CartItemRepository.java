@@ -12,36 +12,47 @@ import java.util.Optional;
 @Repository
 public interface CartItemRepository extends JpaRepository<CartItemEntity, Long> {
 
-    List<CartItemEntity> findByUserId(Long userId);
+	List<CartItemEntity> findByUserId(Long userId);
 
-    Optional<CartItemEntity> findByUserIdAndProductPriceId(Long userId, Long productPriceId);
+	Optional<CartItemEntity> findByUserIdAndProductPriceId(Long userId, Long productPriceId);
 
-    boolean existsByUserIdAndProductPriceId(Long userId, Long productPriceId);
+	boolean existsByUserIdAndProductPriceId(Long userId, Long productPriceId);
 
-    @Modifying
-    @Query(value = """
-        INSERT INTO cart_items (user_id, product_price_id, quantity, created_at, updated_at)
-        VALUES (:userId, :productPriceId, :quantity, now(), now())
-        ON CONFLICT ON CONSTRAINT uq_cart_items_user_product_price
-        DO UPDATE SET quantity = :quantity, updated_at = now()
-        """, nativeQuery = true)
-    void upsertCartItem(@Param("userId") Long userId,
-                        @Param("productPriceId") Long productPriceId,
-                        @Param("quantity") int quantity);
+	@Modifying
+	@Query(value = """
+			INSERT INTO cart_items (user_id, product_price_id, quantity, created_at, updated_at)
+			VALUES (:userId, :productPriceId, :quantity, now(), now())
+			ON CONFLICT ON CONSTRAINT uq_cart_items_user_product_price
+			DO UPDATE SET quantity = :quantity, updated_at = now()
+			""", nativeQuery = true)
+	void upsertCartItem(@Param("userId") Long userId,
+						@Param("productPriceId") Long productPriceId,
+						@Param("quantity") int quantity);
 
-    @Query("""
-        SELECT COUNT(DISTINCT c.productPrice.id)
-        FROM CartItemEntity c
-        WHERE c.user.id = :userId
-        """)
-    long countDistinctProductPriceIdsByUserId(@Param("userId") Long userId);
+	@Modifying
+	@Query(value = """
+			INSERT INTO cart_items (user_id, product_price_id, quantity, created_at, updated_at)
+			VALUES (:userId, :productPriceId, :quantity, now(), now())
+			ON CONFLICT ON CONSTRAINT uq_cart_items_user_product_price
+			DO UPDATE SET quantity = GREATEST(cart_items.quantity, EXCLUDED.quantity), updated_at = now()
+			""", nativeQuery = true)
+	void mergeCartItem(@Param("userId") Long userId,
+					   @Param("productPriceId") Long productPriceId,
+					   @Param("quantity") int quantity);
 
-    @Modifying
-    @Query("""
-        DELETE FROM CartItemEntity c
-        WHERE c.user.id = :userId AND c.productPrice.id = :productPriceId
-        """)
-    int deleteByUserIdAndProductPriceId(@Param("userId") Long userId,
-                                         @Param("productPriceId") Long productPriceId);
+	@Query("""
+			SELECT COUNT(DISTINCT c.productPrice.id)
+			FROM CartItemEntity c
+			WHERE c.user.id = :userId
+			""")
+	long countDistinctProductPriceIdsByUserId(@Param("userId") Long userId);
+
+	@Modifying
+	@Query("""
+			DELETE FROM CartItemEntity c
+			WHERE c.user.id = :userId AND c.productPrice.id = :productPriceId
+			""")
+	int deleteByUserIdAndProductPriceId(@Param("userId") Long userId,
+										@Param("productPriceId") Long productPriceId);
 
 }
