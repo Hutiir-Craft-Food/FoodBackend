@@ -5,7 +5,7 @@ import com.khutircraftubackend.cart.exception.CartLimitExceededException;
 import com.khutircraftubackend.cart.request.CartItemRequest;
 import com.khutircraftubackend.cart.request.CartMergeItemRequest;
 import com.khutircraftubackend.cart.response.CartItemResponse;
-import com.khutircraftubackend.cart.response.CartItemUpsertResult;
+import com.khutircraftubackend.common.UpsertResult;
 import com.khutircraftubackend.product.price.service.ProductPriceService;
 import com.khutircraftubackend.user.UserEntity;
 import com.khutircraftubackend.user.UserService;
@@ -85,9 +85,9 @@ public class CartItemService {
 	}
 
 	@Transactional
-	public CartItemUpsertResult createOrUpdateCartItem(Principal principal,
-													   Long productPriceId,
-													   CartItemRequest request) {
+	public UpsertResult<CartItemResponse> createOrUpdateCartItem(Principal principal,
+											   Long productPriceId,
+											   CartItemRequest request) {
 
 		UserEntity user = userService.findByPrincipal(principal);
 
@@ -114,7 +114,7 @@ public class CartItemService {
 								.formatted(productPriceId)
 				));
 
-		return new CartItemUpsertResult(cartItemMapper.toCartItemResponse(cartItem), !itemExists);
+		return new UpsertResult<>(cartItemMapper.toCartItemResponse(cartItem), !itemExists);
 	}
 
 	@Transactional
