@@ -5,6 +5,7 @@ import com.khutircraftubackend.cart.exception.CartLimitExceededException;
 import com.khutircraftubackend.cart.request.CartItemRequest;
 import com.khutircraftubackend.cart.request.CartMergeItemRequest;
 import com.khutircraftubackend.cart.response.CartItemResponse;
+import com.khutircraftubackend.common.UpsertResult;
 import com.khutircraftubackend.product.ProductEntity;
 import com.khutircraftubackend.product.exception.ProductPriceNotFoundException;
 import com.khutircraftubackend.product.price.entity.ProductPriceEntity;
@@ -174,8 +175,7 @@ class CartItemServiceTest {
 
 			when(userService.findByPrincipal(principal)).thenReturn(user);
 			doNothing().when(productPriceService).assertProductPriceExists(productPriceId);
-			when(cartItemRepository.findByUserIdAndProductPriceId(user.getId(), productPriceId))
-					.thenReturn(Optional.empty());
+			when(cartItemRepository.existsByUserIdAndProductPriceId(user.getId(), productPriceId)).thenReturn(Boolean.FALSE);
 			when(cartItemRepository.countDistinctProductPriceIdsByUserId(user.getId())).thenReturn(10L);
 			doNothing().when(cartItemRepository).upsertCartItem(user.getId(), productPriceId, 5);
 
@@ -188,10 +188,10 @@ class CartItemServiceTest {
 			when(cartItemRepository.findByUserIdAndProductPriceId(user.getId(), productPriceId))
 					.thenReturn(Optional.of(persisted));
 
-			CartItemResponse response = cartItemService.createOrUpdateCartItem(principal, productPriceId, request);
+			UpsertResult<CartItemResponse> result = cartItemService.createOrUpdateCartItem(principal, productPriceId, request);
 
-			assertThat(response.productPriceId()).isEqualTo(productPriceId);
-			assertThat(response.quantity()).isEqualTo(5);
+			assertThat(result.value().productPriceId()).isEqualTo(productPriceId);
+			assertThat(result.value().quantity()).isEqualTo(5);
 
 			InOrder order = inOrder(productPriceService, cartItemRepository);
 			order.verify(productPriceService).assertProductPriceExists(productPriceId);
@@ -236,10 +236,11 @@ class CartItemServiceTest {
 			when(cartItemRepository.findByUserIdAndProductPriceId(user.getId(), productPriceId))
 					.thenReturn(Optional.of(persisted));
 
-			CartItemResponse response = cartItemService.createOrUpdateCartItem(principal, productPriceId, request);
+			UpsertResult<CartItemResponse> result = cartItemService.createOrUpdateCartItem(principal, productPriceId, request);
 
-			assertThat(response.productPriceId()).isEqualTo(productPriceId);
-			assertThat(response.quantity()).isEqualTo(12);
+			assertThat(result.value().productPriceId()).isEqualTo(productPriceId);
+			assertThat(result.value().quantity()).isEqualTo(12);
+			assertThat(result.created()).isFalse();
 			verify(cartItemRepository, never()).countDistinctProductPriceIdsByUserId(anyLong());
 		}
 
@@ -302,7 +303,53 @@ class CartItemServiceTest {
 			verify(cartItemMapper, never()).toCartItemResponse(any(CartItemEntity.class));
 
 		}
+
+		@Test
+		@DisplayName("created = true, whenItemDidNotExist")
+		void  returnsCreatedTrue_whenItemDidNotExist() {
+
+			Long productPriceId = 2L;
+			when(userService.findByPrincipal(principal)).thenReturn(user);
+			when(cartItemRepository.existsByUserIdAndProductPriceId(user.getId(), productPriceId)).thenReturn(false);
+			when(cartItemRepository.countDistinctProductPriceIdsByUserId(user.getId())).thenReturn(10L);
+			when(cartItemRepository.findByUserIdAndProductPriceId(user.getId(), productPriceId))
+					.thenReturn(Optional.of(persistedItem(productPriceId, 1)));
+
+			UpsertResult<CartItemResponse> result =
+					cartItemService.createOrUpdateCartItem(principal, productPriceId, new CartItemRequest(1));
+
+			assertThat(result.created()).isTrue();
+		}
+
+		@Test
+		@DisplayName("create = false, whenItemExisted")
+		void   returnsCreatedFalse_whenItemExisted() {
+
+			Long productPriceId = 2L;
+			when(userService.findByPrincipal(principal)).thenReturn(user);
+			when(cartItemRepository.existsByUserIdAndProductPriceId(user.getId(), productPriceId)).thenReturn(true);
+			when(cartItemRepository.findByUserIdAndProductPriceId(user.getId(), productPriceId))
+					.thenReturn(Optional.of(persistedItem(productPriceId, 7)));
+
+			UpsertResult<CartItemResponse> result =
+					cartItemService.createOrUpdateCartItem(principal, productPriceId, new CartItemRequest(7));
+
+			assertThat(result.created()).isFalse();
+		}
+
+		private CartItemEntity persistedItem(Long productPriceId, int quantity) {
+
+			ProductPriceEntity price = new ProductPriceEntity();
+			price.setId(productPriceId);
+
+			CartItemEntity item = new CartItemEntity();
+			item.setProductPrice(price);
+			item.setQuantity(quantity);
+
+			return  item;
+		}
 	}
+
 
 	@Nested
 	@DisplayName("removeCartItem")

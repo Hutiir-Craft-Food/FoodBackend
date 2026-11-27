@@ -3,9 +3,11 @@ package com.khutircraftubackend.cart;
 import com.khutircraftubackend.cart.request.CartItemRequest;
 import com.khutircraftubackend.cart.request.CartMergeRequest;
 import com.khutircraftubackend.cart.response.CartItemResponse;
+import com.khutircraftubackend.common.UpsertResult;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -39,15 +41,15 @@ public class CartItemController {
 	}
 
 	@PutMapping("/items/{productPriceId}")
-	public CartItemResponse createOrUpdateCartItem(Principal principal,
-												   @PathVariable Long productPriceId,
-												   @Valid @RequestBody CartItemRequest request) {
+	public ResponseEntity<CartItemResponse> createOrUpdateCartItem(Principal principal,
+																   @PathVariable Long productPriceId,
+																   @Valid @RequestBody CartItemRequest request) {
 
-		return cartItemService.createOrUpdateCartItem(
-				principal,
-				productPriceId,
-				request
-		);
+		UpsertResult<CartItemResponse> result = cartItemService.createOrUpdateCartItem(principal, productPriceId, request);
+
+		HttpStatus status = result.created() ? HttpStatus.CREATED : HttpStatus.OK;
+
+		return ResponseEntity.status(status).body(result.value());
 	}
 
 	@DeleteMapping("/items/{productPriceId}")
